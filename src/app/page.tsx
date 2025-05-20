@@ -1,11 +1,90 @@
 import Header from "@/components/header/header";
 import Footer from "@/components/footer/footer";
+import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 
 export default function Home() {
   return (
     <>
       <Header />
-      <div>hello world</div>
+      <div className="px-10 flex flex-col gap-10">
+        <div
+          className="
+    relative
+    flex 
+    flex-col items-center
+    justify-end
+    text-bottom
+    w-full
+    min-h-[980px]
+    bg-[url('/images/img-lp-1.png')]
+    bg-no-repeat bg-center
+    bg-[length:100%_auto]
+    text-white
+    gap-10
+    pb-10
+  "
+        >
+          <div className="relative text-center w-[500px] z-20 flex flex-col gap-3">
+            <p className="font-bold text-[20px]">SEAMLESS EXPERIENCE</p>
+            <p>
+              Dedicated to seamless, executive travel with professionalism and
+              comfort tailored to your business needs.
+            </p>
+          </div>
+          <button className="relative flex gap-1 items-center text-[16px] z-20">
+            <p>LEARN MORE</p>
+            <ArrowBackIosNewRoundedIcon
+              className="transform rotate-180"
+              fontSize="inherit"
+            />
+          </button>
+
+          <div
+            className="absolute bottom-0 left-0 w-full h-[300px]
+      bg-gradient-to-t from-black to-transparent
+      pointer-events-none
+      z-10"
+          />
+        </div>
+
+        <div
+          className="
+    relative
+    flex 
+    flex-col items-center
+    justify-end
+    text-bottom
+    w-full
+    min-h-[980px]
+    bg-[url('/images/img-lp-2.png')]
+    bg-no-repeat bg-center
+    bg-[length:100%_auto]
+    text-white
+    gap-10
+    pb-10
+    mb-20
+  "
+        >
+          <div className="relative text-center w-[500px] z-20 flex flex-col gap-3">
+            <p className="font-bold text-[20px]">JO SUV</p>
+            <p>JO’s SUV most refined class</p>
+          </div>
+          <button className="relative flex gap-1 items-center text-[16px] z-20">
+            <p>LEARN MORE</p>
+            <ArrowBackIosNewRoundedIcon
+              className="transform rotate-180"
+              fontSize="inherit"
+            />
+          </button>
+
+          <div
+            className="absolute bottom-0 left-0 w-full h-[300px]
+      bg-gradient-to-t from-black to-transparent
+      pointer-events-none
+      z-10"
+          />
+        </div>
+      </div>
       <Footer />
     </>
   );
