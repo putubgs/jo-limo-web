@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <div
       className="relative bg-[#FCFAF9]
-    flex flex-col items-start px-[200px] justify-between pt-[100px] pb-10
+    flex flex-col items-start px-[200px] justify-center pt-[100px] pb-10
     bg-[url('/images/black-line-footer.png')] bg-contain bg-no-repeat
     w-full h-[620px] border-t gap-20"
     >
