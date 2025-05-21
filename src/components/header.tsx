@@ -22,7 +22,7 @@ export default function Header() {
           width={82}
           height={82}
         />
-        <div className="flex items-center gap-20">
+        <div className="flex items-center gap-[50px]">
           <div>SERVICES</div>
           <div>MEMBERSHIP</div>
           <div>CITIES & CLASSES</div>

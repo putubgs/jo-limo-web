@@ -5,11 +5,11 @@ export default function Footer() {
   return (
     <div
       className="relative bg-[#FCFAF9]
-    flex flex-col items-start px-[200px] justify-center pt-[100px] pb-10
+    flex flex-col items-start px-[200px] max-[1595px]:px-[125px] justify-center pt-[100px] pb-10
     bg-[url('/images/black-line-footer.png')] bg-contain bg-no-repeat
     w-full h-[620px] border-t gap-20"
     >
-      <div className="flex items-start justify-center gap-[200px] relative z-20">
+      <div className="flex items-start justify-center gap-[200px] relative z-20 mx-auto">
         <Image
           alt="Jo Limo Logo"
           src="/images/jolimo-logo.png"
@@ -17,7 +17,7 @@ export default function Footer() {
           height={106}
         />
 
-        <div className="flex text-[18px] gap-20">
+        <div className="flex text-[18px] gap-20 w-full">
           <div className="flex flex-col gap-4">
             <div className="flex gap-3 items-center">
               <p>AIRPORT TRANSFER</p>
