@@ -1,15 +1,9 @@
-"use client";
-
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import Image from "next/image";
-import { useState } from "react";
 import AppBanner from "@/components/app-banner";
 
 export default function TravelPartner() {
-  const [activeTab, setActiveTab] = useState<"luggage" | "passenger">(
-    "luggage"
-  );
   return (
     <>
       <Header />
