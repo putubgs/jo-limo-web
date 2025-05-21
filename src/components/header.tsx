@@ -1,12 +1,19 @@
+"use client"
+
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 export default function Header() {
+  const pathname = usePathname();
+  const showBorder = pathname !== "/";
   return (
     <div
-      className="relative
-    flex flex-col items-center justify-center
-    bg-[url('/images/black-line-header.png')] bg-cover bg-top
-    w-full h-52 border-b"
+      className={[
+        "relative flex flex-col items-center justify-center",
+        "bg-[url('/images/black-line-header.png')] bg-cover bg-top",
+        "w-full h-52",
+        showBorder ? "border-b" : "",
+      ].join(" ")}
     >
       <div className="flex flex-col relative z-20 flex items-center gap-10">
         <Image

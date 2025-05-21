@@ -1,12 +1,12 @@
-import Header from "@/components/header/header";
-import Footer from "@/components/footer/footer";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 
 export default function Home() {
   return (
     <>
       <Header />
-      <div className="px-10 flex flex-col gap-10">
+      <div className="px-20 flex flex-col gap-10">
         <div
           className="
     relative
