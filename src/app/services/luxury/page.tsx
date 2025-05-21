@@ -16,12 +16,12 @@ export default function Luxury() {
       {/* Hero */}
       <section className="mx-auto px-4 text-center pt-20 gap-10 flex flex-col">
         <div className="flex flex-col gap-10 items-center">
-          <h1 className="text-[64px]">MPV</h1>
+          <h1 className="text-[64px]">Luxury</h1>
           <p className="mt-4 max-w-[800px] mx-auto text-[20px]">
-            Chauffeur-driven Mercedes-Benz V-Class vehicles with enough room for
-            five passengers and a full holiday’s worth of luggage. Designed for
-            families — with extended boot space and a child seat available upon
-            request.
+            Experience unparalleled luxury with the Mercedes S-Class. Designed
+            for the ultimate comfort and elegance, this model offers spacious
+            interiors and advanced features, making it the perfect choice for
+            those seeking a premium, sophisticated travel experience.
           </p>
           {/* <button className="mt-6 px-10 py-5 bg-black text-white uppercase text-sm hover:bg-gray-800 w-fit text-[20px] font-bold">
             Reserve Your Journey
@@ -39,7 +39,7 @@ export default function Luxury() {
 
         <div className="mt-8 w-full px-20">
           <Image
-            src="/images/mpv-img.webp"
+            src="/images/luxury-img.webp"
             alt="Executive Mercedes-E-Class"
             width={1200}
             height={700}
@@ -52,25 +52,21 @@ export default function Luxury() {
       <section className="mx-auto px-4 py-12 w-full flex flex-col mt-10 items-center justify-center">
         <div className="flex flex-col w-full items-center justify-center">
           <div className="flex flex-col w-full justify-center max-w-[850px]">
-            <h2 className="text-[40px]">LUXURY WITH VERSATILITY</h2>
+            <h2 className="text-[40px]">ONLY THE BEST, NOTHING LESS</h2>
             <p className="mt-4 text-[16px]">
-              Travel in style with chauffeur-driven Mercedes-Benz V-Class
-              vehicles, perfect for families. Designed to comfortably seat up to
-              five passengers, these vehicles offer extended boot space,
-              accommodating a full holiday’s worth of luggage. Child seats are
-              also available upon request for added convenience.
+              Indulge in the ultimate luxury with the Mercedes-Benz E-Class, a
+              masterpiece of comfort and style. Expertly driven by a
+              professional Jo Limo chauffeur, this vehicle offers an
+              unparalleled experience for those who demand the best.
             </p>
             <p className="pt-4">
-              Ideal for family trips and airport transfers, these vehicles
-              provide ample space for passengers and their belongings. The
-              spacious boot easily fits bicycles, pushchairs, and pet carriers,
-              making it perfect for every journey.
-            </p>
-            <p className="pt-4">
-              Enjoy a personalized experience as your chauffeur adjusts the
-              temperature and music to your liking. Thoughtful amenities include
-              a complimentary bottle of water and convenient charging options,
-              ensuring you stay refreshed and recharged throughout your trip.
+              Your chauffeur will customize the temperature and music to your
+              exact preferences, creating the perfect atmosphere for your
+              journey. Relax and enjoy exclusive amenities, including access to
+              Wi-Fi features in the armrest, a complementary bottle of water,
+              and convenient charging options. Every detail is designed to
+              ensure your complete comfort and satisfaction from start to
+              finish.
             </p>
           </div>
         </div>
