@@ -1,15 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import Image from "next/image";
 import AppBanner from "@/components/app-banner";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import CloseIcon from "@mui/icons-material/Close";
+import HourlyModal from "@/components/hourlyModal";
 
 export default function IntercityTransfer() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  useEffect(() => {
+    document.body.style.overflow = isModalOpen ? "hidden" : "";
+  }, [isModalOpen]);
   return (
     <>
       <Header />
@@ -139,20 +143,10 @@ export default function IntercityTransfer() {
 
       <Footer />
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="relative bg-white p-6 w-11/12 max-w-sm">
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-2 left-2 text-gray-500 hover:text-gray-700"
-            >
-              <CloseIcon fontSize="small" />
-            </button>
-            <p className="text-xl font-semibold text-center">Coming Soon</p>
-          </div>
-        </div>
-      )}
+      <HourlyModal
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+      />
     </>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import Image from "next/image";
@@ -11,6 +11,9 @@ import AirportModal from "@/components/airportModal";
 
 export default function AirportTransfer() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  useEffect(() => {
+    document.body.style.overflow = isModalOpen ? "hidden" : "";
+  }, [isModalOpen]);
   return (
     <>
       <Header />
@@ -122,10 +125,7 @@ export default function AirportTransfer() {
 
       <Footer />
 
-      <AirportModal
-        isModalOpen={isModalOpen}
-        setIsModalOpen={setIsModalOpen}
-      />
+      <AirportModal isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} />
     </>
   );
 }
