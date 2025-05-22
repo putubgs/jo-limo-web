@@ -7,11 +7,10 @@ import Image from "next/image";
 import AppBanner from "@/components/app-banner";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import CloseIcon from "@mui/icons-material/Close";
+import IntercityModal from "@/components/intercityModal";
 
 export default function IntercityTransfer() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("executive");
-  const tabs = ["executive", "luxury", "suv", "mpv"];
   return (
     <>
       <Header />
@@ -153,47 +152,10 @@ export default function IntercityTransfer() {
       <AppBanner />
 
       <Footer />
-
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="flex flex-col relative bg-white px-[30px] py-[75px] w-11/12 max-w-[750px]">
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 left-4 text-black hover:text-gray-700"
-            >
-              <CloseIcon fontSize="small" />
-            </button>
-            <p className="text-[20px] pb-[75px] text-center">INTERCITY TRANSFER</p>
-            <div className="relative mb-6">
-              <div className="border-t border-gray-200" />
-              <div className="max-w-[400px]">
-                <div className="flex border-t border-gray-200">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className={`
-        relative              // so we can absolutely position the bar inside
-        flex-1                // equal width tabs
-        px-6 py-3             // horizontal/vertical padding
-        text-center uppercase font-medium text-[16px]
-        ${activeTab === tab ? "text-black" : "text-gray-500"}
-      `}
-                    >
-                      {tab.toUpperCase()}
-                      {/* only the active tab renders its little black top‐border */}
-                      {activeTab === tab && (
-                        <span className="absolute top-0 left-0 w-full h-0.5 bg-black" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>{" "}
-          </div>
-        </div>
-      )}
+      <IntercityModal
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+      />
     </>
   );
 }
