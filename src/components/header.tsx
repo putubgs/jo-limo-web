@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -10,7 +10,14 @@ export default function Header() {
   const showBorder = pathname !== "/";
   const [servicesOpen, setServicesOpen] = useState(false);
 
-  // inside your Header component, alongside useState etc
+  // Close dropdown on scroll
+  useEffect(() => {
+    if (!servicesOpen) return;
+    const handleScroll = () => setServicesOpen(false);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [servicesOpen]);
+
   const servicesList = [
     { label: "EXECUTIVE CLASS", slug: "executive" },
     { label: "LUXURY CLASS", slug: "luxury" },
@@ -57,12 +64,14 @@ export default function Header() {
         ].join(" ")}
       >
         <div className="relative z-20 flex flex-col items-center gap-10">
-          <Image
-            alt="Jo Limo Logo"
-            src="/images/jolimo-logo.png"
-            width={82}
-            height={82}
-          />
+          <Link href={"/"}>
+            <Image
+              alt="Jo Limo Logo"
+              src="/images/jolimo-logo.png"
+              width={82}
+              height={82}
+            />
+          </Link>
           <nav className="flex items-center gap-[50px]">
             {navItems.map((item) => (
               <button
@@ -75,7 +84,6 @@ export default function Header() {
             ))}
           </nav>
         </div>
-
         <div
           className="absolute bottom-0 left-0 w-full h-[180px]
              bg-gradient-to-t from-white to-transparent
@@ -83,13 +91,12 @@ export default function Header() {
         />
       </div>
 
-      {/* ——— Backdrop — only *below* the header ——— */}
+      {/* ——— Backdrop — only below header ——— */}
       {servicesOpen && (
         <div
           onClick={() => setServicesOpen(false)}
           className="
             fixed inset-x-0 bottom-0
-            /* push its top edge down by the header’s height (h-52 = 13rem) */
             top-[13rem]
             bg-black bg-opacity-50
             transition-opacity duration-700
@@ -112,7 +119,7 @@ export default function Header() {
         `}
       >
         <div className="max-w-7xl mx-auto px-8 py-8 flex gap-12">
-          {/* Left: list */}
+          {/* Left: links */}
           <div className="flex-shrink-0 flex flex-col gap-4 text-lg text-gray-700">
             {servicesList.map(({ label, slug }) => (
               <Link
@@ -132,7 +139,7 @@ export default function Header() {
                 src="/images/intercity-transfer-img.webp"
                 alt="Intercity Transfer"
                 width={271}
-                height={250}
+                height={208}
                 className="object-cover w-[271px] h-[208px]"
               />
               <p className="mt-2 text-sm text-gray-500">
@@ -144,7 +151,7 @@ export default function Header() {
                 src="/images/executive-img.webp"
                 alt="Executive Class"
                 width={456}
-                height={250}
+                height={350}
                 className="object-cover w-[456px] h-[350px]"
               />
               <p className="mt-2 text-sm text-gray-500">
