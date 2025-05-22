@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import Image from "next/image";
@@ -11,6 +11,9 @@ import IntercityModal from "@/components/intercityModal";
 
 export default function IntercityTransfer() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  useEffect(() => {
+    document.body.style.overflow = isModalOpen ? "hidden" : "";
+  }, [isModalOpen]);
   return (
     <>
       <Header />
