@@ -6,7 +6,6 @@ import Footer from "@/components/footer";
 import Image from "next/image";
 import AppBanner from "@/components/app-banner";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
-import CloseIcon from "@mui/icons-material/Close";
 import HourlyModal from "@/components/hourlyModal";
 
 export default function IntercityTransfer() {

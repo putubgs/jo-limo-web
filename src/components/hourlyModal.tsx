@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
-import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 
 type TabKey = "executive" | "luxury" | "suv" | "mpv";
 
