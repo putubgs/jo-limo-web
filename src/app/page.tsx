@@ -16,7 +16,7 @@ export default function Home() {
     text-bottom
     w-full
     min-h-[980px]
-    bg-[url('/images/img-lp-1.png')]
+    bg-[url('/images/img-lp-1.webp')]
     bg-no-repeat bg-center
     bg-[length:100%_auto]
     text-white
@@ -31,7 +31,7 @@ export default function Home() {
               comfort tailored to your business needs.
             </p>
           </div>
-          <button className="relative flex gap-1 items-center text-[16px] z-20">
+          <button className="relative flex gap-1 items-center text-[16px] z-20 hover:text-gray-400">
             <p>LEARN MORE</p>
             <ArrowBackIosNewRoundedIcon
               className="transform rotate-180"
@@ -56,7 +56,7 @@ export default function Home() {
     text-bottom
     w-full
     min-h-[980px]
-    bg-[url('/images/img-lp-2.png')]
+    bg-[url('/images/img-lp-2.webp')]
     bg-no-repeat bg-center
     bg-[length:100%_auto]
     text-white
@@ -69,7 +69,7 @@ export default function Home() {
             <p className="font-bold text-[20px]">JO SUV</p>
             <p>JO’s SUV most refined class</p>
           </div>
-          <button className="relative flex gap-1 items-center text-[16px] z-20">
+          <button className="relative flex gap-1 items-center text-[16px] z-20 hover:text-gray-400">
             <p>LEARN MORE</p>
             <ArrowBackIosNewRoundedIcon
               className="transform rotate-180"

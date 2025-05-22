@@ -73,15 +73,30 @@ export default function Header() {
             />
           </Link>
           <nav className="flex items-center gap-[50px]">
-            {navItems.map((item) => (
-              <button
-                key={item}
-                onClick={() => handleNavClick(item)}
-                className="text-base font-medium hover:text-gray-500"
-              >
-                {item}
-              </button>
-            ))}
+            {navItems.map((item) => {
+              if (item === "MEMBERSHIP") {
+                return (
+                  <Link
+                    key={item}
+                    href="/membership"
+                    className="text-base font-medium hover:text-gray-500"
+                    onClick={() => setServicesOpen(false)}
+                  >
+                    {item}
+                  </Link>
+                );
+              }
+              // All others still use the toggle/nav handler
+              return (
+                <button
+                  key={item}
+                  onClick={() => handleNavClick(item)}
+                  className="text-base font-medium hover:text-gray-500"
+                >
+                  {item}
+                </button>
+              );
+            })}
           </nav>
         </div>
         <div
@@ -110,7 +125,7 @@ export default function Header() {
         className={`
           absolute top-full left-0 w-full bg-white shadow-lg
           overflow-hidden z-50
-          transition-all duration-700 ease-in-out
+          transition-all duration-700 ease-in-out pb-10
           ${
             servicesOpen
               ? "max-h-[600px] opacity-100"
