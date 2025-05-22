@@ -20,7 +20,7 @@ export default function TravelPartner() {
             items, or translation, our multilingual team is available around the
             clock to assist you.
           </p>
-          <button className="flex gap-4 items-center font-light">
+          <button className="flex gap-4 items-center font-regular">
             <p>AVAILABLE IN THE APP</p>
             <Image
               src="/images/jolimo-app-logo.png"

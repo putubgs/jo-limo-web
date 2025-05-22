@@ -18,7 +18,7 @@ export default function BusinessTransfer() {
             journey. Arrive at or depart your next meeting, dinner or flight
             in optimal time — and comfort.
           </p>
-          <button className="flex gap-4 items-center font-light">
+          <button className="flex gap-4 items-center font-regular">
             <p>AVAILABLE IN THE APP</p>
             <Image
               src="/images/jolimo-app-logo.png"

@@ -22,7 +22,7 @@ export default function IntercityTransfer() {
             driver for your personal or business needs. Enjoy comfort,
             convenience, and professional service tailored to your schedule.
           </p>
-          <button className="flex gap-4 items-center font-light">
+          <button className="flex gap-4 items-center font-regular">
             <p>AVAILABLE IN THE APP</p>
             <Image
               src="/images/jolimo-app-logo.png"

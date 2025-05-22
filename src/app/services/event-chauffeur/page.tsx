@@ -16,7 +16,7 @@ export default function EventChauffeur() {
             up to an entire day — bringing unparalleled freedom and convenience
             to a full schedule.
           </p>
-          <button className="flex gap-4 items-center font-light">
+          <button className="flex gap-4 items-center font-regular">
             <p>AVAILABLE IN THE APP</p>
             <Image
               src="/images/jolimo-app-logo.png"
