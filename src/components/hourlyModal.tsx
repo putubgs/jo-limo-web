@@ -47,7 +47,7 @@ const HOURLY_DATA: Record<
     ],
     waiting: [
       { label: "First 15 min after the arrival of a car", price: "Free" },
-      { label: "After the free period", price: "0.30 JOD / Minute" },
+      { label: "After the free period", price: "0.25 JOD / Minute" },
     ],
     cancellation: [
       { label: "2 hours before the pick up", price: "Free" },
@@ -66,7 +66,7 @@ const HOURLY_DATA: Record<
     ],
     waiting: [
       { label: "First 15 min after the arrival of a car", price: "Free" },
-      { label: "After the free period", price: "0.20 JOD / Minute" },
+      { label: "After the free period", price: "0.25 JOD / Minute" },
     ],
     cancellation: [
       { label: "2 hours before the pick up", price: "Free" },

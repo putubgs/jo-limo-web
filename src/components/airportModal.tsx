@@ -16,62 +16,62 @@ const PRICING: Record<
 > = {
   executive: {
     amm: [
-      { route: "AMM - Amman City ", price: "45 JOD" },
-      { route: "Amman City - AMM", price: "177 JOD" },
+      { route: "AMM - Amman City ", price: "35 JOD" },
+      { route: "Amman City - AMM", price: "30 JOD" },
     ],
     aqj: [
-      { route: "AQJ - Aqaba City ", price: "119 JOD" },
-      { route: "AQJ - Tala Bay", price: "131 JOD" },
+      { route: "AQJ - Aqaba City ", price: "15 JOD" },
+      { route: "AQJ - Tala Bay", price: "30 JOD" },
     ],
     bc: [
-      { route: "KHB to Amman City", price: "119 JOD" },
-      { route: "B1R to Amman City", price: "131 JOD" },
-      { route: "Wadi Araba to Aqaba City", price: "131 JOD" },
+      { route: "KHB to Amman City", price: "35 JOD" },
+      { route: "B1R to Amman City", price: "30 JOD" },
+      { route: "Wadi Araba to Aqaba City", price: "30 JOD" },
     ],
   },
   luxury: {
     amm: [
-      { route: "AMM - Amman City ", price: "46 JOD" },
-      { route: "Amman City - AMM", price: "177 JOD" },
+      { route: "AMM - Amman City ", price: "85 JOD" },
+      { route: "Amman City - AMM", price: "70 JOD" },
     ],
     aqj: [
-      { route: "AQJ - Aqaba City ", price: "119 JOD" },
-      { route: "AQJ - Tala Bay", price: "131 JOD" },
+      { route: "AQJ - Aqaba City ", price: "40 JOD" },
+      { route: "AQJ - Tala Bay", price: "75 JOD" },
     ],
     bc: [
-      { route: "KHB to Amman City", price: "119 JOD" },
-      { route: "B1R to Amman City", price: "131 JOD" },
-      { route: "Wadi Araba to Aqaba City", price: "131 JOD" },
+      { route: "KHB to Amman City", price: "85 JOD" },
+      { route: "B1R to Amman City", price: "70 JOD" },
+      { route: "Wadi Araba to Aqaba City", price: "70 JOD" },
     ],
   },
   suv: {
     amm: [
-      { route: "AMM - Amman City ", price: "47 JOD" },
-      { route: "Amman City - AMM", price: "177 JOD" },
+      { route: "AMM - Amman City ", price: "75 JOD" },
+      { route: "Amman City - AMM", price: "65 JOD" },
     ],
     aqj: [
-      { route: "AQJ - Aqaba City ", price: "119 JOD" },
-      { route: "AQJ - Tala Bay", price: "131 JOD" },
+      { route: "AQJ - Aqaba City ", price: "35 JOD" },
+      { route: "AQJ - Tala Bay", price: "70 JOD" },
     ],
     bc: [
-      { route: "KHB to Amman City", price: "119 JOD" },
-      { route: "B1R to Amman City", price: "131 JOD" },
-      { route: "Wadi Araba to Aqaba City", price: "131 JOD" },
+      { route: "KHB to Amman City", price: "75 JOD" },
+      { route: "B1R to Amman City", price: "65 JOD" },
+      { route: "Wadi Araba to Aqaba City", price: "65 JOD" },
     ],
   },
   mpv: {
     amm: [
-      { route: "AMM - Amman City ", price: "48 JOD" },
-      { route: "Amman City - AMM", price: "177 JOD" },
+      { route: "AMM - Amman City ", price: "90 JOD" },
+      { route: "Amman City - AMM", price: "80 JOD" },
     ],
     aqj: [
-      { route: "AQJ - Aqaba City ", price: "119 JOD" },
-      { route: "AQJ - Tala Bay", price: "131 JOD" },
+      { route: "AQJ - Aqaba City ", price: "45 JOD" },
+      { route: "AQJ - Tala Bay", price: "85 JOD" },
     ],
     bc: [
-      { route: "KHB to Amman City", price: "119 JOD" },
-      { route: "B1R to Amman City", price: "131 JOD" },
-      { route: "Wadi Araba to Aqaba City", price: "131 JOD" },
+      { route: "KHB to Amman City", price: "90 JOD" },
+      { route: "B1R to Amman City", price: "80 JOD" },
+      { route: "Wadi Araba to Aqaba City", price: "80 JOD" },
     ],
   },
 };
