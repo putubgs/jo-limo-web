@@ -86,6 +86,18 @@ export default function Header() {
                   </Link>
                 );
               }
+              if (item === "CITIES & CLASSES") {
+                return (
+                  <Link
+                    key={item}
+                    href="/cities-and-classes"
+                    className="text-base font-medium hover:text-gray-500"
+                    onClick={() => setServicesOpen(false)}
+                  >
+                    {item}
+                  </Link>
+                );
+              }
               // All others still use the toggle/nav handler
               return (
                 <button
