@@ -5,6 +5,7 @@ import Footer from "@/components/footer";
 import Image from "next/image";
 import { useState } from "react";
 import AppBanner from "@/components/app-banner";
+import OtherVehicleClasses from "@/components/other-vehicle-classes";
 
 export default function Executive() {
   const [activeTab, setActiveTab] = useState<"luggage" | "passenger">(
@@ -43,21 +44,22 @@ export default function Executive() {
       <section className="mx-auto px-4 py-12 w-full flex flex-col mt-10 items-center justify-center">
         <div className="flex flex-col w-full items-center justify-center">
           <div className="flex flex-col w-full justify-center max-w-[850px]">
-            <h2 className="text-[40px]">ONLY THE BEST, NOTHING LESS</h2>
+            <h2 className="text-[40px]">UNCOMPROMISED QUALITY, EVERY TIME</h2>
             <p className="mt-4 text-[16px]">
-              Indulge in the ultimate luxury with the Mercedes-Benz E-Class, a
-              masterpiece of comfort and style. Expertly driven by a
-              professional Jo Limo chauffeur, this vehicle offers an
-              unparalleled experience for those who demand the best.
+              Step into refined sophistication with the Mercedes-Benz E-Class,
+              the ideal choice for business professionals and discerning
+              travelers. Driven by a professional Jo Limo chauffeur, this
+              Executive Class service blends sleek design, smooth performance,
+              and tailored comfort to elevate your journey.
             </p>
             <p className="pt-4">
-              Your chauffeur will customize the temperature and music to your
-              exact preferences, creating the perfect atmosphere for your
-              journey. Relax and enjoy exclusive amenities, including access to
-              Wi-Fi features in the armrest, a complementary bottle of water,
-              and convenient charging options. Every detail is designed to
-              ensure your complete comfort and satisfaction from start to
-              finish.
+              Enjoy a quiet, stress-free ride where every detail is taken care
+              of, from personalized climate control and your preferred music
+              selection to in-car essentials like a complimentary bottle of
+              water and charging ports for your devices. Whether you&apos;re heading
+              to a meeting or the airport, the E-Class delivers a seamless
+              balance of luxury and efficiency. Perfect for your daily business
+              needs.
             </p>
           </div>
         </div>
@@ -69,7 +71,9 @@ export default function Executive() {
             height={0}
             className="h-auto object-cover relative"
           />
-          <p className="absolute bottom-5 left-5 text-white">Exquisite personal service</p>
+          <p className="absolute bottom-5 left-5 text-white">
+            Exquisite personal service
+          </p>
         </div>
       </section>
 
@@ -182,12 +186,77 @@ export default function Executive() {
             </div>
           </>
         ) : (
-          <div className="text-gray-600">
-            {/* passenger content… */}
-            <p>The design is coming soon...</p>
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+              <div className="flex justify-center">
+                <Image
+                  src="/images/passenger-img.png"
+                  alt="Luggage illustration"
+                  width={531}
+                  height={0}
+                  className="w-full h-auto"
+                />
+              </div>
+              <div className="text-gray-600">
+                <p>
+                  Business Class vehicles can comfortably seat three passengers,
+                  and seat a maximum of four passengers when the armrest is
+                  raised. The boot has plenty of space for all travel essentials
+                  – including up to three cabin bags. Please refer to the table
+                  below for further details on Business Class luggage capacity.
+                </p>
+                <p className="mt-4">
+                  Hand-held luggage may also be placed into the front passenger
+                  compartment if there is no more space in the rear of the
+                  vehicle.
+                </p>
+                <p className="mt-4">
+                  When booking your journey, kindly leave a comment for your
+                  chauffeur if you have any fragile items to be specially
+                  handled and stored.
+                </p>
+              </div>
+            </div>
+
+            {/* Sizes & Dimensions Header */}
+            <div className="mt-8">
+              <div className="flex items-center text-sm uppercase text-gray-400">
+                <div>Seating Capacity</div>
+              </div>
+              <hr className="border-t border-gray-200 mt-1" />
+
+              {/* Sizes & Dimensions Rows */}
+              <table className="w-full border-collapse">
+                <tbody>
+                  {[{ size: "2 - 3 Passengers" }].map((row, idx) => {
+                    const isOr = row.size.startsWith("or ");
+                    const mainText = isOr ? row.size.slice(3) : row.size;
+                    return (
+                      <tr
+                        key={idx}
+                        className="border-b last:border-b-0 border-gray-200"
+                      >
+                        <td className="py-3">
+                          {isOr ? (
+                            <>
+                              <span className="text-gray-400">or&nbsp;</span>
+                              <span className="text-black">{mainText}</span>
+                            </>
+                          ) : (
+                            <span className="text-black">{mainText}</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </section>
+
+      <OtherVehicleClasses />
 
       <AppBanner />
 

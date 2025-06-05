@@ -29,9 +29,9 @@ export default function AppBanner() {
       <Image
         src="/images/jolimo-app.png"
         alt="Jo Limo App"
-        width={348}
+        width={438}
         height={0}
-        className="absolute max-[1500px]:right-[250px] right-[350px] bottom-0 "
+        className="absolute max-[1500px]:right-[200px] right-[250px] bottom-0 "
       />
     </section>
   );

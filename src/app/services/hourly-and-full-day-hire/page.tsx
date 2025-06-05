@@ -38,7 +38,7 @@ export default function IntercityTransfer() {
 
         <div className="mt-8 w-full px-20">
           <Image
-            src="/images/intercity-transfer-img.webp"
+            src="/images/services-img-2.webp"
             alt="Executive Mercedes-E-Class"
             width={1200}
             height={700}
@@ -142,10 +142,7 @@ export default function IntercityTransfer() {
 
       <Footer />
 
-      <HourlyModal
-        isModalOpen={isModalOpen}
-        setIsModalOpen={setIsModalOpen}
-      />
+      <HourlyModal isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} />
     </>
   );
 }

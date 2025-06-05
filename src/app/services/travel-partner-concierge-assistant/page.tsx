@@ -11,7 +11,7 @@ export default function TravelPartner() {
       <section className="mx-auto px-4 text-center pt-20 gap-10 flex flex-col">
         <div className="flex flex-col gap-10 items-center">
           <div>
-            <h1 className="text-[64px]">Travel Partner Concierge Assistant</h1>
+            <h1 className="text-[64px]">Travel Partner (Concierge Assistant)</h1>
             <p className="text-[20px] text-[#A7A7A7]">For membership Only</p>
           </div>
           <p className="mt-4 max-w-[800px] mx-auto text-[20px]">

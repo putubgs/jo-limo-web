@@ -5,6 +5,7 @@ import Footer from "@/components/footer";
 import Image from "next/image";
 import { useState } from "react";
 import AppBanner from "@/components/app-banner";
+import OtherVehicleClasses from "@/components/other-vehicle-classes";
 
 export default function Mpv() {
   const [activeTab, setActiveTab] = useState<"luggage" | "passenger">(
@@ -164,10 +165,10 @@ export default function Mpv() {
               <table className="w-full border-collapse">
                 <tbody>
                   {[
-                    { size: "3×Cabin", dim: "55×40×25" },
-                    { size: "or 2×Medium (M)", dim: "66×44×27" },
-                    { size: "or 2×Large (L)", dim: "75×52×31" },
-                    { size: "or 1×Extra Large (XL)", dim: "81×55×36" },
+                    { size: "6×Cabin", dim: "55×40×25" },
+                    { size: "or 5×Medium (M)", dim: "66×44×27" },
+                    { size: "or 4×Large (L)", dim: "75×52×31" },
+                    { size: "or 3×Extra Large (XL)", dim: "81×55×36" },
                   ].map((row, idx) => {
                     const isOr = row.size.startsWith("or ");
                     const mainText = isOr ? row.size.slice(3) : row.size;
@@ -197,12 +198,77 @@ export default function Mpv() {
             </div>
           </>
         ) : (
-          <div className="text-gray-600">
-            {/* passenger content… */}
-            <p>The design is coming soon...</p>
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+              <div className="flex justify-center">
+                <Image
+                  src="/images/passenger-img.png"
+                  alt="Luggage illustration"
+                  width={531}
+                  height={0}
+                  className="w-full h-auto"
+                />
+              </div>
+              <div className="text-gray-600">
+                <p>
+                  Business Class vehicles can comfortably seat three passengers,
+                  and seat a maximum of four passengers when the armrest is
+                  raised. The boot has plenty of space for all travel essentials
+                  – including up to three cabin bags. Please refer to the table
+                  below for further details on Business Class luggage capacity.
+                </p>
+                <p className="mt-4">
+                  Hand-held luggage may also be placed into the front passenger
+                  compartment if there is no more space in the rear of the
+                  vehicle.
+                </p>
+                <p className="mt-4">
+                  When booking your journey, kindly leave a comment for your
+                  chauffeur if you have any fragile items to be specially
+                  handled and stored.
+                </p>
+              </div>
+            </div>
+
+            {/* Sizes & Dimensions Header */}
+            <div className="mt-8">
+              <div className="flex items-center text-sm uppercase text-gray-400">
+                <div>Seating Capacity</div>
+              </div>
+              <hr className="border-t border-gray-200 mt-1" />
+
+              {/* Sizes & Dimensions Rows */}
+              <table className="w-full border-collapse">
+                <tbody>
+                  {[{ size: "2 - 3 Passengers" }].map((row, idx) => {
+                    const isOr = row.size.startsWith("or ");
+                    const mainText = isOr ? row.size.slice(3) : row.size;
+                    return (
+                      <tr
+                        key={idx}
+                        className="border-b last:border-b-0 border-gray-200"
+                      >
+                        <td className="py-3">
+                          {isOr ? (
+                            <>
+                              <span className="text-gray-400">or&nbsp;</span>
+                              <span className="text-black">{mainText}</span>
+                            </>
+                          ) : (
+                            <span className="text-black">{mainText}</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </section>
+
+      <OtherVehicleClasses />
 
       <AppBanner />
       <Footer />
