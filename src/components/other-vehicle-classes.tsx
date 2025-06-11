@@ -59,7 +59,7 @@ export default function OtherVehicleClasses() {
                 src={svc.imageSrc}
                 alt={svc.label}
                 fill
-                className="object-cover"
+                className="object-cover transition-transform duration-300 group-hover:scale-110"
               />
             </div>
 
