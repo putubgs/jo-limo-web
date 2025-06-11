@@ -44,32 +44,29 @@ export default function Excursion() {
         <div className="flex flex-col w-full items-center justify-center">
           <div className="flex flex-col w-full justify-center max-w-[850px] gap-[65px]">
             <p className="text-[24px]">
-              We have created an exclusive new service for our most discerning
-              passengers: the ability to make bookings for up to a full day
-              at a flat hourly rate, directly through the Wheely app.
+              From Petra’s ancient wonders to the Dead Sea’s calm shores, every
+              Jo Limo trip is tailored to your pace. Explore freely while your
+              chauffeur handles the details — turning every journey into a
+              smooth, memorable experience.
             </p>
             <div>
-              <p>FREEDOM OF MOVEMENT</p>
+              <p>CUSTOMIZED ITINERARIES</p>
               <p className="mt-4 text-[16px]">
-                Having the same trusted chauffeur throughout the day allows you
-                to leave extra belongings with them between stops — from bags
-                to umbrellas to coats. They can also fetch items from your home
-                or office, ensuring you always have what you need — and only
-                what you need — at every appointment.
+                Whether you want a full-day adventure or a relaxed half-day
+                outing, we tailor every trip to your interests, timing, and pace
+                — with no fixed schedules holding you back.
               </p>
-              <p className="mt-10">TRUSTED ASSISTANCE</p>
+              <p className="mt-10">SEAMLESS COMFORT</p>
               <p className="mt-4 text-[16px]">
-                While you tend to your affairs, your chauffeur can recoup your
-                time by assisting with errands and other logistics — whether
-                that’s handling your dry-cleaning, delivering sensitive
-                documents, or picking up a loved one to join you for dinner
-                in ultimate comfort.
+                Travel in a well-maintained, air-conditioned vehicle with a
+                professional chauffeur who handles the driving, parking, and
+                logistics — so you can focus on the experience.
               </p>
-              <p className="mt-10">FULL FLEXIBILITY</p>
+              <p className="mt-10">LOCAL INSIGHT & ASSISTANCE</p>
               <p className="mt-4 text-[16px]">
-                Book your extended journey directly and instantly in the Wheely
-                app, where you can also leave any instructions for your
-                chauffeur to let them personalise your experience.
+                Our chauffeurs offer more than just transportation. With local
+                knowledge and courteous service, they’re ready to assist,
+                recommend hidden gems, and adapt as your day unfolds.
               </p>
             </div>
           </div>
