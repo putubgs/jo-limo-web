@@ -1,6 +1,7 @@
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -31,13 +32,13 @@ export default function Home() {
               comfort tailored to your business needs.
             </p>
           </div>
-          <button className="relative flex gap-1 items-center text-[16px] z-20 hover:text-gray-400">
+          <Link href="/services/business-transfer" className="relative flex gap-1 items-center text-[16px] z-20 hover:text-gray-400">
             <p>LEARN MORE</p>
             <ArrowBackIosNewRoundedIcon
               className="transform rotate-180"
               fontSize="inherit"
             />
-          </button>
+          </Link>
 
           <div
             className="absolute bottom-0 left-0 w-full h-[300px]
@@ -69,13 +70,13 @@ export default function Home() {
             <p className="font-bold text-[20px]">JO SUV</p>
             <p>JO’s SUV most refined class</p>
           </div>
-          <button className="relative flex gap-1 items-center text-[16px] z-20 hover:text-gray-400">
+          <Link href="/services/suv" className="relative flex gap-1 items-center text-[16px] z-20 hover:text-gray-400">
             <p>LEARN MORE</p>
             <ArrowBackIosNewRoundedIcon
               className="transform rotate-180"
               fontSize="inherit"
             />
-          </button>
+          </Link>
 
           <div
             className="absolute bottom-0 left-0 w-full h-[300px]

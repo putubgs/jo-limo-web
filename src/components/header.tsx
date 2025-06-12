@@ -162,7 +162,7 @@ export default function Header() {
           {/* Right: images */}
           <div className="flex gap-8">
             <div className="flex flex-col">
-              <div className="overflow-hidden w-[271px] h-[208px]">
+              <Link href="/services/airport-transfer" className="overflow-hidden w-[271px] h-[208px]">
                 <Image
                   src="/images/intercity-transfer-img.webp"
                   alt="Intercity Transfer"
@@ -170,13 +170,13 @@ export default function Header() {
                   height={208}
                   className="object-cover w-[271px] h-[208px] transition-transform duration-300 hover:scale-110"
                 />
-              </div>
+              </Link>
               <p className="mt-2 text-sm text-gray-500">
                 Stress-Free Airport Transfers, Every Time
               </p>
             </div>
             <div className="flex flex-col">
-              <div className="overflow-hidden w-[456px] h-[350px]">
+              <Link href="/services/business-transfer" className="overflow-hidden w-[456px] h-[350px]">
                 <Image
                   src="/images/executive-img.webp"
                   alt="Executive Class"
@@ -184,7 +184,7 @@ export default function Header() {
                   height={350}
                   className="object-cover w-[456px] h-[350px] transition-transform duration-300 hover:scale-110"
                 />
-              </div>
+              </Link>
               <p className="mt-2 text-sm text-gray-500">
                 Redefining Business Transfers with Comfort and Class
               </p>
