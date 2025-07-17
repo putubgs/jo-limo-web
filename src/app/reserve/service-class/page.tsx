@@ -205,7 +205,7 @@ function ServiceClassContent() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-12">
                     <Image
-                      src="/images/toyota_img.png"
+                      src="/images/mercedes_bens_img.png"
                       alt="Executive Vehicle"
                       width={147}
                       height={64}
@@ -255,7 +255,7 @@ function ServiceClassContent() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-12">
                     <Image
-                      src="/images/toyota_img.png"
+                      src="/images/luxury.png"
                       alt="Luxury Vehicle"
                       width={147}
                       height={64}
@@ -305,7 +305,7 @@ function ServiceClassContent() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-12">
                     <Image
-                      src="/images/mercedes_bens_img.png"
+                      src="/images/mercedes_img.png"
                       alt="MPV Vehicle"
                       width={147}
                       height={64}
@@ -355,7 +355,7 @@ function ServiceClassContent() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-12">
                     <Image
-                      src="/images/toyota_img.png"
+                      src="/images/cadilac_img.png"
                       alt="SUV Vehicle"
                       width={147}
                       height={64}

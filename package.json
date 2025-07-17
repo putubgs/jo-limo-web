@@ -19,7 +19,8 @@
     "dayjs": "^1.11.13",
     "next": "14.2.20",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "zustand": "^5.0.6"
   },
   "devDependencies": {
     "@types/node": "^20",
