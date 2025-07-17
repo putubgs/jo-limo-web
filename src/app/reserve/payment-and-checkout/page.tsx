@@ -4,6 +4,10 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, Suspense } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import PaymentForm from "@/components/PaymentForm";
+import { useState } from "react";
+import ProcessingDialog from "@/components/dialogs/ProcessingDialog";
+import SuccessDialog from "@/components/dialogs/SuccessDialog";
 
 function PaymentAndCheckoutContent() {
   const searchParams = useSearchParams();
@@ -21,6 +25,17 @@ function PaymentAndCheckoutContent() {
     console.log("Booking data:", bookingData);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+
+  const [processingOpen, setProcessingOpen] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
+
+  const handleCash = () => {
+    setProcessingOpen(true);
+    setTimeout(() => {
+      setProcessingOpen(false);
+      setSuccessOpen(true);
+    }, 3000);
+  };
 
   // Step indicator component
   const StepIndicator = () => (
@@ -104,14 +119,25 @@ function PaymentAndCheckoutContent() {
         </div>
 
         {/* Main content */}
-        <div className="flex-1 flex items-center justify-center">
-          <button
-            className="inline-block bg-green-600 text-white px-8 py-4 rounded-lg font-medium hover:bg-green-700 transition-colors"
-            onClick={() => alert("Booking completed! (This is just a demo)")}
-          >
-            Complete Booking
-          </button>
+        <div className="flex flex-col items-center justify-center max-w-4xl mx-auto gap-4 pt-8">
+          <div className="flex items-center gap-4 w-full px-6">
+            <button className="bg-[#B2B2B2] text-white px-4 py-3 rounded-lg w-full">
+              Credit card
+            </button>
+            <button
+              className="bg-white border border-black font-bold text-black px-4 py-3 rounded-lg w-full"
+              onClick={handleCash}
+            >
+              Cash
+            </button>
+          </div>
+          <PaymentForm />
         </div>
+        <ProcessingDialog open={processingOpen} />
+        <SuccessDialog
+          open={successOpen}
+          onClose={() => setSuccessOpen(false)}
+        />
       </div>
       <Footer />
     </>

@@ -1,13 +1,37 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, Suspense } from "react";
+import { useEffect, Suspense, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import TransferSelector from "@/components/TransferSelector";
 
 function PickUpInfoContent() {
   const searchParams = useSearchParams();
+
+  const initialBooking = {
+    pickup: searchParams.get("pickup") || "",
+    dropoff: searchParams.get("dropoff") || "",
+    date: searchParams.get("date") || "",
+    time: searchParams.get("time") || "",
+    type: searchParams.get("type") || "one-way",
+    duration: searchParams.get("duration") || "",
+  } as const;
+
+  // original locations coming from URL (Reserve Now popup)
+  const urlPickup = initialBooking.pickup;
+  const urlDropoff = initialBooking.dropoff;
+
+  // Route locations chosen via selector (start empty)
+  const [routePickup, setRoutePickup] = useState<string>("");
+  const [routeDropoff, setRouteDropoff] = useState<string>("");
+  const [selector, setSelector] = useState<null | "intercity" | "airport">(
+    null
+  );
+  const [selectedGroup, setSelectedGroup] = useState<
+    null | "intercity" | "airport"
+  >(null);
 
   const bookingData = {
     pickup: searchParams.get("pickup") || "",
@@ -59,21 +83,17 @@ function PickUpInfoContent() {
     return `${dateStr} at ${timeStr} (GMT +3)`;
   };
 
-  const getDisplayLocations = () => {
-    if (bookingData.type === "by-hour") {
-      return {
-        from: bookingData.pickup || "Please select location",
-        to: "Round trip from starting location",
-      };
-    } else {
-      return {
-        from: bookingData.pickup || "Please select pickup location",
-        to: bookingData.dropoff || "Please select dropoff location",
-      };
-    }
+  // Locations to show in grey summary card – use ONLY address from URL
+  const locations = {
+    from:
+      initialBooking.type === "by-hour"
+        ? urlPickup || "Please select location"
+        : urlPickup || "Please select pickup location",
+    to:
+      initialBooking.type === "by-hour"
+        ? "Round trip from starting location"
+        : urlDropoff || "Please select dropoff location",
   };
-
-  const locations = getDisplayLocations();
 
   return (
     <>
@@ -144,13 +164,70 @@ function PickUpInfoContent() {
             </div>
           </div>
 
+          {/* Starting point section – only for one-way bookings */}
+          {initialBooking.type === "one-way" && (
+            <>
+              <h2 className="text-2xl font-semibold text-black mb-4">
+                Location Services
+              </h2>
+              <div className="grid grid-cols-2 gap-6 mb-10">
+                <button
+                  disabled={
+                    selectedGroup !== null && selectedGroup !== "intercity"
+                  }
+                  onClick={() =>
+                    selectedGroup === null && setSelector("intercity")
+                  }
+                  className={`rounded-lg px-6 py-5 flex flex-col items-start bg-[#F5F5F5] ${
+                    selectedGroup !== null && selectedGroup !== "intercity"
+                      ? "opacity-40 cursor-not-allowed"
+                      : ""
+                  }`}
+                >
+                  <span className="text-sm font-medium mb-1 text-gray-700">
+                    Intercity Transfer
+                  </span>
+                  <span className="text-left text-gray-500">
+                    {selectedGroup === "intercity" &&
+                    routePickup &&
+                    routeDropoff
+                      ? `${routePickup} → ${routeDropoff}`
+                      : "Select route"}
+                  </span>
+                </button>
+                <button
+                  disabled={
+                    selectedGroup !== null && selectedGroup !== "airport"
+                  }
+                  onClick={() =>
+                    selectedGroup === null && setSelector("airport")
+                  }
+                  className={`rounded-lg px-6 py-5 flex flex-col items-start bg-[#F5F5F5] ${
+                    selectedGroup !== null && selectedGroup !== "airport"
+                      ? "opacity-40 cursor-not-allowed"
+                      : ""
+                  }`}
+                >
+                  <span className="text-sm font-medium mb-1 text-gray-700">
+                    Airport Transfer
+                  </span>
+                  <span className="text-left text-gray-500">
+                    {selectedGroup === "airport" && routePickup && routeDropoff
+                      ? `${routePickup} → ${routeDropoff}`
+                      : "Select route"}
+                  </span>
+                </button>
+              </div>
+            </>
+          )}
+
           {/* Additional Information Section */}
           <h2 className="text-2xl font-semibold text-black mb-6">
             Additional information
           </h2>
           <div className="bg-[#F5F5F5] rounded-lg shadow-sm p-8 mb-8">
             {/* Pick up sign and Flight Number */}
-            <div className="grid grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-2 gap-6">
               <div>
                 <label className="block text-gray-700 text-sm mb-2">
                   Pick up sign :
@@ -179,7 +256,7 @@ function PickUpInfoContent() {
           </div>
           <div className="bg-[#F5F5F5] rounded-lg shadow-sm p-8 mb-8">
             {/* Notes for chauffeur */}
-            <div className="mb-6">
+            <div className="">
               <label className="block text-gray-700 text-sm mb-2">
                 Notes for the chauffeur :
               </label>
@@ -208,16 +285,16 @@ function PickUpInfoContent() {
           <div className="flex justify-center">
             <Link
               href={`/reserve/service-class?pickup=${encodeURIComponent(
-                bookingData.pickup
+                urlPickup
               )}&dropoff=${encodeURIComponent(
-                bookingData.dropoff
+                urlDropoff
               )}&date=${encodeURIComponent(
-                bookingData.date
+                initialBooking.date
               )}&time=${encodeURIComponent(
-                bookingData.time
+                initialBooking.time
               )}&type=${encodeURIComponent(
-                bookingData.type
-              )}&duration=${encodeURIComponent(bookingData.duration)}`}
+                initialBooking.type
+              )}&duration=${encodeURIComponent(initialBooking.duration)}`}
               className="w-full text-center inline-block bg-[#ABABAB] text-white font-bold text-[16px] px-8 py-4 rounded-lg hover:bg-gray-800 transition-colors"
             >
               Continue
@@ -226,6 +303,26 @@ function PickUpInfoContent() {
         </div>
       </div>
       <Footer />
+      {/* Transfer selector modal */}
+      {selector && (
+        <TransferSelector
+          groupId={selector}
+          onClose={() => setSelector(null)}
+          onSelect={(route) => {
+            // naive parse: "A to B" or "A - B"
+            let from = "";
+            let to = "";
+            if (route.includes(" to ")) {
+              [from, to] = route.split(" to ");
+            } else if (route.includes(" - ")) {
+              [from, to] = route.split(" - ");
+            }
+            setRoutePickup(from.trim());
+            setRouteDropoff(to.trim());
+            setSelectedGroup(selector);
+          }}
+        />
+      )}
     </>
   );
 }
