@@ -2,30 +2,147 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import { autocomplete } from "@/lib/google-autocomplete";
+
+// Calendar helper functions - moved outside component
+const getJordanDate = () => {
+  // Create a new date object in Jordan timezone (GMT+3)
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const jordanOffset = 3; // GMT+3
+  return new Date(utc + jordanOffset * 3600000);
+};
+
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString("en-US", {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
+const formatTime = (date: Date) => {
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
+// Generate time options for the entire day (every 15 minutes)
+const generateTimeOptions = () => {
+  const times = [];
+  for (let hour = 0; hour < 24; hour++) {
+    for (let minute = 0; minute < 60; minute += 15) {
+      const date = new Date();
+      date.setHours(hour, minute, 0, 0);
+      const timeString = date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+      times.push(timeString);
+    }
+  }
+  return times;
+};
+
+// Find the closest time option to current Jordan time
+const getClosestTime = (currentTime: string, timeOptions: string[]) => {
+  // If exact match exists, use it
+  if (timeOptions.includes(currentTime)) {
+    return currentTime;
+  }
+
+  // Otherwise find closest 15-minute interval
+  const jordanNow = getJordanDate();
+  const currentMinutes = jordanNow.getHours() * 60 + jordanNow.getMinutes();
+
+  let closestTime = timeOptions[0];
+  let closestDiff = Infinity;
+
+  timeOptions.forEach((timeOption) => {
+    // Parse time option to get hours and minutes
+    const [time, period] = timeOption.split(" ");
+    const [hours, minutes] = time.split(":").map(Number);
+    let timeMinutes = hours * 60 + minutes;
+
+    // Convert to 24-hour format
+    if (period === "PM" && hours !== 12) {
+      timeMinutes += 12 * 60;
+    } else if (period === "AM" && hours === 12) {
+      timeMinutes -= 12 * 60;
+    }
+
+    const diff = Math.abs(currentMinutes - timeMinutes);
+    if (diff < closestDiff) {
+      closestDiff = diff;
+      closestTime = timeOption;
+    }
+  });
+
+  return closestTime;
+};
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const showBorder = pathname !== "/";
+
   const [servicesOpen, setServicesOpen] = useState(false);
   const [reservationOpen, setReservationOpen] = useState(false);
   const [activeBookingTab, setActiveBookingTab] = useState<
     "one-way" | "by-hour"
   >("one-way");
-  const [pickupLocation, setPickupLocation] = useState(
-    "Queen Alia International Airport"
-  );
-  const [dropoffLocation, setDropoffLocation] = useState(
-    "DAMAC Tower, Al-Istethmar Street, Amman, Jordan"
-  );
-  const [selectedDate, setSelectedDate] = useState("Wed, Aug 7, 2024");
-  const [selectedTime, setSelectedTime] = useState("10:45 AM");
+  const [pickupLocation, setPickupLocation] = useState("");
+  const [dropoffLocation, setDropoffLocation] = useState("");
+  const [fromLocation, setFromLocation] = useState("");
+
+  // Autocomplete states
+  const [pickupSuggestions, setPickupSuggestions] = useState<
+    Array<{ description: string; place_id: string }>
+  >([]);
+  const [dropoffSuggestions, setDropoffSuggestions] = useState<
+    Array<{ description: string; place_id: string }>
+  >([]);
+  const [fromSuggestions, setFromSuggestions] = useState<
+    Array<{ description: string; place_id: string }>
+  >([]);
+  const [showPickupSuggestions, setShowPickupSuggestions] = useState(false);
+  const [showDropoffSuggestions, setShowDropoffSuggestions] = useState(false);
+  const [showFromSuggestions, setShowFromSuggestions] = useState(false);
+  const [pickupLoading, setPickupLoading] = useState(false);
+  const [dropoffLoading, setDropoffLoading] = useState(false);
+  const [fromLoading, setFromLoading] = useState(false);
+  const [pickupError, setPickupError] = useState<string | null>(null);
+  const [dropoffError, setDropoffError] = useState<string | null>(null);
+  const [fromError, setFromError] = useState<string | null>(null);
+  const [autocompletePosition, setAutocompletePosition] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+  });
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const jordanNow = getJordanDate();
+    console.log("Jordan Date:", formatDate(jordanNow)); // Debug log
+    return formatDate(jordanNow);
+  });
+  const [selectedTime, setSelectedTime] = useState(() => {
+    const jordanNow = getJordanDate();
+    const currentTime = formatTime(jordanNow);
+    const timeOptions = generateTimeOptions();
+    const closestTime = getClosestTime(currentTime, timeOptions);
+    console.log("Jordan Time:", currentTime, "Closest:", closestTime); // Debug log
+    return closestTime;
+  });
   const [showCalendar, setShowCalendar] = useState(false);
-  const [calendarDate, setCalendarDate] = useState(new Date());
+  const [calendarDate, setCalendarDate] = useState(() => getJordanDate());
   const [calendarPosition, setCalendarPosition] = useState({
     top: 0,
     left: 0,
@@ -64,26 +181,61 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showCalendar]);
 
-  // Calendar helper functions
-  const getJordanDate = () => {
-    return new Date(
-      new Date().toLocaleString("en-US", { timeZone: "Asia/Amman" })
-    );
-  };
+  // Close autocomplete dropdowns on click outside
+  useEffect(() => {
+    if (
+      !showPickupSuggestions &&
+      !showDropoffSuggestions &&
+      !showFromSuggestions
+    )
+      return;
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest(".autocomplete-container")) {
+        setShowPickupSuggestions(false);
+        setShowDropoffSuggestions(false);
+        setShowFromSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showPickupSuggestions, showDropoffSuggestions, showFromSuggestions]);
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      timeZone: "Asia/Amman",
-    });
-  };
+  // Close reservation dropdown on click outside
+  useEffect(() => {
+    if (!reservationOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      console.log("Click detected:", target);
+      console.log(
+        "Is reservation dropdown?",
+        target.closest(".reservation-dropdown")
+      );
+      console.log(
+        "Is reserve now button?",
+        target.closest(".reserve-now-button")
+      );
+
+      if (
+        !target.closest(".reservation-dropdown") &&
+        !target.closest(".reserve-now-button")
+      ) {
+        console.log("Closing reservation dropdown");
+        setReservationOpen(false);
+        setShowCalendar(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [reservationOpen]);
 
   const getMonthData = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
+    // Create dates in Jordan timezone to avoid offset issues
+    const jordanDate = new Date(
+      date.toLocaleString("en-US", { timeZone: "Asia/Amman" })
+    );
+    const year = jordanDate.getFullYear();
+    const month = jordanDate.getMonth();
     const firstDay = new Date(year, month, 1);
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay());
@@ -102,18 +254,127 @@ export default function Header() {
   const isDateDisabled = (date: Date) => {
     const today = getJordanDate();
     today.setHours(0, 0, 0, 0);
-    const compareDate = new Date(date);
-    compareDate.setHours(0, 0, 0, 0);
+    // Create date at noon to avoid timezone issues
+    const compareDate = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      12,
+      0,
+      0
+    );
     return compareDate < today;
   };
 
   const handleDateSelect = (date: Date) => {
-    const formattedDate = formatDate(date);
+    // Create a proper date in Jordan timezone to avoid offset issues
+    const jordanDate = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      12,
+      0,
+      0
+    );
+    const formattedDate = formatDate(jordanDate);
     setSelectedDate(formattedDate);
     setShowCalendar(false);
   };
 
+  // Calculate autocomplete dropdown position
+  const calculateAutocompletePosition = (element: HTMLElement) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      top: rect.bottom + window.scrollY + 4,
+      left: rect.left + window.scrollX,
+      width: rect.width,
+    };
+  };
+
+  // Autocomplete handlers
+  const handleLocationInput = async (
+    value: string,
+    type: "pickup" | "dropoff" | "from",
+    event?: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    console.log(`🔤 User typing in ${type} field:`, value);
+
+    // Calculate position for dropdown
+    if (event?.target) {
+      const position = calculateAutocompletePosition(
+        event.target as HTMLElement
+      );
+      setAutocompletePosition(position);
+    }
+
+    if (type === "pickup") {
+      setPickupLocation(value);
+      setPickupError(null);
+      if (value.length > 2) {
+        setPickupLoading(true);
+        const response = await autocomplete(value);
+        console.log(`📍 Pickup autocomplete response:`, response);
+        setPickupSuggestions(response.results);
+        setPickupError(response.error);
+        setPickupLoading(false);
+        setShowPickupSuggestions(true);
+      } else {
+        setShowPickupSuggestions(false);
+      }
+    } else if (type === "dropoff") {
+      setDropoffLocation(value);
+      setDropoffError(null);
+      if (value.length > 2) {
+        setDropoffLoading(true);
+        const response = await autocomplete(value);
+        console.log(`📍 Dropoff autocomplete response:`, response);
+        setDropoffSuggestions(response.results);
+        setDropoffError(response.error);
+        setDropoffLoading(false);
+        setShowDropoffSuggestions(true);
+      } else {
+        setShowDropoffSuggestions(false);
+      }
+    } else if (type === "from") {
+      setFromLocation(value);
+      setFromError(null);
+      if (value.length > 2) {
+        setFromLoading(true);
+        const response = await autocomplete(value);
+        console.log(`📍 From autocomplete response:`, response);
+        setFromSuggestions(response.results);
+        setFromError(response.error);
+        setFromLoading(false);
+        setShowFromSuggestions(true);
+      } else {
+        setShowFromSuggestions(false);
+      }
+    }
+  };
+
+  const handleSuggestionSelect = (
+    suggestion: { description: string; place_id: string },
+    type: "pickup" | "dropoff" | "from"
+  ) => {
+    if (type === "pickup") {
+      setPickupLocation(suggestion.description);
+      setShowPickupSuggestions(false);
+    } else if (type === "dropoff") {
+      setDropoffLocation(suggestion.description);
+      setShowDropoffSuggestions(false);
+    } else if (type === "from") {
+      setFromLocation(suggestion.description);
+      setShowFromSuggestions(false);
+    }
+  };
+
   const handleDateFieldClick = (event: React.MouseEvent) => {
+    // Toggle calendar - close if already open
+    if (showCalendar) {
+      setShowCalendar(false);
+      return;
+    }
+
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
     const reservationDropdown = document.querySelector(
       ".reservation-dropdown"
@@ -222,7 +483,9 @@ export default function Header() {
                   <div key={item} className="relative">
                     <button
                       onClick={() => handleNavClick(item)}
-                      className="text-base font-medium hover:text-gray-500"
+                      className={`reserve-now-button text-base hover:text-gray-500 ${
+                        reservationOpen ? "font-bold" : "font-medium"
+                      }`}
                     >
                       {item}
                     </button>
@@ -280,22 +543,19 @@ export default function Header() {
                                       className="text-gray-400"
                                       style={{ width: "15px", height: "15px" }}
                                     />
-                                    <select
+                                    <input
+                                      type="text"
                                       value={pickupLocation}
                                       onChange={(e) =>
-                                        setPickupLocation(e.target.value)
+                                        handleLocationInput(
+                                          e.target.value,
+                                          "pickup",
+                                          e
+                                        )
                                       }
-                                      className="w-full bg-transparent border-0 text-gray-700 text-sm appearance-none focus:outline-none cursor-pointer p-0"
-                                    >
-                                      <option value="Queen Alia International Airport">
-                                        Queen Alia International Airport
-                                      </option>
-                                      <option value="Amman City Center">
-                                        Amman City Center
-                                      </option>
-                                      <option value="Dead Sea">Dead Sea</option>
-                                      <option value="Petra">Petra</option>
-                                    </select>
+                                      placeholder="Address, airport, hotel, ..."
+                                      className="autocomplete-container w-full bg-transparent border-0 text-gray-700 text-sm focus:outline-none cursor-pointer p-0 placeholder-gray-500"
+                                    />
                                   </div>
                                   <svg
                                     className="absolute right-3 bottom-1 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
@@ -305,6 +565,73 @@ export default function Header() {
                                     <polygon points="0,0 10,0 5,10" />
                                   </svg>
                                 </div>
+
+                                {/* Pickup Suggestions Dropdown */}
+                                {showPickupSuggestions && (
+                                  <div
+                                    className="autocomplete-container fixed bg-white border border-gray-300 rounded-md shadow-lg z-[120] max-h-60 overflow-y-auto"
+                                    style={{
+                                      top: `${autocompletePosition.top}px`,
+                                      left: `${autocompletePosition.left}px`,
+                                      width: `${autocompletePosition.width}px`,
+                                    }}
+                                  >
+                                    {pickupLoading && (
+                                      <div className="flex items-center px-3 py-2 text-sm text-gray-500">
+                                        <span>🔍 Searching...</span>
+                                      </div>
+                                    )}
+                                    {pickupError && (
+                                      <div className="flex items-center px-3 py-2 text-sm text-red-500">
+                                        <span>❌ {pickupError}</span>
+                                      </div>
+                                    )}
+                                    {!pickupLoading &&
+                                      !pickupError &&
+                                      pickupSuggestions.length === 0 && (
+                                        <div className="flex items-center px-3 py-2 text-sm text-gray-500">
+                                          <span>
+                                            🏢 No locations found in Jordan
+                                          </span>
+                                        </div>
+                                      )}
+                                    {!pickupLoading &&
+                                      pickupSuggestions.length > 0 &&
+                                      pickupSuggestions.map((suggestion) => (
+                                        <div
+                                          key={suggestion.place_id}
+                                          onClick={() =>
+                                            handleSuggestionSelect(
+                                              suggestion,
+                                              "pickup"
+                                            )
+                                          }
+                                          className="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                                        >
+                                          <LocationOnIcon
+                                            className="text-gray-400 mr-2"
+                                            style={{
+                                              width: "16px",
+                                              height: "16px",
+                                            }}
+                                          />
+                                          <span>{suggestion.description}</span>
+                                        </div>
+                                      ))}
+
+                                    {/* Powered by Google footer */}
+                                    <div className="border-t border-gray-200 px-3 py-2 bg-gray-50 text-xs text-gray-600 flex items-start justify-start">
+                                      <span>powered by </span>
+                                      <Image
+                                        src="/images/google_logo.png"
+                                        alt="Google"
+                                        width={48}
+                                        height={16}
+                                        className="ml-1"
+                                      />
+                                    </div>
+                                  </div>
+                                )}
                               </div>
 
                               {/* Drop off Location */}
@@ -318,22 +645,19 @@ export default function Header() {
                                       className="text-gray-400"
                                       style={{ width: "15px", height: "15px" }}
                                     />
-                                    <select
+                                    <input
+                                      type="text"
                                       value={dropoffLocation}
                                       onChange={(e) =>
-                                        setDropoffLocation(e.target.value)
+                                        handleLocationInput(
+                                          e.target.value,
+                                          "dropoff",
+                                          e
+                                        )
                                       }
-                                      className="w-full bg-transparent border-0 text-gray-700 text-sm appearance-none focus:outline-none cursor-pointer p-0"
-                                    >
-                                      <option value="Queen Alia International Airport">
-                                        Queen Alia International Airport
-                                      </option>
-                                      <option value="Amman City Center">
-                                        Amman City Center
-                                      </option>
-                                      <option value="Dead Sea">Dead Sea</option>
-                                      <option value="Petra">Petra</option>
-                                    </select>
+                                      placeholder="Address, airport, hotel, ..."
+                                      className="autocomplete-container w-full bg-transparent border-0 text-gray-700 text-sm focus:outline-none cursor-pointer p-0 placeholder-gray-500"
+                                    />
                                   </div>
                                   <svg
                                     className="absolute right-3 bottom-1 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
@@ -343,6 +667,73 @@ export default function Header() {
                                     <polygon points="0,0 10,0 5,10" />
                                   </svg>
                                 </div>
+
+                                {/* Dropoff Suggestions Dropdown */}
+                                {showDropoffSuggestions && (
+                                  <div
+                                    className="autocomplete-container fixed bg-white border border-gray-300 rounded-md shadow-lg z-[120] max-h-60 overflow-y-auto"
+                                    style={{
+                                      top: `${autocompletePosition.top}px`,
+                                      left: `${autocompletePosition.left}px`,
+                                      width: `${autocompletePosition.width}px`,
+                                    }}
+                                  >
+                                    {dropoffLoading && (
+                                      <div className="flex items-center px-3 py-2 text-sm text-gray-500">
+                                        <span>🔍 Searching...</span>
+                                      </div>
+                                    )}
+                                    {dropoffError && (
+                                      <div className="flex items-center px-3 py-2 text-sm text-red-500">
+                                        <span>❌ {dropoffError}</span>
+                                      </div>
+                                    )}
+                                    {!dropoffLoading &&
+                                      !dropoffError &&
+                                      dropoffSuggestions.length === 0 && (
+                                        <div className="flex items-center px-3 py-2 text-sm text-gray-500">
+                                          <span>
+                                            🏢 No locations found in Jordan
+                                          </span>
+                                        </div>
+                                      )}
+                                    {!dropoffLoading &&
+                                      dropoffSuggestions.length > 0 &&
+                                      dropoffSuggestions.map((suggestion) => (
+                                        <div
+                                          key={suggestion.place_id}
+                                          onClick={() =>
+                                            handleSuggestionSelect(
+                                              suggestion,
+                                              "dropoff"
+                                            )
+                                          }
+                                          className="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                                        >
+                                          <LocationOnIcon
+                                            className="text-gray-400 mr-2"
+                                            style={{
+                                              width: "16px",
+                                              height: "16px",
+                                            }}
+                                          />
+                                          <span>{suggestion.description}</span>
+                                        </div>
+                                      ))}
+
+                                    {/* Powered by Google footer */}
+                                    <div className="border-t border-gray-200 px-3 py-2 bg-gray-50 text-xs text-gray-600 flex items-start justify-start">
+                                      <span>powered by </span>
+                                      <Image
+                                        src="/images/google_logo.png"
+                                        alt="Google"
+                                        width={48}
+                                        height={16}
+                                        className="ml-1"
+                                      />
+                                    </div>
+                                  </div>
+                                )}
                               </div>
 
                               {/* Date and Time Row */}
@@ -368,12 +759,19 @@ export default function Header() {
                                         {selectedDate}
                                       </div>
                                     </div>
+                                    <svg
+                                      className="absolute right-3 bottom-1 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
+                                      fill="currentColor"
+                                      viewBox="0 0 20 20"
+                                    >
+                                      <polygon points="0,0 10,0 5,10" />
+                                    </svg>
                                   </div>
 
                                   {/* Calendar Dropdown */}
                                   {showCalendar && (
                                     <div
-                                      className="calendar-container fixed bg-white border-2 border-black rounded-lg shadow-xl z-[90] p-6 w-90 mt-[-50px] ml-[-10px]"
+                                      className="calendar-container fixed bg-white border-2 border-black rounded-lg shadow-xl z-[90] p-6 w-90 ml-[-10px]"
                                       style={{
                                         top: `${calendarPosition.top}px`,
                                         left: `${calendarPosition.left}px`,
@@ -509,21 +907,11 @@ export default function Header() {
                                         }
                                         className="w-full bg-transparent border-0 text-gray-700 text-sm appearance-none focus:outline-none cursor-pointer p-0"
                                       >
-                                        <option value="10:45 AM">
-                                          10:45 AM
-                                        </option>
-                                        <option value="11:00 AM">
-                                          11:00 AM
-                                        </option>
-                                        <option value="11:15 AM">
-                                          11:15 AM
-                                        </option>
-                                        <option value="11:30 AM">
-                                          11:30 AM
-                                        </option>
-                                        <option value="12:00 PM">
-                                          12:00 PM
-                                        </option>
+                                        {generateTimeOptions().map((time) => (
+                                          <option key={time} value={time}>
+                                            {time}
+                                          </option>
+                                        ))}
                                       </select>
                                     </div>
                                     <svg
@@ -552,11 +940,93 @@ export default function Header() {
                                     />
                                     <input
                                       type="text"
+                                      value={fromLocation}
+                                      onChange={(e) =>
+                                        handleLocationInput(
+                                          e.target.value,
+                                          "from",
+                                          e
+                                        )
+                                      }
                                       placeholder="Address, airport, hotel, ..."
-                                      className="w-full bg-transparent border-0 text-gray-700 text-sm focus:outline-none cursor-pointer p-0 placeholder-gray-500"
+                                      className="autocomplete-container w-full bg-transparent border-0 text-gray-700 text-sm focus:outline-none cursor-pointer p-0 placeholder-gray-500"
                                     />
                                   </div>
+                                  <svg
+                                    className="absolute right-3 bottom-1 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                  >
+                                    <polygon points="0,0 10,0 5,10" />
+                                  </svg>
                                 </div>
+
+                                {/* From Suggestions Dropdown */}
+                                {showFromSuggestions && (
+                                  <div
+                                    className="autocomplete-container fixed bg-white border border-gray-300 rounded-md shadow-lg z-[120] max-h-60 overflow-y-auto"
+                                    style={{
+                                      top: `${autocompletePosition.top}px`,
+                                      left: `${autocompletePosition.left}px`,
+                                      width: `${autocompletePosition.width}px`,
+                                    }}
+                                  >
+                                    {fromLoading && (
+                                      <div className="flex items-center px-3 py-2 text-sm text-gray-500">
+                                        <span>🔍 Searching...</span>
+                                      </div>
+                                    )}
+                                    {fromError && (
+                                      <div className="flex items-center px-3 py-2 text-sm text-red-500">
+                                        <span>❌ {fromError}</span>
+                                      </div>
+                                    )}
+                                    {!fromLoading &&
+                                      !fromError &&
+                                      fromSuggestions.length === 0 && (
+                                        <div className="flex items-center px-3 py-2 text-sm text-gray-500">
+                                          <span>
+                                            🏢 No locations found in Jordan
+                                          </span>
+                                        </div>
+                                      )}
+                                    {!fromLoading &&
+                                      fromSuggestions.length > 0 &&
+                                      fromSuggestions.map((suggestion) => (
+                                        <div
+                                          key={suggestion.place_id}
+                                          onClick={() =>
+                                            handleSuggestionSelect(
+                                              suggestion,
+                                              "from"
+                                            )
+                                          }
+                                          className="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                                        >
+                                          <LocationOnIcon
+                                            className="text-gray-400 mr-2"
+                                            style={{
+                                              width: "16px",
+                                              height: "16px",
+                                            }}
+                                          />
+                                          <span>{suggestion.description}</span>
+                                        </div>
+                                      ))}
+
+                                    {/* Powered by Google footer */}
+                                    <div className="border-t border-gray-200 px-3 py-2 bg-gray-50 text-xs text-gray-600 flex items-start justify-start">
+                                      <span>powered by </span>
+                                      <Image
+                                        src="/images/google_logo.png"
+                                        alt="Google"
+                                        width={48}
+                                        height={16}
+                                        className="ml-1"
+                                      />
+                                    </div>
+                                  </div>
+                                )}
                               </div>
 
                               {/* Duration */}
@@ -593,182 +1063,192 @@ export default function Header() {
                                 </div>
                               </div>
 
-                              {/* Date */}
-                              <div className="relative">
-                                <div
-                                  className="calendar-container relative flex flex-col bg-gray-200 rounded px-3 py-3 cursor-pointer hover:bg-gray-100 transition-colors"
-                                  onClick={(e) => handleDateFieldClick(e)}
-                                >
-                                  <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
-                                    DATE:
-                                  </div>
-                                  <div className="pl-0 pr-8 gap-1 flex items-center">
-                                    <CalendarTodayIcon
-                                      className="text-gray-400"
-                                      style={{
-                                        width: "15px",
-                                        height: "15px",
-                                      }}
-                                    />
-                                    <div className="w-full text-gray-700 text-sm">
-                                      {selectedDate}
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Calendar Dropdown */}
-                                {showCalendar && (
+                              {/* Date and Time Row */}
+                              <div className="flex gap-4">
+                                {/* Date */}
+                                <div className="relative flex-[3]">
                                   <div
-                                    className="calendar-container fixed bg-white border-2 border-black rounded-lg shadow-xl z-[90] p-6 w-80"
-                                    style={{
-                                      top: `${calendarPosition.top}px`,
-                                      left: `${calendarPosition.left}px`,
-                                    }}
+                                    className="calendar-container relative flex flex-col bg-gray-200 rounded px-3 py-3 cursor-pointer hover:bg-gray-100 transition-colors"
+                                    onClick={(e) => handleDateFieldClick(e)}
                                   >
-                                    <div className="flex items-center justify-between mb-4">
-                                      <button
-                                        onClick={() =>
-                                          setCalendarDate(
-                                            new Date(
-                                              calendarDate.getFullYear(),
-                                              calendarDate.getMonth() - 1
+                                    <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
+                                      DATE:
+                                    </div>
+                                    <div className="pl-0 pr-8 gap-1 flex items-center">
+                                      <CalendarTodayIcon
+                                        className="text-gray-400"
+                                        style={{
+                                          width: "15px",
+                                          height: "15px",
+                                        }}
+                                      />
+                                      <div className="w-full text-gray-700 text-sm">
+                                        {selectedDate}
+                                      </div>
+                                    </div>
+                                    <svg
+                                      className="absolute right-3 bottom-1 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
+                                      fill="currentColor"
+                                      viewBox="0 0 20 20"
+                                    >
+                                      <polygon points="0,0 10,0 5,10" />
+                                    </svg>
+                                  </div>
+
+                                  {/* Calendar Dropdown */}
+                                  {showCalendar && (
+                                    <div
+                                      className="calendar-container fixed bg-white border-2 border-black rounded-lg shadow-xl z-[90] p-6 w-90 ml-[-10px]"
+                                      style={{
+                                        top: `${calendarPosition.top}px`,
+                                        left: `${calendarPosition.left}px`,
+                                      }}
+                                    >
+                                      <div className="flex items-center justify-between mb-4">
+                                        <button
+                                          onClick={() =>
+                                            setCalendarDate(
+                                              new Date(
+                                                calendarDate.getFullYear(),
+                                                calendarDate.getMonth() - 1
+                                              )
                                             )
-                                          )
-                                        }
-                                        className="p-2 hover:bg-gray-100 rounded"
-                                      >
-                                        ←
-                                      </button>
-                                      <h3 className="text-lg font-semibold">
-                                        {calendarDate.toLocaleDateString(
-                                          "en-US",
-                                          {
-                                            month: "long",
-                                            year: "numeric",
-                                            timeZone: "Asia/Amman",
+                                          }
+                                          className="p-2 hover:bg-gray-100 rounded"
+                                        >
+                                          ←
+                                        </button>
+                                        <h3 className="text-lg font-semibold">
+                                          {calendarDate.toLocaleDateString(
+                                            "en-US",
+                                            {
+                                              month: "long",
+                                              year: "numeric",
+                                              timeZone: "Asia/Amman",
+                                            }
+                                          )}
+                                        </h3>
+                                        <button
+                                          onClick={() =>
+                                            setCalendarDate(
+                                              new Date(
+                                                calendarDate.getFullYear(),
+                                                calendarDate.getMonth() + 1
+                                              )
+                                            )
+                                          }
+                                          className="p-2 hover:bg-gray-100 rounded"
+                                        >
+                                          →
+                                        </button>
+                                      </div>
+
+                                      <div className="grid grid-cols-7 gap-1 mb-2 text-sm text-gray-600">
+                                        <div className="text-center p-2 font-medium">
+                                          Sun
+                                        </div>
+                                        <div className="text-center p-2 font-medium">
+                                          Mon
+                                        </div>
+                                        <div className="text-center p-2 font-medium">
+                                          Tue
+                                        </div>
+                                        <div className="text-center p-2 font-medium">
+                                          Wed
+                                        </div>
+                                        <div className="text-center p-2 font-medium">
+                                          Thu
+                                        </div>
+                                        <div className="text-center p-2 font-medium">
+                                          Fri
+                                        </div>
+                                        <div className="text-center p-2 font-medium">
+                                          Sat
+                                        </div>
+                                      </div>
+
+                                      <div className="grid grid-cols-7 gap-1">
+                                        {getMonthData(calendarDate).days.map(
+                                          (day, index) => {
+                                            const isCurrentMonth =
+                                              day.getMonth() ===
+                                              calendarDate.getMonth();
+                                            const isDisabled =
+                                              isDateDisabled(day);
+
+                                            return (
+                                              <button
+                                                key={index}
+                                                onClick={() =>
+                                                  !isDisabled &&
+                                                  handleDateSelect(day)
+                                                }
+                                                disabled={isDisabled}
+                                                className={`
+                                                p-2 text-sm rounded hover:bg-blue-100 transition-colors
+                                                ${
+                                                  !isCurrentMonth
+                                                    ? "text-gray-300"
+                                                    : "text-gray-900"
+                                                }
+                                                ${
+                                                  isDisabled
+                                                    ? "cursor-not-allowed opacity-50"
+                                                    : "cursor-pointer"
+                                                }
+                                                ${
+                                                  !isDisabled && isCurrentMonth
+                                                    ? "hover:bg-blue-50"
+                                                    : ""
+                                                }
+                                              `}
+                                              >
+                                                {day.getDate()}
+                                              </button>
+                                            );
                                           }
                                         )}
-                                      </h3>
-                                      <button
-                                        onClick={() =>
-                                          setCalendarDate(
-                                            new Date(
-                                              calendarDate.getFullYear(),
-                                              calendarDate.getMonth() + 1
-                                            )
-                                          )
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Time */}
+                                <div className="relative flex-[2]">
+                                  <div className="relative flex flex-col bg-gray-200 rounded px-3 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
+                                    <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
+                                      TIME:
+                                    </div>
+                                    <div className="pl-0 pr-8 gap-1 flex items-center">
+                                      <AccessTimeIcon
+                                        className="text-gray-400"
+                                        style={{
+                                          width: "15px",
+                                          height: "15px",
+                                        }}
+                                      />
+                                      <select
+                                        value={selectedTime}
+                                        onChange={(e) =>
+                                          setSelectedTime(e.target.value)
                                         }
-                                        className="p-2 hover:bg-gray-100 rounded"
+                                        className="w-full bg-transparent border-0 text-gray-700 text-sm appearance-none focus:outline-none cursor-pointer p-0"
                                       >
-                                        →
-                                      </button>
+                                        {generateTimeOptions().map((time) => (
+                                          <option key={time} value={time}>
+                                            {time}
+                                          </option>
+                                        ))}
+                                      </select>
                                     </div>
-
-                                    <div className="grid grid-cols-7 gap-1 mb-2 text-sm text-gray-600">
-                                      <div className="text-center p-2 font-medium">
-                                        Sun
-                                      </div>
-                                      <div className="text-center p-2 font-medium">
-                                        Mon
-                                      </div>
-                                      <div className="text-center p-2 font-medium">
-                                        Tue
-                                      </div>
-                                      <div className="text-center p-2 font-medium">
-                                        Wed
-                                      </div>
-                                      <div className="text-center p-2 font-medium">
-                                        Thu
-                                      </div>
-                                      <div className="text-center p-2 font-medium">
-                                        Fri
-                                      </div>
-                                      <div className="text-center p-2 font-medium">
-                                        Sat
-                                      </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-7 gap-1">
-                                      {getMonthData(calendarDate).days.map(
-                                        (day, index) => {
-                                          const isCurrentMonth =
-                                            day.getMonth() ===
-                                            calendarDate.getMonth();
-                                          const isDisabled =
-                                            isDateDisabled(day);
-
-                                          return (
-                                            <button
-                                              key={index}
-                                              onClick={() =>
-                                                !isDisabled &&
-                                                handleDateSelect(day)
-                                              }
-                                              disabled={isDisabled}
-                                              className={`
-                                              p-2 text-sm rounded hover:bg-blue-100 transition-colors
-                                              ${
-                                                !isCurrentMonth
-                                                  ? "text-gray-300"
-                                                  : "text-gray-900"
-                                              }
-                                              ${
-                                                isDisabled
-                                                  ? "cursor-not-allowed opacity-50"
-                                                  : "cursor-pointer"
-                                              }
-                                              ${
-                                                !isDisabled && isCurrentMonth
-                                                  ? "hover:bg-blue-50"
-                                                  : ""
-                                              }
-                                            `}
-                                            >
-                                              {day.getDate()}
-                                            </button>
-                                          );
-                                        }
-                                      )}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Time */}
-                              <div className="relative">
-                                <div className="relative flex flex-col bg-gray-200 rounded px-3 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
-                                  <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
-                                    TIME:
-                                  </div>
-                                  <div className="pl-0 pr-8 gap-1 flex items-center">
-                                    <AccessTimeIcon
-                                      className="text-gray-400"
-                                      style={{
-                                        width: "15px",
-                                        height: "15px",
-                                      }}
-                                    />
-                                    <select
-                                      value={selectedTime}
-                                      onChange={(e) =>
-                                        setSelectedTime(e.target.value)
-                                      }
-                                      className="w-full bg-transparent border-0 text-gray-700 text-sm appearance-none focus:outline-none cursor-pointer p-0"
+                                    <svg
+                                      className="absolute right-3 bottom-1 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
+                                      fill="currentColor"
+                                      viewBox="0 0 20 20"
                                     >
-                                      <option value="10:45 AM">10:45 AM</option>
-                                      <option value="11:00 AM">11:00 AM</option>
-                                      <option value="11:15 AM">11:15 AM</option>
-                                      <option value="11:30 AM">11:30 AM</option>
-                                      <option value="12:00 PM">12:00 PM</option>
-                                    </select>
+                                      <polygon points="0,0 10,0 5,10" />
+                                    </svg>
                                   </div>
-                                  <svg
-                                    className="absolute right-3 bottom-1 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                  >
-                                    <polygon points="0,0 10,0 5,10" />
-                                  </svg>
                                 </div>
                               </div>
                             </>
@@ -778,13 +1258,56 @@ export default function Header() {
                         {/* Continue Button */}
                         <button
                           onClick={() => {
-                            console.log("Continuing with booking:", {
+                            // Only proceed if we have required data for one-way bookings
+                            if (
+                              activeBookingTab === "one-way" &&
+                              (!pickupLocation || !dropoffLocation)
+                            ) {
+                              alert(
+                                "Please fill in pickup and dropoff locations"
+                              );
+                              return;
+                            }
+                            if (
+                              activeBookingTab === "by-hour" &&
+                              !fromLocation
+                            ) {
+                              alert("Please fill in the from location");
+                              return;
+                            }
+
+                            // Prepare booking data
+                            const bookingData = {
                               type: activeBookingTab,
-                              pickup: pickupLocation,
-                              dropoff: dropoffLocation,
+                              pickup:
+                                activeBookingTab === "one-way"
+                                  ? pickupLocation
+                                  : fromLocation,
+                              dropoff:
+                                activeBookingTab === "one-way"
+                                  ? dropoffLocation
+                                  : "",
                               date: selectedDate,
                               time: selectedTime,
+                            };
+
+                            console.log(
+                              "Continuing with booking:",
+                              bookingData
+                            );
+
+                            // Navigate to reservation flow
+                            const queryParams = new URLSearchParams({
+                              pickup: bookingData.pickup,
+                              dropoff: bookingData.dropoff,
+                              date: bookingData.date,
+                              time: bookingData.time,
+                              type: bookingData.type,
                             });
+
+                            router.push(
+                              `/reserve/pick-up-info?${queryParams.toString()}`
+                            );
                             setReservationOpen(false);
                           }}
                           className="w-full mt-8 py-4 bg-gray-400 hover:bg-gray-500 text-white font-bold text-[16px]  rounded transition-colors duration-200"
