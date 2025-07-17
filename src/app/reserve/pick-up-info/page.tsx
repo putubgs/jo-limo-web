@@ -15,6 +15,7 @@ function PickUpInfoContent() {
     date: searchParams.get("date") || "",
     time: searchParams.get("time") || "",
     type: searchParams.get("type") || "one-way",
+    duration: searchParams.get("duration") || "",
   };
 
   useEffect(() => {
@@ -214,7 +215,9 @@ function PickUpInfoContent() {
                 bookingData.date
               )}&time=${encodeURIComponent(
                 bookingData.time
-              )}&type=${encodeURIComponent(bookingData.type)}`}
+              )}&type=${encodeURIComponent(
+                bookingData.type
+              )}&duration=${encodeURIComponent(bookingData.duration)}`}
               className="w-full text-center inline-block bg-[#ABABAB] text-white font-bold text-[16px] px-8 py-4 rounded-lg hover:bg-gray-800 transition-colors"
             >
               Continue

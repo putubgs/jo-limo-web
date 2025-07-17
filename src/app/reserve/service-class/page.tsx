@@ -22,12 +22,88 @@ function ServiceClassContent() {
     date: searchParams.get("date") || "",
     time: searchParams.get("time") || "",
     type: searchParams.get("type") || "one-way",
+    duration: searchParams.get("duration") || "",
   };
 
   useEffect(() => {
-    console.log("Booking data:", bookingData);
+    console.log("=== SERVICE CLASS DEBUG ===");
+    console.log(
+      "URL search params:",
+      Object.fromEntries(searchParams.entries())
+    );
+    console.log("Booking data received:", {
+      type: bookingData.type,
+      duration: bookingData.duration,
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+
+  // Pricing calculation function
+  const calculatePrice = (serviceType: string) => {
+    // If it's one-way booking, return 0 for now
+    if (bookingData.type === "one-way") {
+      return 0;
+    }
+
+    // Check if we have duration data
+    if (!bookingData.duration) {
+      console.log(`❌ No duration data for ${serviceType}, returning 0`);
+      return 0;
+    }
+
+    // By-the-hour pricing structure
+    const pricingStructure = {
+      executive: {
+        hourly: 25, // per hour for <= 3 hours
+        halfDay: 120,
+        fullDay: 180,
+      },
+      luxury: {
+        hourly: 35, // per hour for <= 3 hours
+        halfDay: 150,
+        fullDay: 260,
+      },
+      mpv: {
+        hourly: 45, // per hour for <= 3 hours
+        halfDay: 170,
+        fullDay: 300,
+      },
+      suv: {
+        hourly: 30, // per hour for <= 3 hours
+        halfDay: 120,
+        fullDay: 200,
+      },
+    };
+
+    const pricing =
+      pricingStructure[serviceType as keyof typeof pricingStructure];
+
+    if (!pricing) {
+      return 0;
+    }
+
+    const duration = bookingData.duration;
+
+    // Calculate based on duration
+    if (duration === "Half Day") {
+      console.log(`✅ ${serviceType}: Half Day = ${pricing.halfDay} JOD`);
+      return pricing.halfDay;
+    } else if (duration === "Full Day") {
+      console.log(`✅ ${serviceType}: Full Day = ${pricing.fullDay} JOD`);
+      return pricing.fullDay;
+    } else if (duration.includes("hour")) {
+      // Extract number of hours (1 hour, 2 hours, 3 hours)
+      const hours = parseInt(duration.split(" ")[0]);
+      const calculatedPrice = pricing.hourly * hours;
+      console.log(
+        `✅ ${serviceType}: ${hours} hours × ${pricing.hourly} = ${calculatedPrice} JOD`
+      );
+      return calculatedPrice;
+    }
+
+    console.log(`❌ Unknown duration pattern "${duration}" for ${serviceType}`);
+    return 0;
+  };
 
   // Step indicator component
   const StepIndicator = () => (
@@ -161,7 +237,7 @@ function ServiceClassContent() {
                   </div>
                   <div className="text-right pb-12">
                     <div className="text-[16px] font-bold text-black">
-                      75 JOD
+                      {calculatePrice("executive")} JOD
                     </div>
                   </div>
                 </div>
@@ -211,7 +287,7 @@ function ServiceClassContent() {
                   </div>
                   <div className="text-right pb-12">
                     <div className="text-[16px] font-bold text-black">
-                      75 JOD
+                      {calculatePrice("luxury")} JOD
                     </div>
                   </div>
                 </div>
@@ -261,7 +337,7 @@ function ServiceClassContent() {
                   </div>
                   <div className="text-right pb-12">
                     <div className="text-[16px] font-bold text-black">
-                      75 JOD
+                      {calculatePrice("mpv")} JOD
                     </div>
                   </div>
                 </div>
@@ -311,7 +387,7 @@ function ServiceClassContent() {
                   </div>
                   <div className="text-right pb-12">
                     <div className="text-[16px] font-bold text-black">
-                      75 JOD
+                      {calculatePrice("suv")} JOD
                     </div>
                   </div>
                 </div>
@@ -412,7 +488,13 @@ function ServiceClassContent() {
                       bookingData.time
                     )}&type=${encodeURIComponent(
                       bookingData.type
-                    )}&service=${selectedService}`
+                    )}&service=${selectedService}${
+                      bookingData.duration
+                        ? `&duration=${encodeURIComponent(
+                            bookingData.duration
+                          )}`
+                        : ""
+                    }`
                   : "#"
               }
               className={`text-white text-center w-[275px] py-4 rounded-lg font-medium transition-colors ${

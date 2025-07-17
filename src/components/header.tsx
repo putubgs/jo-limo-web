@@ -103,6 +103,7 @@ export default function Header() {
   const [pickupLocation, setPickupLocation] = useState("");
   const [dropoffLocation, setDropoffLocation] = useState("");
   const [fromLocation, setFromLocation] = useState("");
+  const [selectedDuration, setSelectedDuration] = useState("2 hours");
 
   // Autocomplete states
   const [pickupSuggestions, setPickupSuggestions] = useState<
@@ -1041,16 +1042,17 @@ export default function Header() {
                                       style={{ width: "15px", height: "15px" }}
                                     />
                                     <select
-                                      defaultValue="2 hours"
+                                      value={selectedDuration}
+                                      onChange={(e) =>
+                                        setSelectedDuration(e.target.value)
+                                      }
                                       className="w-full bg-transparent border-0 text-gray-700 text-sm appearance-none focus:outline-none cursor-pointer p-0"
                                     >
                                       <option value="1 hour">1 hour</option>
                                       <option value="2 hours">2 hours</option>
                                       <option value="3 hours">3 hours</option>
-                                      <option value="4 hours">4 hours</option>
-                                      <option value="6 hours">6 hours</option>
-                                      <option value="8 hours">8 hours</option>
-                                      <option value="Full day">Full day</option>
+                                      <option value="Half Day">Half Day</option>
+                                      <option value="Full Day">Full Day</option>
                                     </select>
                                   </div>
                                   <svg
@@ -1289,12 +1291,11 @@ export default function Header() {
                                   : "",
                               date: selectedDate,
                               time: selectedTime,
+                              duration:
+                                activeBookingTab === "by-hour"
+                                  ? selectedDuration
+                                  : "",
                             };
-
-                            console.log(
-                              "Continuing with booking:",
-                              bookingData
-                            );
 
                             // Navigate to reservation flow
                             const queryParams = new URLSearchParams({
@@ -1303,11 +1304,15 @@ export default function Header() {
                               date: bookingData.date,
                               time: bookingData.time,
                               type: bookingData.type,
+                              duration:
+                                activeBookingTab === "by-hour"
+                                  ? selectedDuration || "2 hours"
+                                  : "",
                             });
 
-                            router.push(
-                              `/reserve/pick-up-info?${queryParams.toString()}`
-                            );
+                            const finalUrl = `/reserve/pick-up-info?${queryParams.toString()}`;
+
+                            router.push(finalUrl);
                             setReservationOpen(false);
                           }}
                           className="w-full mt-8 py-4 bg-gray-400 hover:bg-gray-500 text-white font-bold text-[16px]  rounded transition-colors duration-200"
