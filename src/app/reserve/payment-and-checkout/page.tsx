@@ -1,6 +1,5 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { useEffect, Suspense } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
@@ -8,26 +7,46 @@ import PaymentForm from "@/components/PaymentForm";
 import { useState } from "react";
 import ProcessingDialog from "@/components/dialogs/ProcessingDialog";
 import SuccessDialog from "@/components/dialogs/SuccessDialog";
+import { useReservationStore } from "@/lib/reservation-store";
+import { calculateDistanceAndTime } from "@/lib/distance-calculator";
 
 function PaymentAndCheckoutContent() {
-  const searchParams = useSearchParams();
+  const { reservationData } = useReservationStore();
 
+  // Use data from Zustand store instead of URL params
   const bookingData = {
-    pickup: searchParams.get("pickup") || "",
-    dropoff: searchParams.get("dropoff") || "",
-    date: searchParams.get("date") || "",
-    time: searchParams.get("time") || "",
-    type: searchParams.get("type") || "one-way",
-    service: searchParams.get("service") || "",
+    ...reservationData,
+    service: reservationData.selectedClass || "",
   };
 
   useEffect(() => {
     console.log("Booking data:", bookingData);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [bookingData]);
+
+  // Calculate distance when pickup and dropoff are available
+  useEffect(() => {
+    if (bookingData.pickup && bookingData.dropoff) {
+      calculateDistanceAndTime(bookingData.pickup, bookingData.dropoff)
+        .then((result) => {
+          if (result) {
+            setDistanceInfo({
+              distance: result.distance,
+              duration: result.duration,
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("Failed to calculate distance:", error);
+        });
+    }
+  }, [bookingData.pickup, bookingData.dropoff]);
 
   const [processingOpen, setProcessingOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
+  const [distanceInfo, setDistanceInfo] = useState<{
+    distance: string;
+    duration: string;
+  } | null>(null);
 
   const handleCash = () => {
     setProcessingOpen(true);
@@ -41,20 +60,20 @@ function PaymentAndCheckoutContent() {
   const StepIndicator = () => (
     <div className="relative w-full max-w-[550px] mx-auto py-8">
       {/* Background line - absolute positioned behind */}
-      <div className="absolute top-10 left-8 right-8 h-0.5 bg-gray-300 transform -translate-y-1/2 w-[450px]"></div>
+      <div className="absolute top-10 left-9 right-8 h-0.5 bg-gray-300 transform -translate-y-1/2 w-[450px]"></div>
 
       {/* Flex container for bullets and text - in front */}
       <div className="relative flex justify-between items-center">
         {/* Step 1 - Completed */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full bg-gray-400 mb-2"></div>
-          <span className="text-sm text-gray-500">Pick-up Info</span>
+          <span className="text-sm text-gray-500">Service Class</span>
         </div>
 
         {/* Step 2 - Completed */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full bg-gray-400 mb-2"></div>
-          <span className="text-sm text-gray-500">Service Class</span>
+          <span className="text-sm text-gray-500">Pick-up Info</span>
         </div>
 
         {/* Step 3 - Current */}
@@ -113,6 +132,14 @@ function PaymentAndCheckoutContent() {
                     {locations.to}
                   </span>
                 </div>
+                {distanceInfo && (
+                  <div className="mt-3">
+                    <p className="text-sm" style={{ color: "#A4A4A4" }}>
+                      An estimated travel time of {distanceInfo.duration} to the
+                      destination • {distanceInfo.distance}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

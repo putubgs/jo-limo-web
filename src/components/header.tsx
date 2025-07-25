@@ -8,6 +8,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { autocomplete } from "@/lib/google-autocomplete";
+import { useReservationStore } from "@/lib/reservation-store";
 
 // Calendar helper functions - moved outside component
 const getJordanDate = () => {
@@ -94,6 +95,9 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const showBorder = pathname !== "/";
+
+  // Zustand store
+  const { setReservationData } = useReservationStore();
 
   const [servicesOpen, setServicesOpen] = useState(false);
   const [reservationOpen, setReservationOpen] = useState(false);
@@ -1378,22 +1382,11 @@ export default function Header() {
                                   : "",
                             };
 
-                            // Navigate to reservation flow
-                            const queryParams = new URLSearchParams({
-                              pickup: bookingData.pickup,
-                              dropoff: bookingData.dropoff,
-                              date: bookingData.date,
-                              time: bookingData.time,
-                              type: bookingData.type,
-                              duration:
-                                activeBookingTab === "by-hour"
-                                  ? selectedDuration || "2 hours"
-                                  : "",
-                            });
+                            // Save data to Zustand store
+                            setReservationData(bookingData);
 
-                            const finalUrl = `/reserve/pick-up-info?${queryParams.toString()}`;
-
-                            router.push(finalUrl);
+                            // Navigate to reservation flow (no query params needed)
+                            router.push("/reserve/service-class");
                             setReservationOpen(false);
                           }}
                           className="w-full mt-3 py-4 bg-[#7C7C7C] text-white font-bold text-[16px]  rounded transition-colors duration-200"

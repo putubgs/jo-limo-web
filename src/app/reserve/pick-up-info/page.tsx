@@ -1,25 +1,21 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, Suspense, useState } from "react";
-import Link from "next/link";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import TransferSelector from "@/components/TransferSelector";
+import { useReservationStore } from "@/lib/reservation-store";
+import { calculateDistanceAndTime } from "@/lib/distance-calculator";
 
 function PickUpInfoContent() {
-  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { reservationData, setReservationData } = useReservationStore();
 
-  const initialBooking = {
-    pickup: searchParams.get("pickup") || "",
-    dropoff: searchParams.get("dropoff") || "",
-    date: searchParams.get("date") || "",
-    time: searchParams.get("time") || "",
-    type: searchParams.get("type") || "one-way",
-    duration: searchParams.get("duration") || "",
-  } as const;
+  // Use data from Zustand store instead of URL params
+  const initialBooking = reservationData;
 
-  // original locations coming from URL (Reserve Now popup)
+  // original locations coming from store (Reserve Now popup)
   const urlPickup = initialBooking.pickup;
   const urlDropoff = initialBooking.dropoff;
 
@@ -32,39 +28,54 @@ function PickUpInfoContent() {
   const [selectedGroup, setSelectedGroup] = useState<
     null | "intercity" | "airport"
   >(null);
+  const [distanceInfo, setDistanceInfo] = useState<{
+    distance: string;
+    duration: string;
+  } | null>(null);
 
-  const bookingData = {
-    pickup: searchParams.get("pickup") || "",
-    dropoff: searchParams.get("dropoff") || "",
-    date: searchParams.get("date") || "",
-    time: searchParams.get("time") || "",
-    type: searchParams.get("type") || "one-way",
-    duration: searchParams.get("duration") || "",
-  };
+  // Use the same booking data from store
+  const bookingData = reservationData;
 
   useEffect(() => {
     console.log("Booking data:", bookingData);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [bookingData]);
+
+  // Calculate distance when pickup and dropoff are available
+  useEffect(() => {
+    if (bookingData.pickup && bookingData.dropoff) {
+      calculateDistanceAndTime(bookingData.pickup, bookingData.dropoff)
+        .then((result) => {
+          if (result) {
+            setDistanceInfo({
+              distance: result.distance,
+              duration: result.duration,
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("Failed to calculate distance:", error);
+        });
+    }
+  }, [bookingData.pickup, bookingData.dropoff]);
 
   // Step indicator component
   const StepIndicator = () => (
     <div className="relative w-full max-w-[550px] mx-auto py-8">
       {/* Background line - absolute positioned behind */}
-      <div className="absolute top-10 left-8 right-8 h-0.5 bg-gray-300 transform -translate-y-1/2 w-[450px]"></div>
+      <div className="absolute top-10 left-9 right-8 h-0.5 bg-gray-300 transform -translate-y-1/2 w-[450px]"></div>
 
       {/* Flex container for bullets and text - in front */}
       <div className="relative flex justify-between items-center">
-        {/* Step 1 - Current */}
+        {/* Step 1 - Completed */}
+        <div className="flex flex-col items-center">
+          <div className="w-4 h-4 rounded-full bg-gray-400 mb-2"></div>
+          <span className="text-sm text-gray-500">Service Class</span>
+        </div>
+
+        {/* Step 2 - Current */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full bg-black mb-2"></div>
           <span className="text-sm font-medium text-black">Pick-up Info</span>
-        </div>
-
-        {/* Step 2 */}
-        <div className="flex flex-col items-center">
-          <div className="w-4 h-4 rounded-full border-2 border-gray-300 bg-white mb-2"></div>
-          <span className="text-sm text-gray-500">Service Class</span>
         </div>
 
         {/* Step 3 */}
@@ -117,6 +128,14 @@ function PickUpInfoContent() {
                     {locations.to}
                   </span>
                 </div>
+                {distanceInfo && (
+                  <div className="mt-3">
+                    <p className="text-sm" style={{ color: "#A4A4A4" }}>
+                      An estimated travel time of {distanceInfo.duration} to the
+                      destination • {distanceInfo.distance}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -283,22 +302,24 @@ function PickUpInfoContent() {
 
           {/* Continue Button */}
           <div className="flex justify-center">
-            <Link
-              href={`/reserve/service-class?pickup=${encodeURIComponent(
-                urlPickup
-              )}&dropoff=${encodeURIComponent(
-                urlDropoff
-              )}&date=${encodeURIComponent(
-                initialBooking.date
-              )}&time=${encodeURIComponent(
-                initialBooking.time
-              )}&type=${encodeURIComponent(
-                initialBooking.type
-              )}&duration=${encodeURIComponent(initialBooking.duration)}`}
-              className="w-full text-center inline-block bg-[#ABABAB] text-white font-bold text-[16px] px-8 py-4 rounded-lg hover:bg-gray-800 transition-colors"
+            <button
+              onClick={() => {
+                // Update store with any changes made in this step
+                setReservationData({
+                  pickup: urlPickup,
+                  dropoff: urlDropoff,
+                  date: initialBooking.date,
+                  time: initialBooking.time,
+                  type: initialBooking.type,
+                  duration: initialBooking.duration,
+                });
+                // Navigate to payment-and-checkout (next step in the flow)
+                router.push("/reserve/payment-and-checkout");
+              }}
+              className="w-full text-center bg-[#ABABAB] text-white font-bold text-[16px] px-8 py-4 rounded-lg hover:bg-gray-800 transition-colors"
             >
               Continue
-            </Link>
+            </button>
           </div>
         </div>
       </div>
