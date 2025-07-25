@@ -484,8 +484,10 @@ export default function Header() {
                   <div key={item} className="relative">
                     <button
                       onClick={() => handleNavClick(item)}
-                      className={`reserve-now-button text-base hover:text-gray-500 ${
-                        reservationOpen ? "font-bold" : "font-medium"
+                      className={`reserve-now-button text-base transition-all duration-200 ${
+                        reservationOpen
+                          ? "bg-black text-white px-4 py-1 rounded-[10px] font-bold"
+                          : "px-4 py-1 font-medium hover:text-gray-500"
                       }`}
                     >
                       {item}
@@ -494,7 +496,7 @@ export default function Header() {
                     {/* ——— Reservation Dropdown ——— */}
                     <div
                       className={`
-                        reservation-dropdown absolute top-full right-0 w-[440px] bg-white shadow-lg rounded-lg
+                        reservation-dropdown absolute top-full right-0 w-[440px] bg-[#E2E2E2] shadow-lg rounded-lg
                         overflow-hidden z-[60] mt-2
                         transition-all duration-700 ease-in-out text-[13px]
                         ${
@@ -505,13 +507,13 @@ export default function Header() {
                       `}
                     >
                       {/* Tab Navigation */}
-                      <div className="flex bg-white rounded-lg">
+                      <div className="flex bg-[#E2E2E2] rounded-lg">
                         <button
                           onClick={() => setActiveBookingTab("one-way")}
                           className={`flex-1 py-5 px-6 text-center text-base rounded-tl-md rounded-br-md transition-all ${
                             activeBookingTab === "one-way"
                               ? "bg-transparent text-gray-600 hover:text-gray-800 font-bold"
-                              : "bg-gray-200 text-black"
+                              : "bg-white text-black"
                           }`}
                         >
                           ONE WAY
@@ -521,7 +523,7 @@ export default function Header() {
                           className={`flex-1 py-5 px-6 text-center text-base rounded-bl-md rounded-tr-md transition-all ${
                             activeBookingTab === "by-hour"
                               ? "bg-transparent text-gray-600 hover:text-gray-800 font-bold"
-                              : "bg-gray-200 text-black"
+                              : "bg-white text-black"
                           }`}
                         >
                           BY THE HOUR
@@ -535,7 +537,7 @@ export default function Header() {
                             <>
                               {/* Pickup Location */}
                               <div className="relative">
-                                <div className="relative flex flex-col bg-gray-200 rounded px-3 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
+                                <div className="relative flex flex-col bg-white rounded px-3 py-3 cursor-pointer hover:bg-gray-50 border border-transparent hover:border-[#4A4A4A] transition-all">
                                   <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
                                     PICK UP LOCATION:
                                   </div>
@@ -558,13 +560,37 @@ export default function Header() {
                                       className="autocomplete-container w-full bg-transparent border-0 text-gray-700 text-sm focus:outline-none cursor-pointer p-0 placeholder-gray-500"
                                     />
                                   </div>
-                                  <svg
-                                    className="absolute right-3 bottom-1 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                  >
-                                    <polygon points="0,0 10,0 5,10" />
-                                  </svg>
+                                  {pickupLocation ? (
+                                    // Clear button when field has text
+                                    <button
+                                      onClick={() => {
+                                        setPickupLocation("");
+                                        setShowPickupSuggestions(false);
+                                      }}
+                                      className="absolute right-3 bottom-1 transform -translate-y-1/2 w-5 h-5 bg-gray-400 hover:bg-gray-500 rounded-full flex items-center justify-center transition-all"
+                                    >
+                                      <svg
+                                        className="w-3 h-3 text-white"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                      >
+                                        <path
+                                          fillRule="evenodd"
+                                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                          clipRule="evenodd"
+                                        />
+                                      </svg>
+                                    </button>
+                                  ) : (
+                                    // Default dropdown arrow when field is empty
+                                    <svg
+                                      className="absolute right-3 bottom-1 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
+                                      fill="currentColor"
+                                      viewBox="0 0 20 20"
+                                    >
+                                      <polygon points="0,0 10,0 5,10" />
+                                    </svg>
+                                  )}
                                 </div>
 
                                 {/* Pickup Suggestions Dropdown */}
@@ -637,7 +663,7 @@ export default function Header() {
 
                               {/* Drop off Location */}
                               <div className="relative">
-                                <div className="relative flex flex-col bg-gray-200 rounded px-3 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
+                                <div className="relative flex flex-col bg-white rounded px-3 py-3 cursor-pointer hover:bg-gray-50 border border-transparent hover:border-[#4A4A4A] transition-all">
                                   <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
                                     DROP OFF LOCATION:
                                   </div>
@@ -660,13 +686,38 @@ export default function Header() {
                                       className="autocomplete-container w-full bg-transparent border-0 text-gray-700 text-sm focus:outline-none cursor-pointer p-0 placeholder-gray-500"
                                     />
                                   </div>
-                                  <svg
-                                    className="absolute right-3 bottom-1 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                  >
-                                    <polygon points="0,0 10,0 5,10" />
-                                  </svg>
+
+                                  {dropoffLocation ? (
+                                    // Clear button when field has text
+                                    <button
+                                      onClick={() => {
+                                        setDropoffLocation("");
+                                        setShowDropoffSuggestions(false);
+                                      }}
+                                      className="absolute right-3 bottom-1 transform -translate-y-1/2 w-5 h-5 bg-gray-400 hover:bg-gray-500 rounded-full flex items-center justify-center transition-all"
+                                    >
+                                      <svg
+                                        className="w-3 h-3 text-white"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                      >
+                                        <path
+                                          fillRule="evenodd"
+                                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                          clipRule="evenodd"
+                                        />
+                                      </svg>
+                                    </button>
+                                  ) : (
+                                    // Default dropdown arrow when field is empty
+                                    <svg
+                                      className="absolute right-3 bottom-1 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
+                                      fill="currentColor"
+                                      viewBox="0 0 20 20"
+                                    >
+                                      <polygon points="0,0 10,0 5,10" />
+                                    </svg>
+                                  )}
                                 </div>
 
                                 {/* Dropoff Suggestions Dropdown */}
@@ -742,7 +793,7 @@ export default function Header() {
                                 {/* Date */}
                                 <div className="relative flex-[3]">
                                   <div
-                                    className="calendar-container relative flex flex-col bg-gray-200 rounded px-3 py-3 cursor-pointer hover:bg-gray-100 transition-colors"
+                                    className="calendar-container relative flex flex-col bg-white rounded px-3 py-3 cursor-pointer hover:bg-gray-50 border border-transparent hover:border-[#4A4A4A] transition-all"
                                     onClick={(e) => handleDateFieldClick(e)}
                                   >
                                     <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
@@ -889,7 +940,7 @@ export default function Header() {
 
                                 {/* Time */}
                                 <div className="relative flex-[2]">
-                                  <div className="relative flex flex-col bg-gray-200 rounded px-3 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
+                                  <div className="relative flex flex-col bg-white rounded px-3 py-3 cursor-pointer hover:bg-gray-50 border border-transparent hover:border-[#4A4A4A] transition-all">
                                     <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
                                       TIME:
                                     </div>
@@ -930,7 +981,7 @@ export default function Header() {
                             <>
                               {/* From Location (BY THE HOUR) */}
                               <div className="relative">
-                                <div className="relative flex flex-col bg-gray-200 rounded px-3 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
+                                <div className="relative flex flex-col bg-white rounded px-3 py-3 cursor-pointer hover:bg-gray-50 border border-transparent hover:border-[#4A4A4A] transition-all">
                                   <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
                                     FROM:
                                   </div>
@@ -953,13 +1004,38 @@ export default function Header() {
                                       className="autocomplete-container w-full bg-transparent border-0 text-gray-700 text-sm focus:outline-none cursor-pointer p-0 placeholder-gray-500"
                                     />
                                   </div>
-                                  <svg
-                                    className="absolute right-3 bottom-1 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                  >
-                                    <polygon points="0,0 10,0 5,10" />
-                                  </svg>
+
+                                  {fromLocation ? (
+                                    // Clear button when field has text
+                                    <button
+                                      onClick={() => {
+                                        setFromLocation("");
+                                        setShowFromSuggestions(false);
+                                      }}
+                                      className="absolute right-3 bottom-1 transform -translate-y-1/2 w-5 h-5 bg-gray-400 hover:bg-gray-500 rounded-full flex items-center justify-center transition-all"
+                                    >
+                                      <svg
+                                        className="w-3 h-3 text-white"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                      >
+                                        <path
+                                          fillRule="evenodd"
+                                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                          clipRule="evenodd"
+                                        />
+                                      </svg>
+                                    </button>
+                                  ) : (
+                                    // Default dropdown arrow when field is empty
+                                    <svg
+                                      className="absolute right-3 bottom-1 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
+                                      fill="currentColor"
+                                      viewBox="0 0 20 20"
+                                    >
+                                      <polygon points="0,0 10,0 5,10" />
+                                    </svg>
+                                  )}
                                 </div>
 
                                 {/* From Suggestions Dropdown */}
@@ -1032,7 +1108,7 @@ export default function Header() {
 
                               {/* Duration */}
                               <div className="relative">
-                                <div className="relative flex flex-col bg-gray-200 rounded px-3 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
+                                <div className="relative flex flex-col bg-white rounded px-3 py-3 cursor-pointer hover:bg-gray-50 border border-transparent hover:border-[#4A4A4A] transition-all">
                                   <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
                                     DURATION:
                                   </div>
@@ -1070,7 +1146,7 @@ export default function Header() {
                                 {/* Date */}
                                 <div className="relative flex-[3]">
                                   <div
-                                    className="calendar-container relative flex flex-col bg-gray-200 rounded px-3 py-3 cursor-pointer hover:bg-gray-100 transition-colors"
+                                    className="calendar-container relative flex flex-col bg-white rounded px-3 py-3 cursor-pointer hover:bg-gray-50 border border-transparent hover:border-[#4A4A4A] transition-all"
                                     onClick={(e) => handleDateFieldClick(e)}
                                   >
                                     <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
@@ -1217,7 +1293,7 @@ export default function Header() {
 
                                 {/* Time */}
                                 <div className="relative flex-[2]">
-                                  <div className="relative flex flex-col bg-gray-200 rounded px-3 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
+                                  <div className="relative flex flex-col bg-white rounded px-3 py-3 cursor-pointer hover:bg-gray-50 border border-transparent hover:border-[#4A4A4A] transition-all">
                                     <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
                                       TIME:
                                     </div>
@@ -1256,6 +1332,11 @@ export default function Header() {
                             </>
                           )}
                         </div>
+
+                        <p className="text-[#777777] text-[11px] mt-3 text-center">
+                          Free 60 minutes wait time for airport pickups, 15 min
+                          for all others
+                        </p>
 
                         {/* Continue Button */}
                         <button
@@ -1315,7 +1396,7 @@ export default function Header() {
                             router.push(finalUrl);
                             setReservationOpen(false);
                           }}
-                          className="w-full mt-8 py-4 bg-gray-400 hover:bg-gray-500 text-white font-bold text-[16px]  rounded transition-colors duration-200"
+                          className="w-full mt-3 py-4 bg-[#7C7C7C] text-white font-bold text-[16px]  rounded transition-colors duration-200"
                         >
                           Continue
                         </button>
