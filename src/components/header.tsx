@@ -100,7 +100,7 @@ export default function Header() {
   const { setReservationData } = useReservationStore();
 
   const [servicesOpen, setServicesOpen] = useState(false);
-  const [reservationOpen, setReservationOpen] = useState(false);
+  const [reservationOpen, setReservationOpen] = useState(pathname === "/");
   const [activeBookingTab, setActiveBookingTab] = useState<
     "one-way" | "by-hour"
   >("one-way");
