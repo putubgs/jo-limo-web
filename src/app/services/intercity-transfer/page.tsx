@@ -101,7 +101,7 @@ export default function IntercityTransfer() {
                 {/* Row 3 */}
                 <div className="flex justify-between items-start py-4">
                   <span className="text-[16px] font-medium text-gray-500">
-                    NORTHERN INTERCITY TRANSFER
+                    NORTHERN CITY-TO-CITY TRANSFER
                   </span>
                   <div className="text-[18px] text-gray-900 text-right space-y-1">
                     <p>AMM to Jerash (52km)</p>
@@ -115,7 +115,7 @@ export default function IntercityTransfer() {
                 {/* Row 4 */}
                 <div className="flex justify-between items-start py-4">
                   <span className="text-[16px] font-medium text-gray-500">
-                    SOUTHERN INTERCITY TRANSFER
+                    SOUTHERN CITY-TO-CITY TRANSFER
                   </span>
                   <div className="text-[18px] text-gray-900 text-right space-y-1">
                     <p>Wadi Araba to Aqaba City (9km)</p>

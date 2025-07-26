@@ -105,8 +105,8 @@ const PRICING: Record<
 };
 
 const SEGMENTS = [
-  { title: "Southern Intercity Transfer", key: "southern" },
-  { title: "Northern Intercity Transfer", key: "northern" },
+  { title: "Southern City-to-City Transfer", key: "southern" },
+  { title: "Northern City-to-City Transfer", key: "northern" },
 ];
 
 export default function IntercityModal({
@@ -146,7 +146,7 @@ export default function IntercityModal({
         </button>
 
         {/* Title */}
-        <p className="text-[20px] pb-[75px] text-center">INTERCITY TRANSFER</p>
+        <p className="text-[20px] pb-[75px] text-center">CITY-TO-CITY TRANSFER</p>
 
         {/* Tabs container */}
         <div className="relative mb-6">

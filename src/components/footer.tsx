@@ -5,7 +5,7 @@ import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRound
 export default function Footer() {
   const servicesLinks = [
     { label: "AIRPORT TRANSFER", href: "/services/airport-transfer" },
-    { label: "INTERCITY TRANSFER", href: "/services/intercity-transfer" },
+    { label: "CITY-TO-CITY TRANSFER", href: "/services/city-to-city-transfer" },
     { label: "BUSINESS TRANSFER", href: "/services/business-transfer" },
     {
       label: "HOURLY AND FULL DAY HIRE",

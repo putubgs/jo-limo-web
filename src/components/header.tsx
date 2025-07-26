@@ -405,7 +405,7 @@ export default function Header() {
     { label: "MPV CLASS", slug: "mpv" },
     { label: "AIRPORT TRANSFER", slug: "airport-transfer" },
     { label: "BUSINESS TRANSFER", slug: "business-transfer" },
-    { label: "INTERCITY TRANSFER", slug: "intercity-transfer" },
+    { label: "CITY-TO-CITY TRANSFER", slug: "city-to-city-transfer" },
     { label: "EVENT CHAUFFEUR", slug: "event-chauffeur" },
     { label: "EXCURSION", slug: "excursion" },
     {
@@ -1468,7 +1468,7 @@ export default function Header() {
               >
                 <Image
                   src="/images/intercity-transfer-img.webp"
-                  alt="Intercity Transfer"
+                  alt="City-to-City Transfer"
                   width={271}
                   height={208}
                   className="object-cover w-[271px] h-[208px] transition-transform duration-300 hover:scale-110"

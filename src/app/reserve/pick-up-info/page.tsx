@@ -204,7 +204,7 @@ function PickUpInfoContent() {
                   }`}
                 >
                   <span className="text-sm font-medium mb-1 text-gray-700">
-                    Intercity Transfer
+                    City-to-City Transfer
                   </span>
                   <span className="text-left text-gray-500">
                     {selectedGroup === "intercity" &&
