@@ -20,7 +20,7 @@ export default function Footer() {
   ];
 
   const aboutLinks = [
-    { label: "ABOUT JO LIMO", href: "/about" },
+    { label: "ABOUT JO LIMO", href: "/about-us" },
     { label: "MEMBERSHIP", href: "/membership" },
     { label: "B2B", href: "/b2b" },
     { label: "CONTACT", href: "/contact" },
