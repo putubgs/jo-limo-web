@@ -18,7 +18,7 @@ export default function BusinessTransfer() {
             journey. Arrive at or depart your next meeting, dinner or flight
             in optimal time — and comfort.
           </p>
-          <button className="flex gap-4 items-center font-regular">
+          <button className="flex gap-4 items-center font-regular mt-12">
             <p>AVAILABLE IN THE APP</p>
             <Image
               src="/images/jolimo-app-logo.png"
@@ -45,9 +45,11 @@ export default function BusinessTransfer() {
         <div className="flex flex-col w-full items-center justify-center">
           <div className="flex flex-col w-full justify-center max-w-[850px] gap-[65px]">
             <p className="text-[24px]">
-              We have created an exclusive new service for our most discerning
-              passengers: the ability to make bookings for up to a full day
-              at a flat hourly rate, directly through the Wheely app.
+              At Jo Limo, we know business doesn’t stop between destinations.
+              That’s why our service offers more than transport — it’s a space
+              to focus, relax, or stay connected. Your chauffeur remains
+              discreet and flexible, adapting to your schedule so your day runs
+              smoothly and professionally.
             </p>
             <div>
               <p>FREEDOM OF MOVEMENT</p>

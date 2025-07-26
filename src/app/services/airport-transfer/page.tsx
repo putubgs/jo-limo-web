@@ -27,7 +27,7 @@ export default function AirportTransfer() {
             straight to your destination. Relax and enjoy the journey with Jo
             Limo.
           </p>
-          <button className="flex gap-4 items-center font-regular">
+          <button className="flex gap-4 items-center font-regular mt-12">
             <p>AVAILABLE IN THE APP</p>
             <Image
               src="/images/jolimo-app-logo.png"

@@ -32,6 +32,42 @@ const membershipBenefits = [
     description:
       "Simplify payments with a monthly billing option, consolidating all your ride expenses into one easy statement.",
   },
+  {
+    title: (
+      <>
+        Exclusive Meet & Assist <br /> with Fast-Track Airport Services
+      </>
+    ),
+    description:
+      "Meet with personalized signage at aircraft gate or terminal, enjoy fast-track passport control, escorted customs, and dedicated porter assistance with luggage to your vehicle.",
+  },
+  {
+    title: "Employee Travel Management",
+    description:
+      "We provide comprehensive ground transportation solutions tailored to meet the needs of corporate clients. Our professional chauffeur services ensure timely, secure, and efficient travel for your employees, supported by:",
+    details: [
+      {
+        title: "Duty of Care",
+        description:
+          "Ensuring employee safety and real-time travel monitoring throughout their journeys.",
+      },
+      {
+        title: "Expense Management",
+        description:
+          "Simplifying cost tracking and transparent billing for all transportation services.",
+      },
+      {
+        title: "Approval Workflows",
+        description:
+          "Streamlined processes for travel requests and authorizations to maintain compliance with company policies.",
+      },
+      {
+        title: "Reporting & Analytics",
+        description:
+          "Detailed insights and reports on travel usage, costs, and efficiency to support informed decision-making.",
+      },
+    ],
+  },
 ];
 
 const faqItems = [
@@ -54,11 +90,16 @@ const faqItems = [
 
 export default function Membership() {
   const [openIndices, setOpenIndices] = useState<number[]>([0]);
+  const [employeeTravelExpanded, setEmployeeTravelExpanded] = useState(false);
 
   const toggle = (idx: number) => {
     setOpenIndices((prev) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
     );
+  };
+
+  const toggleEmployeeTravel = () => {
+    setEmployeeTravelExpanded(!employeeTravelExpanded);
   };
 
   return (
@@ -134,22 +175,75 @@ export default function Membership() {
                       border-t border-b border-gray-200
                       divide-y divide-gray-200"
           >
-            {membershipBenefits.map(({ title, description }) => (
-              <div
-                key={title}
-                className="flex justify-between items-start pt-4 pb-16 gap-10"
-              >
-                {/* Left column */}
-                <div className="flex flex-col">
-                  <h3 className="text-[24px] text-black">{title}</h3>
-                  <span className="mt-1 text-[14px] text-[#DD8800]">
-                    Members only
-                  </span>
+            {membershipBenefits.map((benefit, index) => {
+              const { title, description, details } = benefit;
+              const isEmployeeTravel = title === "Employee Travel Management";
+
+              return (
+                <div
+                  key={typeof title === "string" ? title : `benefit-${index}`}
+                  className="flex justify-between items-start pt-4 pb-16 gap-10"
+                >
+                  {/* Left column */}
+                  <div className="flex flex-col">
+                    <h3 className="text-[24px] text-black">{title}</h3>
+                    <span className="mt-1 text-[14px] text-[#DD8800]">
+                      Members only
+                    </span>
+                  </div>
+                  {/* Right column */}
+                  <div className="w-1/2">
+                    <p className="text-[16px] text-black">{description}</p>
+
+                    {isEmployeeTravel && (
+                      <>
+                        <div
+                          className={`
+                            overflow-hidden transition-all duration-500 ease-in-out
+                            ${
+                              employeeTravelExpanded
+                                ? "max-h-[500px] opacity-100 mt-4"
+                                : "max-h-0 opacity-0"
+                            }
+                          `}
+                        >
+                          <div className="space-y-4">
+                            {details?.map((detail, detailIndex) => (
+                              <div key={detailIndex}>
+                                <h4 className="font-bold text-[16px] text-black mb-1">
+                                  {detail.title}:
+                                </h4>
+                                <p className="text-[16px] text-black">
+                                  {detail.description}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={toggleEmployeeTravel}
+                          className="flex items-center gap-2 mt-4 text-gray-500 hover:text-gray-700 text-[14px]"
+                        >
+                          {employeeTravelExpanded
+                            ? "Less detail"
+                            : "More detail"}
+                          <svg
+                            className={`w-2 h-2 transition-transform duration-300 ${
+                              employeeTravelExpanded ? "rotate-180" : ""
+                            }`}
+                            fill="currentColor"
+                            viewBox="0 0 10 10"
+                          >
+                            <polygon points="0,0 10,0 5,10" />
+                          </svg>
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
-                {/* Right column */}
-                <p className="w-1/2 text-[16px] text-black">{description}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

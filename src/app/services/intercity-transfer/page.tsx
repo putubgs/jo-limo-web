@@ -19,13 +19,13 @@ export default function IntercityTransfer() {
       {/* Hero */}
       <section className="mx-auto px-4 text-center pt-20 gap-10 flex flex-col">
         <div className="flex flex-col gap-10 items-center">
-          <h1 className="text-[64px]">Intercity Transfer</h1>
+          <h1 className="text-[64px]">City-to-City Transfer</h1>
           <p className="mt-4 max-w-[800px] mx-auto text-[20px]">
             Travel effortlessly between cities with Jo Limo. Enjoy a smooth,
             comfortable ride with professional chauffeurs ensuring you arrive
             relaxed and on time.
           </p>
-          <button className="flex gap-4 items-center font-regular">
+          <button className="flex gap-4 items-center font-regular mt-12">
             <p>AVAILABLE IN THE APP</p>
             <Image
               src="/images/jolimo-app-logo.png"
