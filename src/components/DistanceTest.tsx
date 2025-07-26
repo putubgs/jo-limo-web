@@ -166,7 +166,7 @@ export default function DistanceTest() {
             • Ensure Distance Matrix API is enabled in Google Cloud Console
           </li>
           <li>• Verify GOOGLE_API_KEY is set in your .env.local file</li>
-          <li>• Try different location formats (e.g., "Amman, Jordan")</li>
+                            <li>• Try different location formats (e.g., &quot;Amman, Jordan&quot;)</li>
         </ul>
       </div>
     </div>

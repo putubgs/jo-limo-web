@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
+import { useEffect, Suspense, useMemo } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import PaymentForm from "@/components/PaymentForm";
@@ -14,10 +14,13 @@ function PaymentAndCheckoutContent() {
   const { reservationData } = useReservationStore();
 
   // Use data from Zustand store instead of URL params
-  const bookingData = {
-    ...reservationData,
-    service: reservationData.selectedClass || "",
-  };
+  const bookingData = useMemo(
+    () => ({
+      ...reservationData,
+      service: reservationData.selectedClass || "",
+    }),
+    [reservationData, reservationData.selectedClass]
+  );
 
   useEffect(() => {
     console.log("Booking data:", bookingData);
