@@ -63,26 +63,26 @@ function PaymentAndCheckoutContent() {
   const StepIndicator = () => (
     <div className="relative w-full max-w-[550px] mx-auto py-8">
       {/* Background line - absolute positioned behind */}
-      <div className="absolute top-10 left-9 right-8 h-0.5 bg-gray-300 transform -translate-y-1/2 w-[450px]"></div>
+      <div className="absolute top-10 left-9 right-8 h-0.5 bg-gray-300 transform -translate-y-1/2 w-[440px]"></div>
 
       {/* Flex container for bullets and text - in front */}
       <div className="relative flex justify-between items-center">
         {/* Step 1 - Completed */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full bg-gray-400 mb-2"></div>
-          <span className="text-sm text-gray-500">Service Class</span>
+          <span className="text-sm text-gray-500 p-1">Service Class</span>
         </div>
 
         {/* Step 2 - Completed */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full bg-gray-400 mb-2"></div>
-          <span className="text-sm text-gray-500">Pick-up Info</span>
+          <span className="text-sm text-gray-500 p-1">Pick-up Info</span>
         </div>
 
         {/* Step 3 - Current */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full bg-black mb-2"></div>
-          <span className="text-sm font-medium text-black">
+          <span className="text-sm font-bold text-black bg-[#F0F0F0] rounded-full p-1 px-2">
             Payment & Checkout
           </span>
         </div>

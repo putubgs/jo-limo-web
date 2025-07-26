@@ -20,14 +20,7 @@ function PickUpInfoContent() {
   const urlDropoff = initialBooking.dropoff;
 
   // Route locations chosen via selector (start empty)
-  const [routePickup, setRoutePickup] = useState<string>("");
-  const [routeDropoff, setRouteDropoff] = useState<string>("");
-  const [selector, setSelector] = useState<null | "intercity" | "airport">(
-    null
-  );
-  const [selectedGroup, setSelectedGroup] = useState<
-    null | "intercity" | "airport"
-  >(null);
+  const [selector, setSelector] = useState<null | "intercity" | "airport">(null);
   const [distanceInfo, setDistanceInfo] = useState<{
     distance: string;
     duration: string;
@@ -323,26 +316,28 @@ function PickUpInfoContent() {
   const StepIndicator = () => (
     <div className="relative w-full max-w-[550px] mx-auto py-8">
       {/* Background line - absolute positioned behind */}
-      <div className="absolute top-10 left-9 right-8 h-0.5 bg-gray-300 transform -translate-y-1/2 w-[450px]"></div>
+      <div className="absolute top-10 left-12 right-8 h-0.5 bg-gray-300 transform -translate-y-1/2 w-[440px]"></div>
 
       {/* Flex container for bullets and text - in front */}
       <div className="relative flex justify-between items-center">
-        {/* Step 1 - Completed */}
+        {/* Step 1 - Current */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full bg-gray-400 mb-2"></div>
-          <span className="text-sm text-gray-500">Service Class</span>
+          <span className="text-sm text-gray-500 p-1">Service Class</span>
         </div>
 
-        {/* Step 2 - Current */}
+        {/* Step 2 */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full bg-black mb-2"></div>
-          <span className="text-sm font-medium text-black">Pick-up Info</span>
+          <span className="text-sm font-bold text-black bg-[#F0F0F0] rounded-full p-1 px-2">
+            Pick-up Info
+          </span>
         </div>
 
         {/* Step 3 */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full border-2 border-gray-300 bg-white mb-2"></div>
-          <span className="text-sm text-gray-500">Payment & Checkout</span>
+          <span className="text-sm text-gray-500 p-1">Payment & Checkout</span>
         </div>
       </div>
     </div>
@@ -565,63 +560,6 @@ function PickUpInfoContent() {
             </div>
           </div>
 
-          {/* Starting point section – only for one-way bookings */}
-          {initialBooking.type === "one-way" && (
-            <>
-              <h2 className="text-2xl font-semibold text-black mb-4">
-                Location Services
-              </h2>
-              <div className="grid grid-cols-2 gap-6 mb-10">
-                <button
-                  disabled={
-                    selectedGroup !== null && selectedGroup !== "intercity"
-                  }
-                  onClick={() =>
-                    selectedGroup === null && setSelector("intercity")
-                  }
-                  className={`rounded-lg px-6 py-5 flex flex-col items-start bg-[#F5F5F5] ${
-                    selectedGroup !== null && selectedGroup !== "intercity"
-                      ? "opacity-40 cursor-not-allowed"
-                      : ""
-                  }`}
-                >
-                  <span className="text-sm font-medium mb-1 text-gray-700">
-                    City-to-City Transfer
-                  </span>
-                  <span className="text-left text-gray-500">
-                    {selectedGroup === "intercity" &&
-                    routePickup &&
-                    routeDropoff
-                      ? `${routePickup} → ${routeDropoff}`
-                      : "Select route"}
-                  </span>
-                </button>
-                <button
-                  disabled={
-                    selectedGroup !== null && selectedGroup !== "airport"
-                  }
-                  onClick={() =>
-                    selectedGroup === null && setSelector("airport")
-                  }
-                  className={`rounded-lg px-6 py-5 flex flex-col items-start bg-[#F5F5F5] ${
-                    selectedGroup !== null && selectedGroup !== "airport"
-                      ? "opacity-40 cursor-not-allowed"
-                      : ""
-                  }`}
-                >
-                  <span className="text-sm font-medium mb-1 text-gray-700">
-                    Airport Transfer
-                  </span>
-                  <span className="text-left text-gray-500">
-                    {selectedGroup === "airport" && routePickup && routeDropoff
-                      ? `${routePickup} → ${routeDropoff}`
-                      : "Select route"}
-                  </span>
-                </button>
-              </div>
-            </>
-          )}
-
           {/* Additional Information Section */}
           <h2 className="text-2xl font-semibold text-black mb-6">
             Additional information
@@ -719,26 +657,6 @@ function PickUpInfoContent() {
         </div>
       </div>
       <Footer />
-      {/* Transfer selector modal */}
-      {selector && (
-        <TransferSelector
-          groupId={selector}
-          onClose={() => setSelector(null)}
-          onSelect={(route) => {
-            // naive parse: "A to B" or "A - B"
-            let from = "";
-            let to = "";
-            if (route.includes(" to ")) {
-              [from, to] = route.split(" to ");
-            } else if (route.includes(" - ")) {
-              [from, to] = route.split(" - ");
-            }
-            setRoutePickup(from.trim());
-            setRouteDropoff(to.trim());
-            setSelectedGroup(selector);
-          }}
-        />
-      )}
     </>
   );
 }

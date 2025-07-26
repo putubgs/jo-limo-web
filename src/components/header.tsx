@@ -413,6 +413,7 @@ export default function Header() {
       slug: "travel-partner-concierge-assistant",
     },
     { label: "HOURLY AND FULL DAY HIRE", slug: "hourly-and-full-day-hire" },
+    { label: "FLAT RATE CITY TRANSFER", slug: "flat-rate-city-transfer" },
   ];
 
   const navItems = [
@@ -488,11 +489,7 @@ export default function Header() {
                   <div key={item} className="relative">
                     <button
                       onClick={() => handleNavClick(item)}
-                      className={`reserve-now-button text-base transition-all duration-200 ${
-                        reservationOpen
-                          ? "bg-black text-white px-4 py-1 rounded-[10px] font-bold"
-                          : "px-4 py-1 font-medium hover:text-gray-500"
-                      }`}
+                      className="reserve-now-button text-base transition-all duration-200  bg-black text-white px-4 py-1 rounded-[10px] font-bold"
                     >
                       {item}
                     </button>
