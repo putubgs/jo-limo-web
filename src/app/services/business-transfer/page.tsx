@@ -45,12 +45,14 @@ export default function BusinessTransfer() {
         <div className="flex flex-col w-full items-center justify-center">
           <div className="flex flex-col w-full justify-center max-w-[850px] gap-[65px]">
             <p className="text-[24px]">
-              We have created an exclusive new service for our most discerning
-              passengers: the ability to make bookings for up to a full day
-              at a flat hourly rate, directly through the Wheely app.
+              At Jo Limo, we know business doesn’t stop between destinations.
+              That’s why our service offers more than transport — it’s a space
+              to focus, relax, or stay connected. Your chauffeur remains
+              discreet and flexible, adapting to your schedule so your day runs
+              smoothly and professionally.
             </p>
             <div>
-              <p>FREEDOM OF MOVEMENT</p>
+              <p>EFFORTLESS ARRIVAL</p>
               <p className="mt-4 text-[16px]">
                 Having the same trusted chauffeur throughout the day allows you
                 to leave extra belongings with them between stops — from bags
@@ -58,19 +60,22 @@ export default function BusinessTransfer() {
                 or office, ensuring you always have what you need — and only
                 what you need — at every appointment.
               </p>
-              <p className="mt-10">TRUSTED ASSISTANCE</p>
+              <p className="mt-10">BUSINESS-CLASS SUPPORT</p>
               <p className="mt-4 text-[16px]">
-                While you tend to your affairs, your chauffeur can recoup your
-                time by assisting with errands and other logistics — whether
-                that’s handling your dry-cleaning, delivering sensitive
-                documents, or picking up a loved one to join you for dinner
-                in ultimate comfort.
+                More than just a ride, our chauffeurs provide reliable support
+                throughout your itinerary. Need to drop off contracts, swing by
+                multiple locations, or coordinate a discreet airport pickup for
+                a VIP? Consider it done — all with the professionalism that
+                reflects your brand and expectations.
               </p>
-              <p className="mt-10">FULL FLEXIBILITY</p>
+              <p className="mt-10">TAILORED TO YOUR SCHEDULE</p>
               <p className="mt-4 text-[16px]">
-                Book your extended journey directly and instantly in the Wheely
-                app, where you can also leave any instructions for your
-                chauffeur to let them personalise your experience.
+                Meetings change, schedules shift — and Jo Limo adapts with you.
+                Your chauffeur remains ready and available for any adjustments,
+                offering the flexibility today’s fast-paced business world
+                demands. Leave instructions in advance, or communicate
+                throughout the journey — your comfort and efficiency remain our
+                top priority.
               </p>
             </div>
           </div>
