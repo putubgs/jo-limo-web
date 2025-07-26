@@ -63,7 +63,7 @@ export default function Home() {
     text-white
     gap-10
     pb-10
-    mb-20
+    mb-10
   "
         >
           <div className="relative text-center w-[500px] z-20 flex flex-col gap-3">

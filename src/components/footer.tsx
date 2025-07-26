@@ -22,7 +22,7 @@ export default function Footer() {
   const aboutLinks = [
     { label: "ABOUT JO LIMO", href: "/about" },
     { label: "MEMBERSHIP", href: "/membership" },
-    { label: "CORPORATE MOBILITY", href: "/corporate-mobility" },
+    { label: "B2B", href: "/b2b" },
     { label: "CONTACT", href: "/contact" },
   ];
 
@@ -40,12 +40,22 @@ export default function Footer() {
         w-full h-[620px] border-t gap-20"
     >
       <div className="flex items-start justify-center gap-[200px] relative z-20 mx-auto">
-        <Image
-          alt="Jo Limo Logo"
-          src="/images/jolimo-logo.png"
-          width={106}
-          height={106}
-        />
+        <div className="flex flex-col gap-2 items-start w-[350px]">
+          <div className="flex gap-4 items-center">
+            <p className="text-[18px]">DOWNLOAD THE APP</p>
+            <Image
+              alt="Jo Limo Logo"
+              src="/images/jolimo-app-logo.png"
+              width={31}
+              height={31}
+              className="rounded-md"
+            />
+          </div>
+          <p className="text-[14px]">
+            Experience refined travel. <br />
+            Available for iOS and Android.
+          </p>
+        </div>
 
         <div className="flex text-[18px] gap-20 w-full">
           {/* Services Column */}
@@ -101,8 +111,14 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="w-full text-center">
-        © 2025 Jordan Limousine Services LLC.
+      <div className="flex flex-col gap-2 items-center w-full text-center font-plus-jakarta-sans">
+        <p>© 2025 Jordan Limousine Services LLC.</p>
+        <p>
+          JORDAN LIMOUSINE SERVICES LLC. REGISTERED IN JORDAN WITH COMPANY
+          NUMBER 200155494. <br />
+          REGISTERED OFFICE: SHAREEF JAMIL BIN NASSER STREET. KING ABDULLAH
+          GARDENS PO BOX 961003 AMMAN 11196 JORDAN.
+        </p>
       </div>
 
       <div
