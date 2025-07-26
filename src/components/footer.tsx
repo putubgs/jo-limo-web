@@ -16,6 +16,10 @@ export default function Footer() {
       label: "TRAVEL PARTNER CONCIERGE ASSISTANT",
       href: "/services/travel-partner-concierge-assistant",
     },
+    {
+      label: "FLAT RATE CITY TRANSFER",
+      href: "/services/flat-rate-city-transfer",
+    },
     { label: "EXCURSION", href: "/services/excursion" },
   ];
 

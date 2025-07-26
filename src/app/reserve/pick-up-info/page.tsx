@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, Suspense, useState, useRef } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import TransferSelector from "@/components/TransferSelector";
 import { useReservationStore } from "@/lib/reservation-store";
 import { calculateDistanceAndTime } from "@/lib/distance-calculator";
 
@@ -19,8 +18,6 @@ function PickUpInfoContent() {
   const urlPickup = initialBooking.pickup;
   const urlDropoff = initialBooking.dropoff;
 
-  // Route locations chosen via selector (start empty)
-  const [selector, setSelector] = useState<null | "intercity" | "airport">(null);
   const [distanceInfo, setDistanceInfo] = useState<{
     distance: string;
     duration: string;
