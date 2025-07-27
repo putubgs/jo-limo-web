@@ -24,15 +24,15 @@ export default function Contact() {
               </div>
               <div className="flex flex-col text-[20px]">
                 <p>Corporate B2B</p>
-                <a href="mailto:b2b@jolimo.com" className="underline">b2b@jolimo.com</a>
+                <a href="mailto:b2b@jo-limo.com" className="underline">b2b@jo-limo.com</a>
               </div>
               <div className="flex flex-col text-[20px]">
                 <p>Bookings</p>
-                <a href="mailto:booking@jolimo.com" className="underline">booking@jolimo.com</a>
+                <a href="mailto:booking@jo-limo.com" className="underline">booking@jo-limo.com</a>
               </div>
               <div className="flex flex-col text-[20px]">
                 <p>Mobile</p>
-                <p className="underline">+962 7962 27227</p>
+                <p className="underline">+962 79 169 8125</p>
               </div>
             </div>
           </div>
