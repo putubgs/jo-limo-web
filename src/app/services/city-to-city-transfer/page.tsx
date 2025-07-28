@@ -82,7 +82,7 @@ export default function IntercityTransfer() {
                     AIRPORT TRANSFER
                   </span>
                   <div className="text-[18px] text-gray-900 text-right space-y-1">
-                    <p>AMM to Amman City (40km)</p>
+                    <p>QAIA to Amman City (40km)</p>
                     <p>AQJ to Aqaba City (10km)</p>
                   </div>
                 </div>
@@ -104,11 +104,11 @@ export default function IntercityTransfer() {
                     NORTHERN CITY-TO-CITY TRANSFER
                   </span>
                   <div className="text-[18px] text-gray-900 text-right space-y-1">
-                    <p>AMM to Jerash (52km)</p>
-                    <p>AMM to Ajloun (76km)</p>
-                    <p>AMM to Al Ramtha (76km)</p>
-                    <p>AMM to Um Qais (120km)</p>
-                    <p>AMM to Anjara (77km)</p>
+                    <p>Amman to Jerash (52km)</p>
+                    <p>Amman to Ajloun (76km)</p>
+                    <p>Amman to Al Ramtha (76km)</p>
+                    <p>Amman to Um Qais (120km)</p>
+                    <p>Amman to Anjara (77km)</p>
                   </div>
                 </div>
 
@@ -119,16 +119,16 @@ export default function IntercityTransfer() {
                   </span>
                   <div className="text-[18px] text-gray-900 text-right space-y-1">
                     <p>Wadi Araba to Aqaba City (9km)</p>
-                    <p>AMM to Dead Sea (60km)</p>
-                    <p>AMM to Petra (235km)</p>
-                    <p>AMM to Wadi Rum (310km)</p>
-                    <p>AMM to Aqaba (330km)</p>
-                    <p>AMM to Baptism site (53km)</p>
-                    <p>AMM to Wadi Mujib (83km)</p>
-                    <p>AMM to Madaba (32km)</p>
-                    <p>AMM to Dessert Castle (85km)</p>
-                    <p>AMM to Dana Nature Reserve (205km)</p>
-                    <p>AMM to Ma’in Hot Springs (75km)</p>
+                    <p>Amman to Dead Sea (60km)</p>
+                    <p>Amman to Petra (235km)</p>
+                    <p>Amman to Wadi Rum (310km)</p>
+                    <p>Amman to Aqaba (330km)</p>
+                    <p>Amman to Baptism site (53km)</p>
+                    <p>Amman to Wadi Mujib (83km)</p>
+                    <p>Amman to Madaba (32km)</p>
+                    <p>Amman to Dessert Castle (85km)</p>
+                    <p>Amman to Dana Nature Reserve (205km)</p>
+                    <p>Amman to Ma’in Hot Springs (75km)</p>
                   </div>
                 </div>
               </div>
