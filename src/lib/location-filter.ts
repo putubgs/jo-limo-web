@@ -22,6 +22,7 @@ export interface LocationMatch {
     "Baptism site": ["baptism site", "baptism"],
     "Wadi Mujib": ["wadi mujib"],
     Madaba: ["madaba"],
+    Irbid: ["irbid"],
     "Dessert Castle": ["dessert castle", "desert castle"],
     "Dana Nature Reserve": ["dana nature reserve", "dana"],
     "Ma'in Hot Springs": ["ma'in hot springs", "main hot springs"],
