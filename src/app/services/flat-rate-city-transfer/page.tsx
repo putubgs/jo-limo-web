@@ -64,20 +64,20 @@ export default function FlatRateCityTransfer() {
               </div>
               <div className="flex justify-between items-center py-4 border-b border-gray-200">
                 <span className="text-[16px] font-medium">
-                  EXECUTIVE <br />
+                  LUXURY <br />
                   MERCEDES S-CLASS
                 </span>
                 <span className="text-[20px] font-bold">28 JOD</span>
               </div>
               <div className="flex justify-between items-center py-4 border-b border-gray-200">
                 <span className="text-[16px] font-medium">
-                  EXECUTIVE <br /> MERCEDES V-CLASS
+                  SUV <br /> MERCEDES V-CLASS
                 </span>
                 <span className="text-[20px] font-bold">26 JOD</span>
               </div>
               <div className="flex justify-between items-center py-4 border-b border-gray-200">
                 <span className="text-[16px] font-medium">
-                  EXECUTIVE <br />
+                  MPV <br />
                   CADILLAC ESCALADE
                 </span>
                 <span className="text-[20px] font-bold">36 JOD</span>
@@ -99,19 +99,19 @@ export default function FlatRateCityTransfer() {
               </div>
               <div className="flex justify-between items-center py-4 border-b border-gray-200">
                 <span className="text-[16px] font-medium">
-                  EXECUTIVE <br /> MERCEDES S-CLASS
+                  LUXURY <br /> MERCEDES S-CLASS
                 </span>
                 <span className="text-[20px] font-bold">28 JOD</span>
               </div>
               <div className="flex justify-between items-center py-4 border-b border-gray-200">
                 <span className="text-[16px] font-medium">
-                  EXECUTIVE <br /> MERCEDES V-CLASS
+                  SUV <br /> MERCEDES V-CLASS
                 </span>
                 <span className="text-[20px] font-bold">26 JOD</span>
               </div>
               <div className="flex justify-between items-center py-4 border-b border-gray-200">
                 <span className="text-[16px] font-medium">
-                  EXECUTIVE <br /> CADILLAC ESCALADE
+                  MPV <br /> CADILLAC ESCALADE
                 </span>
                 <span className="text-[20px] font-bold">36 JOD</span>
               </div>
