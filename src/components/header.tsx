@@ -434,7 +434,6 @@ export default function Header() {
     } else {
       setServicesOpen(false);
       setReservationOpen(false);
-      // …normal navigation…
     }
   }
 
@@ -477,6 +476,18 @@ export default function Header() {
                   <Link
                     key={item}
                     href="/cities-and-classes"
+                    className="text-base font-medium hover:text-gray-500"
+                    onClick={() => setServicesOpen(false)}
+                  >
+                    {item}
+                  </Link>
+                );
+              }
+              if (item === "CORPORATE MOBILITY") {
+                return (
+                  <Link
+                    key={item}
+                    href="/corporate-mobility/login"
                     className="text-base font-medium hover:text-gray-500"
                     onClick={() => setServicesOpen(false)}
                   >
