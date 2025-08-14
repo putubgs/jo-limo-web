@@ -54,16 +54,23 @@ const generateTimeOptions = () => {
   return times;
 };
 
-// Find the closest time option to current Jordan time
 const getClosestTime = (currentTime: string, timeOptions: string[]) => {
   // If exact match exists, use it
   if (timeOptions.includes(currentTime)) {
     return currentTime;
   }
 
-  // Otherwise find closest 15-minute interval
-  const jordanNow = getJordanDate();
-  const currentMinutes = jordanNow.getHours() * 60 + jordanNow.getMinutes();
+  // Parse the currentTime parameter to get minutes
+  const [time, period] = currentTime.split(" ");
+  const [hours, minutes] = time.split(":").map(Number);
+  let currentMinutes = hours * 60 + minutes;
+
+  // Convert to 24-hour format
+  if (period === "PM" && hours !== 12) {
+    currentMinutes += 12 * 60;
+  } else if (period === "AM" && hours === 12) {
+    currentMinutes -= 12 * 60;
+  }
 
   let closestTime = timeOptions[0];
   let closestDiff = Infinity;
@@ -140,10 +147,18 @@ export default function Header() {
   });
   const [selectedTime, setSelectedTime] = useState(() => {
     const jordanNow = getJordanDate();
-    const currentTime = formatTime(jordanNow);
+    const twoHoursLater = new Date(jordanNow.getTime() + 2 * 60 * 60 * 1000);
+    const currentTime = formatTime(twoHoursLater);
     const timeOptions = generateTimeOptions();
     const closestTime = getClosestTime(currentTime, timeOptions);
-    console.log("Jordan Time:", currentTime, "Closest:", closestTime); // Debug log
+    console.log(
+      "Jordan Time:",
+      formatTime(jordanNow),
+      "Target:",
+      currentTime,
+      "Closest:",
+      closestTime
+    );
     return closestTime;
   });
   const [showCalendar, setShowCalendar] = useState(false);
@@ -1419,7 +1434,7 @@ export default function Header() {
             })}
           </nav>
         </div>
-        
+
         <div
           className="absolute bottom-0 left-0 w-full h-[180px]
              bg-gradient-to-t from-white to-transparent

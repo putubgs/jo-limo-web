@@ -9,7 +9,7 @@ export default function Contact() {
         <div className="flex flex-col items-center px-12 w-full max-w-[1000px] mx-auto gap-[90px] pt-[100px] pb-[170px] text-[20px]">
           <h1 className="text-[64px]">Contact Information</h1>
           <div className="flex flex-col gap-6 w-full">
-            <p className="text-[28px]">JO LIMO HEADQUARTER</p>
+            <p className="text-[28px]">JO LIMO HEAD OFFICE</p>
             <p>
               Shareef Jamil Bin Nasser Street, King Abdullah Gardens, PO Box
               961003, Amman 11196, Jordan.

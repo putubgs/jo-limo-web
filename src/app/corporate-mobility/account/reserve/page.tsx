@@ -52,20 +52,33 @@ const generateTimeOptions = () => {
 };
 
 const getClosestTime = (currentTime: string, timeOptions: string[]) => {
+  // If exact match exists, use it
   if (timeOptions.includes(currentTime)) {
     return currentTime;
   }
 
-  const jordanNow = getJordanDate();
-  const currentMinutes = jordanNow.getHours() * 60 + jordanNow.getMinutes();
+  // Parse the currentTime parameter to get minutes
+  const [time, period] = currentTime.split(" ");
+  const [hours, minutes] = time.split(":").map(Number);
+  let currentMinutes = hours * 60 + minutes;
+
+  // Convert to 24-hour format
+  if (period === "PM" && hours !== 12) {
+    currentMinutes += 12 * 60;
+  } else if (period === "AM" && hours === 12) {
+    currentMinutes -= 12 * 60;
+  }
+
   let closestTime = timeOptions[0];
   let closestDiff = Infinity;
 
   timeOptions.forEach((timeOption) => {
+    // Parse time option to get hours and minutes
     const [time, period] = timeOption.split(" ");
     const [hours, minutes] = time.split(":").map(Number);
     let timeMinutes = hours * 60 + minutes;
 
+    // Convert to 24-hour format
     if (period === "PM" && hours !== 12) {
       timeMinutes += 12 * 60;
     } else if (period === "AM" && hours === 12) {
@@ -125,9 +138,19 @@ export default function ReserveCorporateMobility() {
   });
   const [selectedTime, setSelectedTime] = useState(() => {
     const jordanNow = getJordanDate();
-    const currentTime = formatTime(jordanNow);
+    const twoHoursLater = new Date(jordanNow.getTime() + 2 * 60 * 60 * 1000);
+    const currentTime = formatTime(twoHoursLater);
     const timeOptions = generateTimeOptions();
-    return getClosestTime(currentTime, timeOptions);
+    const closestTime = getClosestTime(currentTime, timeOptions);
+    console.log(
+      "Jordan Time:",
+      formatTime(jordanNow),
+      "Target:",
+      currentTime,
+      "Closest:",
+      closestTime
+    );
+    return closestTime;
   });
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarDate, setCalendarDate] = useState(() => getJordanDate());
