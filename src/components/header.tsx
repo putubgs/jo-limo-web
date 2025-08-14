@@ -1419,6 +1419,7 @@ export default function Header() {
             })}
           </nav>
         </div>
+        
         <div
           className="absolute bottom-0 left-0 w-full h-[180px]
              bg-gradient-to-t from-white to-transparent
