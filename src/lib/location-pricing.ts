@@ -8,9 +8,7 @@ export interface RoutePricing {
   suv: number;
 }
 
-// Location-based pricing for one-way transfers
 export const LOCATION_PRICING: RoutePricing[] = [
-  // Amman to destinations
   { route: "Amman to Dead Sea", executive: 45, luxury: 90, mpv: 95, suv: 110 },
   { route: "Amman to Petra", executive: 177, luxury: 295, mpv: 305, suv: 284 },
   {
@@ -78,7 +76,6 @@ export const LOCATION_PRICING: RoutePricing[] = [
   { route: "Amman to Amman", executive: 12, luxury: 28, mpv: 36, suv: 26 },
   { route: "Aqaba to Aqaba", executive: 12, luxury: 28, mpv: 36, suv: 26 },
 
-  // Airport routes
   {
     route: "Queen Alia International Airport to Amman",
     executive: 35,
@@ -138,7 +135,32 @@ export function createRouteString(
   return `${pickupLocation.name} to ${dropoffLocation.name}`;
 }
 
-// Function to get pricing for a specific route
+// Helper function to create reverse route string
+function createReverseRouteString(
+  pickupLocation: LocationMatch | null,
+  dropoffLocation: LocationMatch | null
+): string {
+  if (!pickupLocation || !dropoffLocation) {
+    return "";
+  }
+
+  return `${dropoffLocation.name} to ${pickupLocation.name}`;
+}
+
+// Helper function to check if a route should allow reverse lookup
+// Routes with intentional directional pricing (like airports) should be excluded
+function shouldAllowReverseLookup(routeString: string): boolean {
+  const reverseRoute = routeString.split(" to ").reverse().join(" to ");
+  
+  // Check if both directions already exist in the pricing data
+  const hasOriginal = LOCATION_PRICING.some(route => route.route === routeString);
+  const hasReverse = LOCATION_PRICING.some(route => route.route === reverseRoute);
+  
+  // If both directions exist, don't allow reverse lookup to preserve intentional pricing differences
+  return !(hasOriginal && hasReverse);
+}
+
+// Function to get pricing for a specific route (now works bidirectionally)
 export function getRoutePricing(
   pickupLocation: LocationMatch | null,
   dropoffLocation: LocationMatch | null
@@ -149,7 +171,7 @@ export function getRoutePricing(
 
   const routeString = createRouteString(pickupLocation, dropoffLocation);
 
-  // Find exact match
+  // First, try to find exact match
   const exactMatch = LOCATION_PRICING.find(
     (route) => route.route === routeString
   );
@@ -157,6 +179,23 @@ export function getRoutePricing(
   if (exactMatch) {
     console.log(`✅ Route pricing found: ${routeString}`);
     return exactMatch;
+  }
+
+  // If no exact match and reverse lookup is allowed, try reverse route
+  if (shouldAllowReverseLookup(routeString)) {
+    const reverseRouteString = createReverseRouteString(pickupLocation, dropoffLocation);
+    
+    const reverseMatch = LOCATION_PRICING.find(
+      (route) => route.route === reverseRouteString
+    );
+
+    if (reverseMatch) {
+      console.log(`✅ Reverse route pricing found: ${reverseRouteString} (for ${routeString})`);
+      return {
+        ...reverseMatch,
+        route: routeString // Return with the original route string
+      };
+    }
   }
 
   console.log(`❌ No pricing found for route: ${routeString}`);
