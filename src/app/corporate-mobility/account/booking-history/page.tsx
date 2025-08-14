@@ -3,18 +3,15 @@
 import { useState } from "react";
 import ReactPaginate from "react-paginate";
 import HistoryCard from "@/components/corporate-mobility/booking-history/historyCard";
+import { bookingHistoryData } from "@/data/bookingHistoryData";
 
 export default function BookingHistory() {
-  const bookings = Array.from({ length: 70 }, (_, i) => ({
-    id: i + 1,
-  }));
-
   const itemsPerPage = 5;
   const [currentPage, setCurrentPage] = useState(0);
 
-  const pageCount = Math.ceil(bookings.length / itemsPerPage);
+  const pageCount = Math.ceil(bookingHistoryData.length / itemsPerPage);
   const offset = currentPage * itemsPerPage;
-  const currentItems = bookings.slice(offset, offset + itemsPerPage);
+  const currentItems = bookingHistoryData.slice(offset, offset + itemsPerPage);
 
   const handlePageClick = ({ selected }: { selected: number }) => {
     setCurrentPage(selected);
@@ -22,8 +19,16 @@ export default function BookingHistory() {
 
   return (
     <div className="w-3/4 flex flex-col gap-4">
-      {currentItems.map((booking) => (
-        <HistoryCard key={booking.id} />
+      {currentItems.map((booking, index) => (
+        <HistoryCard
+          key={index}
+          image={booking.image}
+          imageName={booking.imageName}
+          dateTime={booking.dateTime}
+          pickup={booking.pickup}
+          dropoff={booking.dropoff}
+          price={booking.price}
+        />
       ))}
 
       <div className="mt-8 flex justify-end">

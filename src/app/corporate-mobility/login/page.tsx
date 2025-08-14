@@ -15,7 +15,7 @@ export default function LoginCorporateMobility() {
             <p className="text-[16px]">
               View and track your bookings and billing information with ease.
             </p>
-            <form action="/membership" className="w-full gap-1 flex flex-col">
+            <form action="/corporate-mobility/account" className="w-full gap-1 flex flex-col">
               <input
                 className="border rounded-lg border-[#CACACA] w-full p-3 outline-none "
                 placeholder="Corporate Reference"
