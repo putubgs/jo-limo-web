@@ -131,7 +131,7 @@ export default function ReserveCorporateMobility() {
   });
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarDate, setCalendarDate] = useState(() => getJordanDate());
-  const [calendarPosition, setCalendarPosition] = useState({
+  const [, setCalendarPosition] = useState({
     top: 0,
     left: 0,
   });
@@ -339,7 +339,7 @@ export default function ReserveCorporateMobility() {
 
   return (
     <div className="w-3/4 flex flex-col gap-4">
-      <div className="bg-[#E2E2E2] shadow-lg rounded-lg  text-[13px]">
+      <div className="bg-[#E2E2E2] rounded-lg border  text-[13px]">
         {/* Tab Navigation */}
         <div className="flex bg-[#E2E2E2] rounded-lg">
           <button
