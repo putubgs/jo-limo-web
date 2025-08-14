@@ -12,12 +12,12 @@ interface RouteItem {
 
 const PRICING: Record<
   TabKey,
-  { amm: RouteItem[]; aqj: RouteItem[]; bc: RouteItem[] }
+  { qaia: RouteItem[]; aqj: RouteItem[]; bc: RouteItem[] }
 > = {
   executive: {
-    amm: [
-      { route: "AMM - Amman City ", price: "35 JOD" },
-      { route: "Amman City - AMM", price: "30 JOD" },
+    qaia: [
+      { route: "QAIA - Amman City ", price: "35 JOD" },
+      { route: "Amman City - QAIA", price: "30 JOD" },
     ],
     aqj: [
       { route: "AQJ - Aqaba City ", price: "15 JOD" },
@@ -30,9 +30,9 @@ const PRICING: Record<
     ],
   },
   luxury: {
-    amm: [
-      { route: "AMM - Amman City ", price: "85 JOD" },
-      { route: "Amman City - AMM", price: "70 JOD" },
+    qaia: [
+      { route: "QAIA - Amman City ", price: "85 JOD" },
+      { route: "Amman City - QAIA", price: "70 JOD" },
     ],
     aqj: [
       { route: "AQJ - Aqaba City ", price: "40 JOD" },
@@ -45,9 +45,9 @@ const PRICING: Record<
     ],
   },
   suv: {
-    amm: [
-      { route: "AMM - Amman City ", price: "75 JOD" },
-      { route: "Amman City - AMM", price: "65 JOD" },
+    qaia: [
+      { route: "QAIA - Amman City ", price: "75 JOD" },
+      { route: "Amman City - QAIA", price: "65 JOD" },
     ],
     aqj: [
       { route: "AQJ - Aqaba City ", price: "35 JOD" },
@@ -60,9 +60,9 @@ const PRICING: Record<
     ],
   },
   mpv: {
-    amm: [
-      { route: "AMM - Amman City ", price: "90 JOD" },
-      { route: "Amman City - AMM", price: "80 JOD" },
+    qaia: [
+      { route: "QAIA - Amman City ", price: "90 JOD" },
+      { route: "Amman City - QAIA", price: "80 JOD" },
     ],
     aqj: [
       { route: "AQJ - Aqaba City ", price: "45 JOD" },
@@ -77,7 +77,7 @@ const PRICING: Record<
 };
 
 const SEGMENTS = [
-  { title: "Queen Alia International Airport (AMM)", key: "amm" },
+  { title: "Queen Alia International Airport (QAIA)", key: "qaia" },
   { title: "King Hussein International Airport (AQJ)", key: "aqj" },
   { title: "Border Crossing", key: "bc" },
 ];
@@ -154,7 +154,7 @@ export default function AirportModal({
         <div className="border-t border-gray-200 divide-y divide-gray-200 max-h-[400px] overflow-y-auto">
           {SEGMENTS.map(({ title, key }, sidx) => {
             const isOpen = openSegments.includes(sidx);
-            const routes = PRICING[activeTab][key as "amm" | "aqj" | "bc"];
+            const routes = PRICING[activeTab][key as "qaia" | "aqj" | "bc"];
             return (
               <div key={title} className="flex flex-col">
                 {/* header */}

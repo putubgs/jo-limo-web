@@ -8,7 +8,9 @@ export interface RoutePricing {
   suv: number;
 }
 
+// Location-based pricing for one-way transfers
 export const LOCATION_PRICING: RoutePricing[] = [
+  // Amman to destinations
   { route: "Amman to Dead Sea", executive: 45, luxury: 90, mpv: 95, suv: 110 },
   { route: "Amman to Petra", executive: 177, luxury: 295, mpv: 305, suv: 284 },
   {
@@ -76,6 +78,7 @@ export const LOCATION_PRICING: RoutePricing[] = [
   { route: "Amman to Amman", executive: 12, luxury: 28, mpv: 36, suv: 26 },
   { route: "Aqaba to Aqaba", executive: 12, luxury: 28, mpv: 36, suv: 26 },
 
+  // Airport routes (only to their respective cities)
   {
     route: "Queen Alia International Airport to Amman",
     executive: 35,
@@ -123,6 +126,12 @@ export const LOCATION_PRICING: RoutePricing[] = [
   { route: "Wadi Araba to Aqaba", executive: 30, luxury: 70, mpv: 80, suv: 65 },
 ];
 
+// Airport to city mapping for pricing equivalency
+const AIRPORT_CITY_MAPPING: Record<string, string> = {
+  "Queen Alia International Airport": "Amman",
+  "King Hussein International Airport": "Aqaba",
+};
+
 // Helper function to create route string from pickup and dropoff locations
 export function createRouteString(
   pickupLocation: LocationMatch | null,
@@ -148,19 +157,65 @@ function createReverseRouteString(
 }
 
 // Helper function to check if a route should allow reverse lookup
-// Routes with intentional directional pricing (like airports) should be excluded
 function shouldAllowReverseLookup(routeString: string): boolean {
   const reverseRoute = routeString.split(" to ").reverse().join(" to ");
-  
-  // Check if both directions already exist in the pricing data
-  const hasOriginal = LOCATION_PRICING.some(route => route.route === routeString);
-  const hasReverse = LOCATION_PRICING.some(route => route.route === reverseRoute);
-  
-  // If both directions exist, don't allow reverse lookup to preserve intentional pricing differences
+
+  const hasOriginal = LOCATION_PRICING.some(
+    (route) => route.route === routeString
+  );
+  const hasReverse = LOCATION_PRICING.some(
+    (route) => route.route === reverseRoute
+  );
+
   return !(hasOriginal && hasReverse);
 }
 
-// Function to get pricing for a specific route (now works bidirectionally)
+// Helper function to get equivalent city route for airport pricing
+function getAirportEquivalentRoute(
+  pickupLocation: LocationMatch | null,
+  dropoffLocation: LocationMatch | null
+): string | null {
+  if (!pickupLocation || !dropoffLocation) {
+    return null;
+  }
+
+  const pickupName = pickupLocation.name;
+  const dropoffName = dropoffLocation.name;
+
+  const pickupIsAirport = AIRPORT_CITY_MAPPING[pickupName];
+  const dropoffIsAirport = AIRPORT_CITY_MAPPING[dropoffName];
+
+  // Case 1: Airport to Airport
+  if (pickupIsAirport && dropoffIsAirport) {
+    const equivalentPickupCity = AIRPORT_CITY_MAPPING[pickupName];
+    const equivalentDropoffCity = AIRPORT_CITY_MAPPING[dropoffName];
+    return `${equivalentPickupCity} to ${equivalentDropoffCity}`;
+  }
+
+  // Case 2: Airport to City (but not the airport's main city)
+  if (pickupIsAirport && !dropoffIsAirport) {
+    const equivalentCity = AIRPORT_CITY_MAPPING[pickupName];
+
+    // If destination is not the airport's main city, use city-to-city pricing
+    if (dropoffName !== equivalentCity) {
+      return `${equivalentCity} to ${dropoffName}`;
+    }
+  }
+
+  // Case 3: City to Airport (but not the airport's main city)
+  if (!pickupIsAirport && dropoffIsAirport) {
+    const equivalentCity = AIRPORT_CITY_MAPPING[dropoffName];
+
+    // If origin is not the airport's main city, use city-to-city pricing
+    if (pickupName !== equivalentCity) {
+      return `${pickupName} to ${equivalentCity}`;
+    }
+  }
+
+  return null;
+}
+
+// Function to get pricing for a specific route
 export function getRoutePricing(
   pickupLocation: LocationMatch | null,
   dropoffLocation: LocationMatch | null
@@ -181,20 +236,67 @@ export function getRoutePricing(
     return exactMatch;
   }
 
+  // Check for airport equivalent route (city-to-city pricing for airports)
+  const airportEquivalentRoute = getAirportEquivalentRoute(
+    pickupLocation,
+    dropoffLocation
+  );
+  if (airportEquivalentRoute) {
+    const airportMatch = LOCATION_PRICING.find(
+      (route) => route.route === airportEquivalentRoute
+    );
+
+    if (airportMatch) {
+      console.log(
+        `✅ Airport equivalent pricing found: ${airportEquivalentRoute} (for ${routeString})`
+      );
+      return {
+        ...airportMatch,
+        route: routeString, // Return with the original route string
+      };
+    }
+  }
+
   // If no exact match and reverse lookup is allowed, try reverse route
   if (shouldAllowReverseLookup(routeString)) {
-    const reverseRouteString = createReverseRouteString(pickupLocation, dropoffLocation);
-    
+    const reverseRouteString = createReverseRouteString(
+      pickupLocation,
+      dropoffLocation
+    );
+
     const reverseMatch = LOCATION_PRICING.find(
       (route) => route.route === reverseRouteString
     );
 
     if (reverseMatch) {
-      console.log(`✅ Reverse route pricing found: ${reverseRouteString} (for ${routeString})`);
+      console.log(
+        `✅ Reverse route pricing found: ${reverseRouteString} (for ${routeString})`
+      );
       return {
         ...reverseMatch,
-        route: routeString // Return with the original route string
+        route: routeString,
       };
+    }
+
+    // Also try reverse route for airport equivalent
+    if (airportEquivalentRoute) {
+      const reverseAirportEquivalent = airportEquivalentRoute
+        .split(" to ")
+        .reverse()
+        .join(" to ");
+      const reverseAirportMatch = LOCATION_PRICING.find(
+        (route) => route.route === reverseAirportEquivalent
+      );
+
+      if (reverseAirportMatch) {
+        console.log(
+          `✅ Reverse airport equivalent pricing found: ${reverseAirportEquivalent} (for ${routeString})`
+        );
+        return {
+          ...reverseAirportMatch,
+          route: routeString,
+        };
+      }
     }
   }
 
