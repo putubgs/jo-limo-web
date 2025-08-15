@@ -357,7 +357,7 @@ export default function ReserveCorporateMobility() {
     };
 
     setReservationData(bookingData);
-    router.push("/reserve/service-class");
+    router.push("/corporate-mobility/account/reserve/service-class");
   };
 
   return (
