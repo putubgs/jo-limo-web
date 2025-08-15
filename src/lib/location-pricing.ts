@@ -76,7 +76,7 @@ export const LOCATION_PRICING: RoutePricing[] = [
   { route: "Amman to Anjara", executive: 134, luxury: 241, mpv: 202, suv: 195 },
   { route: "Amman to Irbid", executive: 126, luxury: 211, mpv: 187, suv: 217 },
   { route: "Amman to Amman", executive: 12, luxury: 28, mpv: 36, suv: 26 },
-  { route: "Aqaba to Aqaba", executive: 12, luxury: 28, mpv: 36, suv: 26 },
+  { route: "Aqaba to Aqaba", executive: 8, luxury: 27, mpv: 34, suv: 25 },
 
   // Airport routes (only to their respective cities)
   {
