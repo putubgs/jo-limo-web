@@ -436,6 +436,7 @@ export default function Header() {
     "MEMBERSHIP",
     "CITIES & CLASSES",
     "CORPORATE MOBILITY",
+    "THE GLOBAL LIMO",
     "RESERVE NOW",
   ];
 
@@ -503,6 +504,18 @@ export default function Header() {
                   <Link
                     key={item}
                     href="/corporate-mobility/login"
+                    className="text-base font-medium hover:text-gray-500"
+                    onClick={() => setServicesOpen(false)}
+                  >
+                    {item}
+                  </Link>
+                );
+              }
+              if (item === "THE GLOBAL LIMO") {
+                return (
+                  <Link
+                    key={item}
+                    href="/the-global-limo"
                     className="text-base font-medium hover:text-gray-500"
                     onClick={() => setServicesOpen(false)}
                   >
