@@ -1,7 +1,10 @@
 // Update your existing reservationStore.ts file
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { LocationMatch, getPrimaryLocation } from "./location-filter"; // Add this import
+import { LocationMatch, getPrimaryLocation } from "./location-filter";
+
+// Add this type for service classes
+export type ServiceClass = "executive" | "luxury" | "mpv" | "suv";
 
 export interface ReservationData {
   type: "one-way" | "by-hour";
@@ -10,8 +13,8 @@ export interface ReservationData {
   date: string;
   time: string;
   duration: string;
-  selectedClass?: string;
-  price?: number;
+  selectedClass?: ServiceClass;
+  selectedClassPrice?: string; // Keep as string to match calculatePrice return type
   // Add these new fields
   pickupLocation?: LocationMatch | null;
   dropoffLocation?: LocationMatch | null;
@@ -21,6 +24,10 @@ interface ReservationStore {
   reservationData: ReservationData;
   setReservationData: (data: Partial<ReservationData>) => void;
   clearReservationData: () => void;
+  // Fix the parameter type here - price should be string
+  setSelectedServiceClass: (serviceClass: ServiceClass, price: string) => void;
+  getSelectedServiceClass: () => ServiceClass | undefined;
+  getSelectedServicePrice: () => string | undefined;
 }
 
 const defaultReservationData: ReservationData = {
@@ -30,38 +37,37 @@ const defaultReservationData: ReservationData = {
   date: "",
   time: "",
   duration: "",
-  selectedClass: "",
-  price: 0,
-  pickupLocation: null,  // Add this
-  dropoffLocation: null, // Add this
+  selectedClass: undefined,
+  selectedClassPrice: undefined,
+  pickupLocation: null,
+  dropoffLocation: null,
 };
 
 export const useReservationStore = create<ReservationStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       reservationData: defaultReservationData,
-      
-      // MODIFY this method to include location filtering
+
       setReservationData: (data) => {
         console.log(`\n💾 STORE UPDATE:`, data);
-        
+
         // Auto-filter locations when pickup/dropoff changes
         const enhancedData = { ...data };
-        
+
         if (data.pickup !== undefined) {
           console.log(`🚗 Processing pickup location...`);
           enhancedData.pickupLocation = getPrimaryLocation(data.pickup);
         }
-        
+
         if (data.dropoff !== undefined) {
           console.log(`🏁 Processing dropoff location...`);
           enhancedData.dropoffLocation = getPrimaryLocation(data.dropoff);
         }
-        
+
         set((state) => ({
           reservationData: { ...state.reservationData, ...enhancedData },
         }));
-        
+
         // Show results
         if (enhancedData.pickupLocation || enhancedData.dropoffLocation) {
           console.log(`🎯 DETECTED LOCATIONS:`);
@@ -73,7 +79,28 @@ export const useReservationStore = create<ReservationStore>()(
           }
         }
       },
-      
+
+      // Updated method - price parameter is now string
+      setSelectedServiceClass: (serviceClass: ServiceClass, price: string) => {
+        console.log(`🚙 SERVICE CLASS SELECTED:`, { serviceClass, price });
+        set((state) => ({
+          reservationData: {
+            ...state.reservationData,
+            selectedClass: serviceClass,
+            selectedClassPrice: price,
+          },
+        }));
+      },
+
+      // Updated getter methods
+      getSelectedServiceClass: () => {
+        return get().reservationData.selectedClass;
+      },
+
+      getSelectedServicePrice: () => {
+        return get().reservationData.selectedClassPrice;
+      },
+
       clearReservationData: () =>
         set({ reservationData: defaultReservationData }),
     }),

@@ -70,11 +70,11 @@ export default function AirportTransfer() {
                 {/* Row 1 */}
                 <div className="flex justify-between items-start py-4">
                   <span className="text-[16px] font-medium text-gray-500">
-                    Queen Alia International Airport (AMM)
+                    Queen Alia International Airport (QAIA)
                   </span>
                   <div className="text-[18px] text-gray-900 text-right space-y-1">
-                    <p>AMM - Amman City</p>
-                    <p>Amman City - AMM</p>
+                    <p>QAIA - Amman City</p>
+                    <p>Amman City - QAIA</p>
                   </div>
                 </div>
 

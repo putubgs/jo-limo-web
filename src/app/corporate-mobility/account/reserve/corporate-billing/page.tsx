@@ -22,7 +22,13 @@ function PaymentAndCheckoutContent() {
 
   useEffect(() => {
     console.log("Booking data:", bookingData);
-  }, [bookingData]);
+    console.log("Selected service:", reservationData.selectedClass);
+    console.log("Selected price:", reservationData.selectedClassPrice);
+  }, [
+    bookingData,
+    reservationData.selectedClass,
+    reservationData.selectedClassPrice,
+  ]);
 
   // Calculate distance when pickup and dropoff are available
   useEffect(() => {
@@ -47,11 +53,48 @@ function PaymentAndCheckoutContent() {
     duration: string;
   } | null>(null);
 
+  // Service class data mapping
+  const serviceClassData = {
+    executive: {
+      name: "EXECUTIVE",
+      description: "Mercedes E-Class or similar",
+      image: "/images/mercedes_bens_img.png",
+      passengers: 3,
+      luggage: "2-3",
+    },
+    luxury: {
+      name: "LUXURY",
+      description: "Mercedes S-Class or similar",
+      image: "/images/luxury.png",
+      passengers: 3,
+      luggage: "2-3",
+    },
+    mpv: {
+      name: "MPV",
+      description: "Mercedes V-Class or similar",
+      image: "/images/mercedes_img.png",
+      passengers: 6,
+      luggage: "5-6",
+    },
+    suv: {
+      name: "SUV",
+      description: "Cadillac Escalade or similar",
+      image: "/images/cadilac_img.png",
+      passengers: 5,
+      luggage: "4-5",
+    },
+  };
+
+  // Get selected service data or fallback to default
+  const selectedServiceData = reservationData.selectedClass
+    ? serviceClassData[reservationData.selectedClass]
+    : serviceClassData.mpv; // fallback to MPV if no selection
+
   // Step indicator component
   const StepIndicator = () => (
     <div className="relative w-full max-w-[550px] mx-auto py-8">
       {/* Background line - absolute positioned behind */}
-      <div className="absolute top-10 left-9 right-8 h-0.5 bg-gray-300 transform -translate-y-1/2 w-[440px]"></div>
+      <div className="absolute top-10 left-10 right-8 h-0.5 bg-gray-300 transform -translate-y-1/2 w-[440px]"></div>
 
       {/* Flex container for bullets and text - in front */}
       <div className="relative flex justify-between items-center">
@@ -135,44 +178,48 @@ function PaymentAndCheckoutContent() {
           </div>
         </div>
 
-        {/* Main content */}
+        {/* Main content - Display selected service */}
         <div className="px-6">
           <div className="max-w-4xl px-6 mb-8 mx-auto">
             <div className="border border-gray-300 rounded-b-lg border-2 p-6 transition-colors cursor-pointer">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-12">
                   <Image
-                    src="/images/mercedes_img.png"
-                    alt="MPV Vehicle"
+                    src={selectedServiceData.image}
+                    alt={`${selectedServiceData.name} Vehicle`}
                     width={147}
                     height={64}
                   />
                   <div>
                     <h3 className="text-xl font-semibold text-black mb-1">
-                      MPV
+                      {selectedServiceData.name}
                     </h3>
                     <p className="mb-2 text-gray-600">
-                      Mercedes V-Class or similar
+                      {selectedServiceData.description}
                     </p>
                     <div className="flex items-center space-x-4 text-[#B2B2B2] text-sm">
                       <div className="flex items-center space-x-1">
                         <PersonIcon fontSize="small" />
-                        <span>6</span>
+                        <span>{selectedServiceData.passengers}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <LuggageIcon fontSize="small" />
-                        <span>5-6</span>
+                        <span>{selectedServiceData.luggage}</span>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="text-right pb-12">
-                  <div className="text-[16px] font-bold text-black">0 JOD</div>
+                  <div className="text-[16px] font-bold text-black">
+                    {reservationData.selectedClassPrice || "0"} JOD
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Success message */}
         <div className="text-center text-[16px]">
           <p className="font-bold">
             Your chauffeur has been successfully reserved and billed to your
