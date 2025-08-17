@@ -2,21 +2,26 @@
 
 import { useEffect, Suspense, useState } from "react";
 import Image from "next/image";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 import { useRouter } from "next/navigation";
 import PersonIcon from "@mui/icons-material/Person";
 import LuggageIcon from "@mui/icons-material/Luggage";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import InfoIcon from "@mui/icons-material/Info";
-import Header from "@/components/header";
-import Footer from "@/components/footer";
-import { useReservationStore } from "@/lib/reservation-store";
+import { useReservationStore, ServiceClass } from "@/lib/reservation-store";
 import { calculateDistanceAndTime } from "@/lib/distance-calculator";
 import { calculatePrice } from "@/lib/pricing-calculator";
 
 function ServiceClassContent() {
   const router = useRouter();
-  const { reservationData, setReservationData } = useReservationStore();
-  const [selectedService, setSelectedService] = useState<string>("");
+  const { reservationData, setSelectedServiceClass, getSelectedServiceClass } =
+    useReservationStore();
+
+  // Initialize selectedService from store
+  const [selectedService, setSelectedService] = useState<ServiceClass | "">(
+    getSelectedServiceClass() || ""
+  );
   const [showTermsPopup, setShowTermsPopup] = useState(false);
   const [distanceInfo, setDistanceInfo] = useState<{
     distance: string;
@@ -29,6 +34,7 @@ function ServiceClassContent() {
   useEffect(() => {
     console.log("=== SERVICE CLASS DEBUG ===");
     console.log("Booking data from store:", bookingData);
+    console.log("Selected service from store:", getSelectedServiceClass());
     console.log("Booking data received:", {
       type: bookingData.type,
       duration: bookingData.duration,
@@ -78,7 +84,7 @@ function ServiceClassContent() {
         {/* Step 3 */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full border-2 border-gray-300 bg-white mb-2"></div>
-          <span className="text-sm text-gray-500 p-1">Payment & Checkout</span>
+          <span className="text-sm text-gray-500 p-1">Corporate Billing</span>
         </div>
       </div>
     </div>
@@ -106,6 +112,72 @@ function ServiceClassContent() {
   };
 
   const locations = getDisplayLocations();
+
+  // Service class data with pricing
+  const serviceClasses = [
+    {
+      id: "executive" as ServiceClass,
+      name: "EXECUTIVE",
+      description: "Mercedes E-Class or similar",
+      image: "/images/mercedes_bens_img.png",
+      passengers: 3,
+      luggage: "2-3",
+    },
+    {
+      id: "luxury" as ServiceClass,
+      name: "LUXURY",
+      description: "Mercedes S-Class or similar",
+      image: "/images/luxury.png",
+      passengers: 3,
+      luggage: "2-3",
+    },
+    {
+      id: "mpv" as ServiceClass,
+      name: "MPV",
+      description: "Mercedes V-Class or similar",
+      image: "/images/mercedes_img.png",
+      passengers: 6,
+      luggage: "5-6",
+    },
+    {
+      id: "suv" as ServiceClass,
+      name: "SUV",
+      description: "Cadillac Escalade or similar",
+      image: "/images/cadilac_img.png",
+      passengers: 5,
+      luggage: "4-5",
+    },
+  ];
+
+  const handleServiceSelection = (serviceId: ServiceClass) => {
+    console.log("🚙 Service selected:", serviceId);
+    setSelectedService(serviceId);
+  };
+
+  const handleContinue = () => {
+    if (selectedService) {
+      // Calculate the price for the selected service - returns number
+      const priceNumber = calculatePrice(
+        selectedService,
+        bookingData.type,
+        bookingData.duration,
+        bookingData.pickupLocation,
+        bookingData.dropoffLocation
+      );
+
+      // Convert number to string for storage
+      const priceString = priceNumber.toString();
+
+      console.log("💰 Calculated price (number):", priceNumber);
+      console.log("💰 Calculated price (string):", priceString);
+
+      // Pass the string to the store method
+      setSelectedServiceClass(selectedService, priceString);
+
+      // Navigate to pick-up info
+      router.push("/reserve/pick-up-info");
+    }
+  };
 
   return (
     <>
@@ -151,233 +223,70 @@ function ServiceClassContent() {
             </p>
 
             <div className="">
-              {/* EXECUTIVE */}
-              <div
-                className={`border rounded-t-lg p-6 transition-colors cursor-pointer ${
-                  selectedService === "executive"
-                    ? "border-black border-2"
-                    : "border-gray-300 hover:border-black"
-                }`}
-                onClick={() => setSelectedService("executive")}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-12">
-                    <Image
-                      src="/images/mercedes_bens_img.png"
-                      alt="Executive Vehicle"
-                      width={147}
-                      height={64}
-                    />
-                    <div>
-                      <h3 className="text-xl font-semibold text-black mb-1">
-                        EXECUTIVE
-                      </h3>
-                      <p
-                        className={`mb-2 ${
-                          selectedService === "executive"
-                            ? "text-black"
-                            : "text-gray-600"
-                        }`}
-                      >
-                        Mercedes E-Class or similar
-                      </p>
-                      <div className="flex items-center space-x-4 text-[#B2B2B2] text-sm">
-                        <div className="flex items-center space-x-1">
-                          <PersonIcon fontSize="small" />
-                          <span>3</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <LuggageIcon fontSize="small" />
-                          <span>2-3</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right pb-12">
-                    <div className="text-[16px] font-bold text-black">
-                      {calculatePrice(
-                        "executive",
-                        bookingData.type,
-                        bookingData.duration,
-                        bookingData.pickupLocation,
-                        bookingData.dropoffLocation
-                      )}{" "}
-                      JOD
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* LUXURY */}
-              <div
-                className={`border p-6 transition-colors cursor-pointer ${
-                  selectedService === "luxury"
-                    ? "border-black border-2"
-                    : "border-gray-300 hover:border-black"
-                }`}
-                onClick={() => setSelectedService("luxury")}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-12">
-                    <Image
-                      src="/images/luxury.png"
-                      alt="Luxury Vehicle"
-                      width={147}
-                      height={64}
-                    />
-                    <div>
-                      <h3 className="text-xl font-semibold text-black mb-1">
-                        LUXURY
-                      </h3>
-                      <p
-                        className={`mb-2 ${
-                          selectedService === "luxury"
-                            ? "text-black"
-                            : "text-gray-600"
-                        }`}
-                      >
-                        Mercedes S-Class or similar
-                      </p>
-                      <div className="flex items-center space-x-4 text-[#B2B2B2] text-sm">
-                        <div className="flex items-center space-x-1">
-                          <PersonIcon fontSize="small" />
-                          <span>3</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <LuggageIcon fontSize="small" />
-                          <span>2-3</span>
+              {serviceClasses.map((service, index) => (
+                <div
+                  key={service.id}
+                  className={`border p-6 transition-colors cursor-pointer ${
+                    index === 0
+                      ? "rounded-t-lg"
+                      : index === serviceClasses.length - 1
+                      ? "rounded-b-lg"
+                      : ""
+                  } ${
+                    selectedService === service.id
+                      ? "border-black border-2"
+                      : "border-gray-300 hover:border-black"
+                  }`}
+                  onClick={() => handleServiceSelection(service.id)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-12">
+                      <Image
+                        src={service.image}
+                        alt={`${service.name} Vehicle`}
+                        width={147}
+                        height={64}
+                      />
+                      <div>
+                        <h3 className="text-xl font-semibold text-black mb-1">
+                          {service.name}
+                        </h3>
+                        <p
+                          className={`mb-2 ${
+                            selectedService === service.id
+                              ? "text-black"
+                              : "text-gray-600"
+                          }`}
+                        >
+                          {service.description}
+                        </p>
+                        <div className="flex items-center space-x-4 text-[#B2B2B2] text-sm">
+                          <div className="flex items-center space-x-1">
+                            <PersonIcon fontSize="small" />
+                            <span>{service.passengers}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <LuggageIcon fontSize="small" />
+                            <span>{service.luggage}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="text-right pb-12">
-                    <div className="text-[16px] font-bold text-black">
-                      {calculatePrice(
-                        "luxury",
-                        bookingData.type,
-                        bookingData.duration,
-                        bookingData.pickupLocation,
-                        bookingData.dropoffLocation
-                      )}{" "}
-                      JOD
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* MPV */}
-              <div
-                className={`border p-6 transition-colors cursor-pointer ${
-                  selectedService === "mpv"
-                    ? "border-black border-2"
-                    : "border-gray-300 hover:border-black"
-                }`}
-                onClick={() => setSelectedService("mpv")}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-12">
-                    <Image
-                      src="/images/mercedes_img.png"
-                      alt="MPV Vehicle"
-                      width={147}
-                      height={64}
-                    />
-                    <div>
-                      <h3 className="text-xl font-semibold text-black mb-1">
-                        MPV
-                      </h3>
-                      <p
-                        className={`mb-2 ${
-                          selectedService === "mpv"
-                            ? "text-black"
-                            : "text-gray-600"
-                        }`}
-                      >
-                        Mercedes V-Class or similar
-                      </p>
-                      <div className="flex items-center space-x-4 text-[#B2B2B2] text-sm">
-                        <div className="flex items-center space-x-1">
-                          <PersonIcon fontSize="small" />
-                          <span>6</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <LuggageIcon fontSize="small" />
-                          <span>5-6</span>
-                        </div>
+                    <div className="text-right pb-12">
+                      <div className="text-[16px] font-bold text-black">
+                        {calculatePrice(
+                          service.id,
+                          bookingData.type,
+                          bookingData.duration,
+                          bookingData.pickupLocation,
+                          bookingData.dropoffLocation
+                        )}{" "}
+                        JOD
                       </div>
                     </div>
                   </div>
-                  <div className="text-right pb-12">
-                    <div className="text-[16px] font-bold text-black">
-                      {calculatePrice(
-                        "mpv",
-                        bookingData.type,
-                        bookingData.duration,
-                        bookingData.pickupLocation,
-                        bookingData.dropoffLocation
-                      )}{" "}
-                      JOD
-                    </div>
-                  </div>
                 </div>
-              </div>
-
-              {/* SUV */}
-              <div
-                className={`border rounded-b-lg p-6 transition-colors cursor-pointer ${
-                  selectedService === "suv"
-                    ? "border-black border-2"
-                    : "border-gray-300 hover:border-black"
-                }`}
-                onClick={() => setSelectedService("suv")}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-12">
-                    <Image
-                      src="/images/cadilac_img.png"
-                      alt="SUV Vehicle"
-                      width={147}
-                      height={64}
-                    />
-                    <div>
-                      <h3 className="text-xl font-semibold text-black mb-1">
-                        SUV
-                      </h3>
-                      <p
-                        className={`mb-2 ${
-                          selectedService === "suv"
-                            ? "text-black"
-                            : "text-gray-600"
-                        }`}
-                      >
-                        Cadillac Escalade or similar
-                      </p>
-                      <div className="flex items-center space-x-4 text-[#B2B2B2] text-sm">
-                        <div className="flex items-center space-x-1">
-                          <PersonIcon fontSize="small" />
-                          <span>5</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <LuggageIcon fontSize="small" />
-                          <span>4-5</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right pb-12">
-                    <div className="text-[16px] font-bold text-black">
-                      {calculatePrice(
-                        "suv",
-                        bookingData.type,
-                        bookingData.duration,
-                        bookingData.pickupLocation,
-                        bookingData.dropoffLocation
-                      )}{" "}
-                      JOD
-                    </div>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
@@ -462,14 +371,7 @@ function ServiceClassContent() {
             </button>
 
             <button
-              onClick={() => {
-                if (selectedService) {
-                  // Save selected service to store
-                  setReservationData({ selectedClass: selectedService });
-                  // Navigate to pick-up info (next step in the flow)
-                  router.push("/reserve/pick-up-info");
-                }
-              }}
+              onClick={handleContinue}
               disabled={!selectedService}
               className={`text-white text-center w-[275px] py-4 rounded-lg font-medium transition-colors ${
                 selectedService
