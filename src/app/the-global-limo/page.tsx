@@ -11,8 +11,8 @@ export default function AboutUs() {
         <Image
           src="/images/global_limo.png"
           alt="The Global Limo Image"
-          width={736}
-          height={540}
+          width={424}
+          height={238}
         />
         <div className="flex flex-col text-center gap-6 text-[20px]">
           <p>
