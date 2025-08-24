@@ -7,7 +7,7 @@ export default function AboutUs() {
     <>
       <Header />
       <section className="flex flex-col items-center justify-center text-center mt-[50px] mb-[100px] max-w-[1000px] mx-auto gap-[50px]">
-        <h1 className="text-[32px]">International Chauffeur Charter with AirportConnect</h1>
+        <h1 className="text-[42px]">International Chauffeur Charter with AirportConnect</h1>
         <Image
           src="/images/global_limo.png"
           alt="The Global Limo Image"
