@@ -27,7 +27,9 @@ export default function HistoryCard({
           <p className="font-bold">{dateTime}</p>
           <div>
             <p>From&nbsp;&nbsp;: {pickup}</p>
-            <p className="-mt-1">To&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {dropoff}</p>
+            <p className="-mt-1">
+              To&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {dropoff}
+            </p>
           </div>
         </div>
         <div className="flex w-full justify-between items-center border-t border-1 pt-1">

@@ -168,7 +168,7 @@ export const bookingHistoryData: BookingHistoryItem[] = [
     dropoff: "InterContinental Hotel, Amman, Jordan",
     price: "JOD85.00",
   },
-    {
+  {
     image: "/images/mercedes_bens_img.png",
     imageName: "Executive Vehicle",
     dateTime: "WED, AUG 7, 2024 at 10:45 AM",
@@ -328,7 +328,7 @@ export const bookingHistoryData: BookingHistoryItem[] = [
     dropoff: "InterContinental Hotel, Amman, Jordan",
     price: "JOD85.00",
   },
-    {
+  {
     image: "/images/mercedes_bens_img.png",
     imageName: "Executive Vehicle",
     dateTime: "WED, AUG 7, 2024 at 10:45 AM",
@@ -488,7 +488,7 @@ export const bookingHistoryData: BookingHistoryItem[] = [
     dropoff: "InterContinental Hotel, Amman, Jordan",
     price: "JOD85.00",
   },
-    {
+  {
     image: "/images/mercedes_bens_img.png",
     imageName: "Executive Vehicle",
     dateTime: "WED, AUG 7, 2024 at 10:45 AM",

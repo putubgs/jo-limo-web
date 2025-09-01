@@ -84,7 +84,7 @@ function ServiceClassContent() {
         {/* Step 3 */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full border-2 border-gray-300 bg-white mb-2"></div>
-          <span className="text-sm text-gray-500 p-1">Corporate Billing</span>
+          <span className="text-sm text-gray-500 p-1">Payment & Checkout</span>
         </div>
       </div>
     </div>
