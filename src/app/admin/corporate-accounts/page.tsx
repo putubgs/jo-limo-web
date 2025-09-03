@@ -11,6 +11,7 @@ interface CorporateAccount {
   company_email: string;
   phone_number: string;
   billing_address: string;
+  password: string;
 }
 
 type FormMode = "create" | "edit" | "view" | null;
@@ -29,15 +30,45 @@ export default function CorporateAccounts() {
     reference: string;
     email: string;
   }>({ show: false, reference: "", email: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState({
+    isValid: false,
+    errors: [] as string[],
+    requirements: {
+      minLength: false,
+      hasUppercase: false,
+      hasLowercase: false,
+      hasNumber: false,
+      hasSpecialChar: false,
+    },
+  });
 
-  // Generate corporate reference
-  const generateCorporateReference = (): string => {
-    const prefix = "CORP";
-    const timestamp = Date.now().toString().slice(-6);
-    const random = Math.floor(Math.random() * 1000)
-      .toString()
-      .padStart(3, "0");
-    return `${prefix}-${timestamp}-${random}`;
+  // Password validation function
+  const validatePassword = (password: string) => {
+    const requirements = {
+      minLength: password.length >= 8,
+      hasUppercase: /[A-Z]/.test(password),
+      hasLowercase: /[a-z]/.test(password),
+      hasNumber: /\d/.test(password),
+      hasSpecialChar: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+    };
+
+    const errors = [];
+    if (!requirements.minLength) errors.push("At least 8 characters");
+    if (!requirements.hasUppercase) errors.push("One uppercase letter");
+    if (!requirements.hasLowercase) errors.push("One lowercase letter");
+    if (!requirements.hasNumber) errors.push("One number");
+    if (!requirements.hasSpecialChar) errors.push("One special character");
+
+    const isValid = Object.values(requirements).every((req) => req);
+
+    setPasswordValidation({
+      isValid,
+      errors,
+      requirements,
+    });
+
+    return isValid;
   };
 
   useEffect(() => {
@@ -54,6 +85,7 @@ export default function CorporateAccounts() {
         phone_number: "+962 6 123 4567",
         billing_address:
           "Abdali Boulevard, Building 7, Floor 12, Amman, Jordan",
+        password: "JTS2024!secure",
       },
       {
         company_id: "550e8400-e29b-41d4-a716-446655440002",
@@ -64,6 +96,7 @@ export default function CorporateAccounts() {
         company_email: "info@petrabusiness.com",
         phone_number: "+962 6 987 6543",
         billing_address: "Rainbow Street 45, Jabal Amman, Amman, Jordan",
+        password: "PBG2024@strong",
       },
       {
         company_id: "550e8400-e29b-41d4-a716-446655440003",
@@ -74,6 +107,7 @@ export default function CorporateAccounts() {
         company_email: "hello@deadseaenterprises.jo",
         phone_number: "+962 6 456 7890",
         billing_address: "King Hussein Business Park, Amman, Jordan",
+        password: "DSE2024#complex",
       },
     ];
     setAccounts(dummyAccounts);
@@ -124,45 +158,76 @@ export default function CorporateAccounts() {
   const handleCreateAccount = () => {
     setFormMode("create");
     setCurrentAccount(null);
+    setShowPassword(false); // Reset password visibility
+    setPasswordValidation({
+      // Reset password validation
+      isValid: false,
+      errors: [],
+      requirements: {
+        minLength: false,
+        hasUppercase: false,
+        hasLowercase: false,
+        hasNumber: false,
+        hasSpecialChar: false,
+      },
+    });
     setFormData({
+      corporate_reference: "",
       company_name: "",
       company_website: "",
       company_address: "",
       company_email: "",
       phone_number: "",
       billing_address: "",
+      password: "",
     });
   };
 
   const handleEditAccount = (account: CorporateAccount) => {
     setFormMode("edit");
     setCurrentAccount(account);
+    setShowPassword(false); // Reset password visibility
     setFormData(account);
   };
 
   const handleViewAccount = (account: CorporateAccount) => {
     setFormMode("view");
     setCurrentAccount(account);
+    setShowPassword(false); // Reset password visibility
     setFormData(account);
   };
 
   const handleSaveAccount = () => {
     if (formMode === "create") {
-      const corporateReference = generateCorporateReference();
+      // Validate password before saving
+      const isPasswordValid = validatePassword(formData.password || "");
+      if (!isPasswordValid) {
+        alert("Please ensure the password meets all security requirements.");
+        return;
+      }
+
       const newAccount: CorporateAccount = {
         ...(formData as CorporateAccount),
         company_id: `550e8400-e29b-41d4-a716-${Date.now()}`,
-        corporate_reference: corporateReference,
       };
       setAccounts((prev) => [...prev, newAccount]);
 
       // Show success message
       setSuccessMessage({
         show: true,
-        reference: corporateReference,
+        reference: formData.corporate_reference || "",
         email: formData.company_email || "",
       });
     } else if (formMode === "edit" && currentAccount) {
+      // Validate password for edit mode if password is being changed
+      if (formData.password && formData.password !== currentAccount.password) {
+        const isPasswordValid = validatePassword(formData.password);
+        if (!isPasswordValid) {
+          alert("Please ensure the password meets all security requirements.");
+          return;
+        }
+      }
+
       setAccounts((prev) =>
         prev.map((acc) =>
           acc.company_id === currentAccount.company_id
@@ -174,6 +239,7 @@ export default function CorporateAccounts() {
     setFormMode(null);
     setCurrentAccount(null);
     setFormData({});
+    setShowPassword(false); // Reset password visibility
   };
 
   const handleFormInputChange = (
@@ -186,6 +252,11 @@ export default function CorporateAccounts() {
       ...prev,
       [name]: type === "number" ? parseFloat(value) || 0 : value,
     }));
+
+    // Validate password on change
+    if (name === "password") {
+      validatePassword(value);
+    }
   };
 
   return (
@@ -283,11 +354,12 @@ export default function CorporateAccounts() {
                       Email Notification
                     </p>
                     <p className="text-sm text-blue-700 mt-1">
-                      The reference number has been sent to{" "}
+                      The corporate reference and account password have been
+                      sent to{" "}
                       <span className="font-semibold">
                         {successMessage.email}
                       </span>{" "}
-                      for the client&apos;s records.
+                      for the client&apos;s records and secure access.
                     </p>
                   </div>
                 </div>
@@ -310,11 +382,12 @@ export default function CorporateAccounts() {
                   </svg>
                   <div>
                     <p className="text-sm font-medium text-yellow-800">
-                      Important Note
+                      Account Credentials Created
                     </p>
                     <p className="text-sm text-yellow-700 mt-1">
-                      Please save this reference number for future
-                      correspondence and account management.
+                      The corporate reference and account password have been
+                      successfully created. Please save these credentials
+                      securely for future account access and management.
                     </p>
                   </div>
                 </div>
@@ -603,6 +676,239 @@ export default function CorporateAccounts() {
                     scrollbarColor: "#93c5fd #f3f4f6",
                   }}
                 >
+                  {/* Account Information Section */}
+                  <div className="bg-purple-50 rounded-xl p-6 border border-purple-200">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <svg
+                        className="w-5 h-5 mr-2 text-purple-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                        />
+                      </svg>
+                      Account Credentials
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700 flex items-center">
+                          <svg
+                            className="w-4 h-4 mr-1 text-gray-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                            />
+                          </svg>
+                          Corporate Reference *
+                        </label>
+                        <input
+                          type="text"
+                          name="corporate_reference"
+                          value={formData.corporate_reference || ""}
+                          onChange={handleFormInputChange}
+                          disabled={formMode === "view"}
+                          className="block w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm disabled:bg-gray-100 py-3 px-4 font-mono"
+                          placeholder="e.g., CORP-2024-001"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700 flex items-center">
+                          <svg
+                            className="w-4 h-4 mr-1 text-gray-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                            />
+                          </svg>
+                          Account Password *
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={
+                              formMode === "view"
+                                ? "password"
+                                : showPassword
+                                ? "text"
+                                : "password"
+                            }
+                            name="password"
+                            value={formData.password || ""}
+                            onChange={handleFormInputChange}
+                            disabled={formMode === "view"}
+                            className={`block w-full rounded-lg shadow-sm focus:ring-2 text-sm disabled:bg-gray-100 py-3 px-4 pr-12 ${
+                              formMode !== "view" && formData.password
+                                ? passwordValidation.isValid
+                                  ? "border-green-300 focus:ring-green-500 focus:border-green-500"
+                                  : "border-red-300 focus:ring-red-500 focus:border-red-500"
+                                : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                            }`}
+                            placeholder="Create a secure password"
+                            required
+                          />
+                          {formMode !== "view" && (
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                            >
+                              {showPassword ? (
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L6.5 6.5m3.378 3.378a3 3 0 014.243 4.243M6.5 6.5L4 4m2.5 2.5l7 7m-7-7l7 7m0 0L17.5 17.5M21 21l-3.5-3.5m0 0L21 21l-3.5-3.5M17.5 17.5L12 12"
+                                  />
+                                </svg>
+                              ) : (
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                  />
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                  />
+                                </svg>
+                              )}
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Password Requirements */}
+                        {formMode !== "view" && formData.password && (
+                          <div className="mt-3 p-3 bg-gray-50 rounded-lg border">
+                            <p className="text-sm font-medium text-gray-700 mb-2">
+                              Password Requirements:
+                            </p>
+                            <div className="space-y-1">
+                              {[
+                                {
+                                  key: "minLength",
+                                  text: "At least 8 characters",
+                                },
+                                {
+                                  key: "hasUppercase",
+                                  text: "One uppercase letter (A-Z)",
+                                },
+                                {
+                                  key: "hasLowercase",
+                                  text: "One lowercase letter (a-z)",
+                                },
+                                { key: "hasNumber", text: "One number (0-9)" },
+                                {
+                                  key: "hasSpecialChar",
+                                  text: "One special character (!@#$%^&*)",
+                                },
+                              ].map(({ key, text }) => (
+                                <div
+                                  key={key}
+                                  className="flex items-center text-sm"
+                                >
+                                  {passwordValidation.requirements[
+                                    key as keyof typeof passwordValidation.requirements
+                                  ] ? (
+                                    <svg
+                                      className="w-4 h-4 text-green-500 mr-2"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M5 13l4 4L19 7"
+                                      />
+                                    </svg>
+                                  ) : (
+                                    <svg
+                                      className="w-4 h-4 text-red-500 mr-2"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M6 18L18 6M6 6l12 12"
+                                      />
+                                    </svg>
+                                  )}
+                                  <span
+                                    className={
+                                      passwordValidation.requirements[
+                                        key as keyof typeof passwordValidation.requirements
+                                      ]
+                                        ? "text-green-700"
+                                        : "text-red-700"
+                                    }
+                                  >
+                                    {text}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                            {passwordValidation.isValid && (
+                              <div className="mt-2 flex items-center text-sm text-green-700">
+                                <svg
+                                  className="w-4 h-4 text-green-500 mr-2"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
+                                </svg>
+                                <span className="font-medium">
+                                  Password meets all requirements!
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Company Information Section */}
                   <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
                     <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -634,7 +940,7 @@ export default function CorporateAccounts() {
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               strokeWidth={2}
-                              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 0 011 1v5m-4 0h4"
                             />
                           </svg>
                           Company Name *
@@ -863,7 +1169,8 @@ export default function CorporateAccounts() {
                               d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                             />
                           </svg>
-                          Corporate reference will be generated automatically
+                          Please create a unique corporate reference and secure
+                          password
                         </span>
                       )}
                     </div>
