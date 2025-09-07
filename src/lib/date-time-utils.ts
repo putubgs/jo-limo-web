@@ -88,20 +88,33 @@ export const getClosestTime = (currentTime: string, timeOptions: string[]) => {
 };
 
 export const getMonthData = (date: Date) => {
-  // Create dates in Jordan timezone to avoid offset issues
-  const jordanDate = new Date(
-    date.toLocaleString("en-US", { timeZone: "Asia/Amman" })
-  );
-  const year = jordanDate.getFullYear();
-  const month = jordanDate.getMonth();
-  const firstDay = new Date(year, month, 1);
-  const startDate = new Date(firstDay);
-  startDate.setDate(startDate.getDate() - firstDay.getDay());
+  const year = date.getFullYear();
+  const month = date.getMonth();
 
+  // Get the first day of the month
+  const firstDayOfMonth = new Date(year, month, 1);
+
+  // Get the last day of the month
+  const lastDayOfMonth = new Date(year, month + 1, 0);
+
+  // Get the day of the week for the first day (0 = Sunday, 1 = Monday, etc.)
+  const firstDayWeekday = firstDayOfMonth.getDay();
+
+  // Calculate the start date (may be from previous month)
+  const startDate = new Date(year, month, 1 - firstDayWeekday);
+
+  // Generate calendar days
   const days = [];
   const current = new Date(startDate);
 
-  for (let i = 0; i < 42; i++) {
+  // Generate enough days to fill the calendar grid (6 weeks = 42 days)
+  // But we'll be smarter about when to show 5 vs 6 weeks
+  const weeksNeeded = Math.ceil(
+    (firstDayWeekday + lastDayOfMonth.getDate()) / 7
+  );
+  const totalDays = weeksNeeded * 7;
+
+  for (let i = 0; i < totalDays; i++) {
     days.push(new Date(current));
     current.setDate(current.getDate() + 1);
   }

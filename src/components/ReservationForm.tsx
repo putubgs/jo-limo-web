@@ -98,7 +98,11 @@ export default function ReservationForm({
     return closestTime;
   });
   const [showCalendar, setShowCalendar] = useState(false);
-  const [calendarDate, setCalendarDate] = useState(() => getJordanDate());
+  const [calendarDate, setCalendarDate] = useState(() => {
+    const jordanNow = getJordanDate();
+    // Set to first day of current month to avoid date issues
+    return new Date(jordanNow.getFullYear(), jordanNow.getMonth(), 1);
+  });
   const [calendarPosition, setCalendarPosition] = useState({
     top: 0,
     left: 0,
@@ -245,6 +249,47 @@ export default function ReservationForm({
       setShowCalendar(false);
       return;
     }
+
+    // Set calendar to show the month of the selected date, or current month if no date selected
+    let targetDate;
+    if (selectedDate && selectedDate.trim() !== "") {
+      // Parse the selected date and navigate to that month
+      // selectedDate format is like "Mon, Oct 28, 2024" from formatDate()
+      const parsedSelectedDate = new Date(selectedDate);
+      if (!isNaN(parsedSelectedDate.getTime())) {
+        // Successfully parsed, navigate to that month
+        targetDate = new Date(
+          parsedSelectedDate.getFullYear(),
+          parsedSelectedDate.getMonth(),
+          1
+        );
+      } else {
+        // Fallback to current month if parsing fails
+        console.warn("Failed to parse selected date:", selectedDate);
+        const currentDate = getJordanDate();
+        targetDate = new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          1
+        );
+      }
+    } else {
+      // No date selected, use current month
+      const currentDate = getJordanDate();
+      targetDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        1
+      );
+    }
+
+    console.log("📅 Calendar opening - navigating to:", {
+      selectedDate,
+      targetDate,
+      isSelectedDateValid:
+        selectedDate && !isNaN(new Date(selectedDate).getTime()),
+    });
+    setCalendarDate(targetDate);
 
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
 
@@ -606,7 +651,7 @@ export default function ReservationForm({
                 <div
                   className={`calendar-container ${
                     variant === "popup" ? "fixed" : "absolute"
-                  } bg-white border-2 border-black rounded-lg shadow-xl z-[90] p-6 w-90 ${
+                  } bg-white border-2 border-black rounded-lg shadow-xl z-[90] p-6 w-80 ${
                     variant === "page" ? "mt-1" : "ml-[-10px]"
                   }`}
                   style={
@@ -623,15 +668,37 @@ export default function ReservationForm({
                 >
                   <div className="flex items-center justify-between mb-4">
                     <button
-                      onClick={() =>
-                        setCalendarDate(
+                      onClick={() => {
+                        setCalendarDate((prevDate) => {
+                          const newDate = new Date(
+                            prevDate.getFullYear(),
+                            prevDate.getMonth() - 1,
+                            1
+                          );
+                          console.log("📅 Previous month clicked:", {
+                            current: prevDate,
+                            new: newDate,
+                          });
+                          return newDate;
+                        });
+                      }}
+                      disabled={(() => {
+                        const currentMonth = getJordanDate();
+                        const prevMonth = new Date(
+                          calendarDate.getFullYear(),
+                          calendarDate.getMonth() - 1,
+                          1
+                        );
+                        return (
+                          prevMonth <
                           new Date(
-                            calendarDate.getFullYear(),
-                            calendarDate.getMonth() - 1
+                            currentMonth.getFullYear(),
+                            currentMonth.getMonth(),
+                            1
                           )
-                        )
-                      }
-                      className="p-2 hover:bg-gray-100 rounded"
+                        );
+                      })()}
+                      className="p-2 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       ←
                     </button>
@@ -639,18 +706,23 @@ export default function ReservationForm({
                       {calendarDate.toLocaleDateString("en-US", {
                         month: "long",
                         year: "numeric",
-                        timeZone: "Asia/Amman",
                       })}
                     </h3>
                     <button
-                      onClick={() =>
-                        setCalendarDate(
-                          new Date(
-                            calendarDate.getFullYear(),
-                            calendarDate.getMonth() + 1
-                          )
-                        )
-                      }
+                      onClick={() => {
+                        setCalendarDate((prevDate) => {
+                          const newDate = new Date(
+                            prevDate.getFullYear(),
+                            prevDate.getMonth() + 1,
+                            1
+                          );
+                          console.log("📅 Next month clicked:", {
+                            current: prevDate,
+                            new: newDate,
+                          });
+                          return newDate;
+                        });
+                      }}
                       className="p-2 hover:bg-gray-100 rounded"
                     >
                       →
@@ -658,31 +730,81 @@ export default function ReservationForm({
                   </div>
 
                   <div className="grid grid-cols-7 gap-1 mb-2 text-sm text-gray-600">
-                    <div className="text-center p-2 font-medium">Sun</div>
-                    <div className="text-center p-2 font-medium">Mon</div>
-                    <div className="text-center p-2 font-medium">Tue</div>
-                    <div className="text-center p-2 font-medium">Wed</div>
-                    <div className="text-center p-2 font-medium">Thu</div>
-                    <div className="text-center p-2 font-medium">Fri</div>
-                    <div className="text-center p-2 font-medium">Sat</div>
+                    <div className="text-center p-2 font-medium min-h-[32px] flex items-center justify-center">
+                      Sun
+                    </div>
+                    <div className="text-center p-2 font-medium min-h-[32px] flex items-center justify-center">
+                      Mon
+                    </div>
+                    <div className="text-center p-2 font-medium min-h-[32px] flex items-center justify-center">
+                      Tue
+                    </div>
+                    <div className="text-center p-2 font-medium min-h-[32px] flex items-center justify-center">
+                      Wed
+                    </div>
+                    <div className="text-center p-2 font-medium min-h-[32px] flex items-center justify-center">
+                      Thu
+                    </div>
+                    <div className="text-center p-2 font-medium min-h-[32px] flex items-center justify-center">
+                      Fri
+                    </div>
+                    <div className="text-center p-2 font-medium min-h-[32px] flex items-center justify-center">
+                      Sat
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-7 gap-1">
-                    {getMonthData(calendarDate).days.map((day, index) => {
+                    {getMonthData(calendarDate).days.map((day) => {
                       const isCurrentMonth =
                         day.getMonth() === calendarDate.getMonth();
                       const isDisabled = isDateDisabled(day);
+                      const jordanToday = getJordanDate();
+                      const isToday =
+                        day.toDateString() === jordanToday.toDateString();
+
+                      // Check if this day is the selected date
+                      const isSelected =
+                        selectedDate &&
+                        selectedDate.trim() !== "" &&
+                        (() => {
+                          const parsedSelectedDate = new Date(selectedDate);
+                          if (isNaN(parsedSelectedDate.getTime())) return false;
+
+                          // Compare using date strings to avoid timezone issues
+                          const dayStr = `${day.getFullYear()}-${(
+                            day.getMonth() + 1
+                          )
+                            .toString()
+                            .padStart(2, "0")}-${day
+                            .getDate()
+                            .toString()
+                            .padStart(2, "0")}`;
+                          const selectedStr = `${parsedSelectedDate.getFullYear()}-${(
+                            parsedSelectedDate.getMonth() + 1
+                          )
+                            .toString()
+                            .padStart(2, "0")}-${parsedSelectedDate
+                            .getDate()
+                            .toString()
+                            .padStart(2, "0")}`;
+
+                          return dayStr === selectedStr;
+                        })();
 
                       return (
                         <button
-                          key={index}
+                          key={`${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`}
                           onClick={() => !isDisabled && handleDateSelect(day)}
                           disabled={isDisabled}
                           className={`
-                            p-2 text-sm rounded hover:bg-blue-100 transition-colors
+                            p-2 text-sm rounded transition-colors min-h-[32px] flex items-center justify-center
                             ${
                               !isCurrentMonth
                                 ? "text-gray-300"
+                                : isSelected
+                                ? "bg-green-500 text-white font-semibold"
+                                : isToday
+                                ? "bg-blue-500 text-white font-semibold"
                                 : "text-gray-900"
                             }
                             ${
@@ -691,8 +813,16 @@ export default function ReservationForm({
                                 : "cursor-pointer"
                             }
                             ${
-                              !isDisabled && isCurrentMonth
+                              !isDisabled &&
+                              isCurrentMonth &&
+                              !isToday &&
+                              !isSelected
                                 ? "hover:bg-blue-50"
+                                : ""
+                            }
+                            ${
+                              !isDisabled && !isCurrentMonth
+                                ? "hover:bg-gray-100"
                                 : ""
                             }
                           `}
