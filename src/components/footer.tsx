@@ -38,15 +38,15 @@ export default function Footer() {
   return (
     <div
       className="relative bg-[#FCFAF9]
-        flex flex-col items-start px-[100px] justify-center
-        pt-[100px] pb-10
+        flex flex-col items-start px-4 md:px-[100px] justify-center
+        pt-8 md:pt-[100px] pb-10
         bg-[url('/images/black-line-footer.png')] bg-contain bg-no-repeat
-        w-full h-[620px] border-t gap-20"
+        w-full min-h-[500px] md:h-[620px] border-t gap-8 md:gap-20"
     >
-      <div className="flex items-start justify-center gap-[200px] relative z-20 mx-auto">
-        <div className="flex flex-col gap-2 items-start w-[350px]">
+      <div className="flex flex-col md:flex-row items-start md:justify-center gap-8 md:gap-[200px] relative z-20 mx-auto">
+        <div className="flex flex-col gap-2 items-start w-full md:w-[350px]">
           <div className="flex gap-4 items-center">
-            <p className="text-[18px]">DOWNLOAD THE APP</p>
+            <p className="text-base md:text-[18px]">DOWNLOAD THE APP</p>
             <Image
               alt="Jo Limo Logo"
               src="/images/jolimo-app-logo.png"
@@ -55,13 +55,13 @@ export default function Footer() {
               className="rounded-md"
             />
           </div>
-          <p className="text-[14px]">
+          <p className="text-sm md:text-[14px]">
             Experience refined travel. <br />
             Available for iOS and Android.
           </p>
         </div>
 
-        <div className="flex text-[18px] gap-20 w-full">
+        <div className="flex flex-col md:flex-row text-base md:text-[18px] gap-8 md:gap-20 w-full">
           {/* Services Column */}
           <div className="flex flex-col gap-4">
             {servicesLinks.map(({ label, href }) => (
