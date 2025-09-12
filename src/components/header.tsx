@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
 import ReservationForm from "@/components/ReservationForm";
 
 export default function Header() {
@@ -12,17 +14,19 @@ export default function Header() {
 
   const [servicesOpen, setServicesOpen] = useState(false);
   const [reservationOpen, setReservationOpen] = useState(pathname === "/");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Close dropdowns on scroll
   useEffect(() => {
-    if (!reservationOpen && !servicesOpen) return;
+    if (!reservationOpen && !servicesOpen && !mobileMenuOpen) return;
     const handleScroll = () => {
       setReservationOpen(false);
       setServicesOpen(false);
+      setMobileMenuOpen(false);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [reservationOpen, servicesOpen]);
+  }, [reservationOpen, servicesOpen, mobileMenuOpen]);
 
   // Close reservation dropdown on click outside
   useEffect(() => {
@@ -50,6 +54,22 @@ export default function Header() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [reservationOpen]);
+
+  // Close mobile menu on click outside
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (
+        !target.closest(".mobile-menu") &&
+        !target.closest(".mobile-menu-button")
+      ) {
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [mobileMenuOpen]);
 
   const servicesList = [
     { label: "EXECUTIVE CLASS", slug: "executive" },
@@ -82,14 +102,25 @@ export default function Header() {
     if (item === "SERVICES") {
       setServicesOpen((o) => !o);
       setReservationOpen(false);
+      setMobileMenuOpen(false);
     } else if (item === "RESERVE NOW") {
       setServicesOpen(false);
       setReservationOpen((o) => !o);
+      setMobileMenuOpen(false);
     } else {
       setServicesOpen(false);
       setReservationOpen(false);
+      setMobileMenuOpen(false);
     }
   }
+
+  // Mobile menu handler - close services submenu when opening mobile menu
+  const handleMobileMenuToggle = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+    // Always close services submenu when toggling mobile menu
+    setServicesOpen(false);
+    setReservationOpen(false);
+  };
 
   return (
     <header className="relative z-50">
@@ -98,11 +129,12 @@ export default function Header() {
         className={[
           "relative flex flex-col items-center justify-center",
           "bg-[url('/images/black-line-header.png')] bg-cover bg-top",
-          "w-full h-52",
+          "w-full h-20 md:h-52", // Shorter height on mobile
           showBorder ? "border-b" : "",
         ].join(" ")}
       >
-        <div className="relative z-20 flex flex-col items-center gap-10">
+        {/* Desktop Layout */}
+        <div className="relative z-20 hidden md:flex flex-col items-center gap-10">
           <Link href={"/"}>
             <Image
               alt="Jo Limo Logo"
@@ -207,6 +239,31 @@ export default function Header() {
           </nav>
         </div>
 
+        {/* Mobile Layout */}
+        <div className="relative z-20 flex md:hidden items-center justify-between w-full px-6">
+          <Link href={"/"}>
+            <Image
+              alt="Jo Limo Logo"
+              src="/images/jolimo-logo.png"
+              width={60}
+              height={60}
+            />
+          </Link>
+
+          {/* Hamburger Menu Button */}
+          <button
+            onClick={handleMobileMenuToggle}
+            className="mobile-menu-button p-2 text-black hover:text-gray-600 transition-colors"
+            aria-label="Toggle mobile menu"
+          >
+            {mobileMenuOpen ? (
+              <CloseIcon className="w-8 h-8" />
+            ) : (
+              <MenuIcon className="w-8 h-8" />
+            )}
+          </button>
+        </div>
+
         <div
           className="absolute bottom-0 left-0 w-full h-[180px]
              bg-gradient-to-t from-white to-transparent
@@ -292,6 +349,142 @@ export default function Header() {
               </p>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* ——— Mobile Menu Backdrop ——— */}
+      {mobileMenuOpen && (
+        <div
+          onClick={() => setMobileMenuOpen(false)}
+          className="
+            md:hidden absolute top-full left-0 right-0 bg-black bg-opacity-50
+            transition-opacity duration-300
+            z-40
+          "
+          style={{
+            height: "100vh",
+          }}
+        />
+      )}
+
+      {/* ——— Mobile Menu Dropdown ——— */}
+      <div
+        className={`
+          mobile-menu md:hidden absolute top-full left-0 w-full bg-white shadow-lg border-t
+          overflow-hidden z-50
+          transition-all duration-300 ease-in-out
+          ${
+            mobileMenuOpen
+              ? "max-h-screen opacity-100"
+              : "max-h-0 opacity-0 pointer-events-none"
+          }
+        `}
+      >
+        <div className="py-4">
+          {/* Mobile Navigation Items */}
+          {navItems
+            .filter((item) => item !== "RESERVE NOW") // Remove RESERVE NOW from mobile menu
+            .map((item) => {
+              if (item === "MEMBERSHIP") {
+                return (
+                  <Link
+                    key={item}
+                    href="/membership"
+                    className="block px-6 py-3 text-lg font-medium text-gray-800 hover:bg-gray-50 border-b border-gray-100"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setServicesOpen(false);
+                      setReservationOpen(false);
+                    }}
+                  >
+                    {item}
+                  </Link>
+                );
+              }
+              if (item === "CITIES & CLASSES") {
+                return (
+                  <Link
+                    key={item}
+                    href="/cities-and-classes"
+                    className="block px-6 py-3 text-lg font-medium text-gray-800 hover:bg-gray-50 border-b border-gray-100"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setServicesOpen(false);
+                      setReservationOpen(false);
+                    }}
+                  >
+                    {item}
+                  </Link>
+                );
+              }
+              if (item === "CORPORATE MOBILITY") {
+                return (
+                  <Link
+                    key={item}
+                    href="/corporate-mobility/login"
+                    className="block px-6 py-3 text-lg font-medium text-gray-800 hover:bg-gray-50 border-b border-gray-100"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setServicesOpen(false);
+                      setReservationOpen(false);
+                    }}
+                  >
+                    {item}
+                  </Link>
+                );
+              }
+              if (item === "THE GLOBAL LIMO") {
+                return (
+                  <Link
+                    key={item}
+                    href="/the-global-limo"
+                    className="block px-6 py-3 text-lg font-medium text-gray-800 hover:bg-gray-50 border-b border-gray-100"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setServicesOpen(false);
+                      setReservationOpen(false);
+                    }}
+                  >
+                    {item}
+                  </Link>
+                );
+              }
+              if (item === "SERVICES") {
+                return (
+                  <div key={item}>
+                    <button
+                      onClick={() => setServicesOpen(!servicesOpen)}
+                      className="w-full text-left px-6 py-3 text-lg font-medium text-gray-800 hover:bg-gray-50 border-b border-gray-100 flex items-center justify-between"
+                    >
+                      {item}
+                      <span className="text-sm">
+                        {servicesOpen ? "−" : "+"}
+                      </span>
+                    </button>
+                    {/* Mobile Services Submenu */}
+                    {servicesOpen && (
+                      <div className="bg-gray-50">
+                        {servicesList.map(({ label, slug }) => (
+                          <Link
+                            key={slug}
+                            href={`/services/${slug}`}
+                            className="block px-8 py-2 text-base text-gray-700 hover:bg-gray-100 border-b border-gray-200"
+                            onClick={() => {
+                              setMobileMenuOpen(false);
+                              setServicesOpen(false);
+                              setReservationOpen(false);
+                            }}
+                          >
+                            {label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+              return null;
+            })}
         </div>
       </div>
     </header>

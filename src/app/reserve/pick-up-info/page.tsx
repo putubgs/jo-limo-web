@@ -365,7 +365,7 @@ function PickUpInfoContent() {
       <div className="min-h-screen bg-white flex flex-col my-[50px]">
         <StepIndicator />
 
-        <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="max-w-[584px] mx-auto px-6 py-8">
           <div className="bg-[#F0F0F0] rounded-lg shadow-sm p-6">
             <div className="flex justify-start items-center">
               <div className="text-left">
@@ -395,7 +395,7 @@ function PickUpInfoContent() {
         </div>
 
         {/* Main content */}
-        <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="max-w-[584px] mx-auto px-6 py-8">
           {/* Passenger Information Section */}
           <h2 className="text-2xl font-semibold text-black mb-6">
             Passenger information
