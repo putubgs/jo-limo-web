@@ -132,7 +132,7 @@ export default function SimpleHyperPayForm({
 
   if (!checkoutId) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 md:w-[600px] w-[100% mx-auto">
+      <div className="bg-white rounded-xl p-4 sm:p-6 md:w-[600px] w-[100%] mx-auto">
         <div className="text-center">
           <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">
             Please Wait

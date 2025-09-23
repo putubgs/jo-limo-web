@@ -1,261 +1,284 @@
+/* app/reserve/payment-and-checkout/page.tsx */
 "use client";
 
-import { useEffect, Suspense, useMemo } from "react";
+import {
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+  Suspense,
+} from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import SimpleHyperPayForm from "@/components/SimpleHyperPayForm";
-import { useState } from "react";
 import ProcessingDialog from "@/components/dialogs/ProcessingDialog";
 import SuccessDialog from "@/components/dialogs/SuccessDialog";
+import FailureDialog from "@/components/dialogs/FailureDialog";
 import { useReservationStore } from "@/lib/reservation-store";
 import { calculateDistanceAndTime } from "@/lib/distance-calculator";
-import { useSearchParams } from "next/navigation";
 import type { HyperPayResult } from "@/types/hyperpay";
 
-function PaymentAndCheckoutContent() {
-  const { reservationData } = useReservationStore();
-  const searchParams = useSearchParams();
+/* ------------------------------------------------------------------ */
+/*  Dialog reducer                                                     */
+/* ------------------------------------------------------------------ */
 
-  // State declarations
-  const [processingOpen, setProcessingOpen] = useState(false);
-  const [successOpen, setSuccessOpen] = useState(false);
-  const [paymentResult, setPaymentResult] = useState<HyperPayResult | null>(
-    null
-  );
-  const [hasCheckedPayment, setHasCheckedPayment] = useState(false);
+type DialogAction =
+  | { type: "PROCESSING" }
+  | { type: "SUCCESS"; payload: HyperPayResult }
+  | { type: "FAILURE"; payload: string }
+  | { type: "RESET" };
+
+interface DialogState {
+  kind: "NONE" | "PROCESSING" | "SUCCESS" | "FAILURE";
+  result?: HyperPayResult;
+  message?: string;
+}
+
+const reducer = (state: DialogState, action: DialogAction): DialogState => {
+  switch (action.type) {
+    case "PROCESSING":
+      return { kind: "PROCESSING" };
+    case "SUCCESS":
+      return { kind: "SUCCESS", result: action.payload };
+    case "FAILURE":
+      return { kind: "FAILURE", message: action.payload };
+    case "RESET":
+      return { kind: "NONE" };
+    default:
+      return state;
+  }
+};
+
+/* ------------------------------------------------------------------ */
+/*  Page component                                                     */
+/* ------------------------------------------------------------------ */
+
+function PaymentAndCheckoutContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { reservationData } = useReservationStore();
+
+  /* ---------------------------------------------------------------- */
+  /*  Dialog state (useReducer)                                       */
+  /* ---------------------------------------------------------------- */
+  const [dialog, dispatch] = useReducer(reducer, { kind: "NONE" });
+
+  /* When we’ve already shown SUCCESS or FAILURE, ignore further      */
+  const hasSettledRef = useRef(false);
+
+  /* ---------------------------------------------------------------- */
+  /*  Distance info                                                   */
+  /* ---------------------------------------------------------------- */
   const [distanceInfo, setDistanceInfo] = useState<{
     distance: string;
     duration: string;
   } | null>(null);
 
-  // Use data from Zustand store instead of URL params
   const bookingData = useMemo(
-    () => ({
-      ...reservationData,
-      service: reservationData.selectedClass || "",
-    }),
+    () => ({ ...reservationData, service: reservationData.selectedClass }),
     [reservationData]
   );
 
-  useEffect(() => {
-    console.log("Booking data:", bookingData);
-  }, [bookingData]);
-
-  // Handle payment result when redirected back from HyperPay
+  /* ---------------------------------------------------------------- */
+  /*  Payment-status check (after redirect)                           */
+  /* ---------------------------------------------------------------- */
   useEffect(() => {
     const resourcePath = searchParams.get("resourcePath");
     const paymentId = searchParams.get("id");
 
-    if (resourcePath && paymentId && !hasCheckedPayment) {
-      // Prevent duplicate API calls
-      setHasCheckedPayment(true);
+    if (!resourcePath || !paymentId || hasSettledRef.current) return;
 
-      // Show processing dialog while checking payment status
-      setProcessingOpen(true);
+    dispatch({ type: "PROCESSING" });
 
-      // Fetch payment status
-      fetch(
-        `/api/checkout-status?resourcePath=${encodeURIComponent(resourcePath)}`
-      )
-        .then((r) => r.json())
-        .then((data) => {
-          console.log("🔍 PAYMENT STATUS API RESULT:");
-          console.log("📊 Status Code:", data.result?.code);
-          console.log("📝 Description:", data.result?.description);
-          console.log("💰 Amount:", data.amount);
-          console.log("💳 Currency:", data.currency);
-          console.log("🆔 Transaction ID:", data.id);
-          console.log("📄 Full Response:", JSON.stringify(data, null, 2));
+    fetch(
+      `/api/checkout-status?resourcePath=${encodeURIComponent(resourcePath)}`
+    )
+      .then((r) => r.json())
+      .then((data: HyperPayResult) => {
+        if (hasSettledRef.current) return; // already handled
 
-          // Check if payment was successful
-          const successCodes = [
-            "000.000.000",
-            "000.000.100",
-            "000.100.110",
-            "000.100.111",
-            "000.100.112",
-          ];
+        const okCodes = [
+          "000.000.000",
+          "000.000.100",
+          "000.100.110",
+          "000.100.111",
+          "000.100.112",
+        ];
+        const success = okCodes.includes(data.result.code);
 
-          const isSuccess = successCodes.includes(data.result?.code);
-
-          console.log("✅ Payment Success Check:", {
-            resultCode: data.result?.code,
-            isSuccess,
-            successCodes,
-          });
-
-          // Hide processing dialog and show success dialog
-          setProcessingOpen(false);
-
-          if (isSuccess) {
-            console.log("🎉 PAYMENT SUCCESSFUL!");
-            setPaymentResult(data);
-            // Show success dialog
-            setSuccessOpen(true);
-          } else {
-            console.log("❌ PAYMENT FAILED!");
-            console.error(
-              "Payment failed:",
-              data.result?.description || "Payment failed"
-            );
-          }
-        })
-        .catch((error) => {
-          console.error("❌ Error fetching payment status:", error);
-          setProcessingOpen(false);
+        if (success) {
+          hasSettledRef.current = true;
+          dispatch({ type: "SUCCESS", payload: data });
+        } else {
+          hasSettledRef.current = true;
+          dispatch({ type: "FAILURE", payload: data.result.description });
+        }
+      })
+      .catch(() => {
+        if (hasSettledRef.current) return;
+        hasSettledRef.current = true;
+        dispatch({
+          type: "FAILURE",
+          payload: "Network error. Please try again.",
         });
-    }
-  }, [searchParams, hasCheckedPayment]);
+      });
+  }, [searchParams]);
 
-  // Calculate distance when pickup and dropoff are available
+  /* ---------------------------------------------------------------- */
+  /*  Distance calculation                                            */
+  /* ---------------------------------------------------------------- */
   useEffect(() => {
-    if (bookingData.pickup && bookingData.dropoff) {
-      calculateDistanceAndTime(bookingData.pickup, bookingData.dropoff)
-        .then((result) => {
-          if (result) {
-            setDistanceInfo({
-              distance: result.distance,
-              duration: result.duration,
-            });
-          }
+    if (!bookingData.pickup || !bookingData.dropoff) return;
+    calculateDistanceAndTime(bookingData.pickup, bookingData.dropoff)
+      .then((r) =>
+        setDistanceInfo({
+          distance: r?.distance || "",
+          duration: r?.duration || "",
         })
-        .catch((error) => {
-          console.error("Failed to calculate distance:", error);
-        });
-    }
+      )
+      .catch((err) => console.error("distance-calc", err));
   }, [bookingData.pickup, bookingData.dropoff]);
 
+  /* ---------------------------------------------------------------- */
+  /*  Handlers                                                        */
+  /* ---------------------------------------------------------------- */
   const handleCash = () => {
-    setProcessingOpen(true);
+    dispatch({ type: "PROCESSING" });
     setTimeout(() => {
-      setProcessingOpen(false);
-      setSuccessOpen(true);
-    }, 3000);
+      if (hasSettledRef.current) return;
+      hasSettledRef.current = true;
+      dispatch({
+        type: "SUCCESS",
+        payload: {
+          id: `CASH-${Date.now()}`,
+          amount: reservationData.selectedClassPrice || "0",
+          currency: "SAR",
+          result: { code: "000.000.000", description: "Cash accepted" },
+        } as HyperPayResult,
+      });
+    }, 2000);
   };
 
-  const handlePaymentError = (error: string) => {
-    console.error("Payment error:", error);
+  const resetAndGo = (path: string) => {
+    hasSettledRef.current = false;
+    dispatch({ type: "RESET" });
+    router.push(path);
   };
 
-  // Step indicator component
+  /* ---------------------------------------------------------------- */
+  /*  JSX                                                             */
+  /* ---------------------------------------------------------------- */
+
   const StepIndicator = () => (
     <div className="relative w-full max-w-[550px] mx-auto py-8">
-      {/* Background line - absolute positioned behind */}
-      <div className="absolute top-10 left-9 right-8 h-0.5 bg-gray-300 transform -translate-y-1/2 w-[440px]"></div>
-
-      {/* Flex container for bullets and text - in front */}
+      <div className="absolute top-10 left-9 right-8 h-0.5 bg-gray-300 -translate-y-1/2 w-[440px]" />
       <div className="relative flex justify-between items-center">
-        {/* Step 1 - Completed */}
-        <div className="flex flex-col items-center">
-          <div className="w-4 h-4 rounded-full bg-gray-400 mb-2"></div>
-          <span className="text-sm text-gray-500 p-1">Service Class</span>
-        </div>
-
-        {/* Step 2 - Completed */}
-        <div className="flex flex-col items-center">
-          <div className="w-4 h-4 rounded-full bg-gray-400 mb-2"></div>
-          <span className="text-sm text-gray-500 p-1">Pick-up Info</span>
-        </div>
-
-        {/* Step 3 - Current */}
-        <div className="flex flex-col items-center">
-          <div className="w-4 h-4 rounded-full bg-black mb-2"></div>
-          <span className="text-sm font-bold text-black bg-[#F0F0F0] rounded-full p-1 px-2">
-            Payment & Checkout
-          </span>
-        </div>
+        {["Service Class", "Pick-up Info", "Payment & Checkout"].map(
+          (label, i) => (
+            <div key={label} className="flex flex-col items-center">
+              <div
+                className={`w-4 h-4 rounded-full mb-2 ${
+                  i === 2 ? "bg-black" : "bg-gray-400"
+                }`}
+              />
+              <span
+                className={`text-sm ${
+                  i === 2
+                    ? "font-bold text-black bg-[#F0F0F0] rounded-full p-1 px-2"
+                    : "text-gray-500 p-1"
+                }`}
+              >
+                {label}
+              </span>
+            </div>
+          )
+        )}
       </div>
     </div>
   );
 
-  const formatDisplayDate = (dateStr: string, timeStr: string) => {
-    if (!dateStr || !timeStr) {
-      return "Please select date and time";
-    }
-    return `${dateStr} at ${timeStr} (GMT +3)`;
-  };
+  const formatDate = (d: string, t: string) =>
+    d && t ? `${d} at ${t} (GMT +3)` : "Please select date and time";
 
-  const getDisplayLocations = () => {
-    if (bookingData.type === "by-hour") {
-      return {
-        from: bookingData.pickup || "Please select location",
-        to: "Round trip from starting location",
-      };
-    } else {
-      return {
-        from: bookingData.pickup || "Please select pickup location",
-        to: bookingData.dropoff || "Please select dropoff location",
-      };
-    }
-  };
-
-  const locations = getDisplayLocations();
+  const loc =
+    bookingData.type === "by-hour"
+      ? {
+          from: bookingData.pickup || "Please select location",
+          to: "Round trip from starting location",
+        }
+      : {
+          from: bookingData.pickup || "Please select pickup location",
+          to: bookingData.dropoff || "Please select drop-off location",
+        };
 
   return (
     <>
       <Header />
+
       <div className="min-h-screen bg-white flex flex-col my-[50px]">
-        {/* Header */}
         <StepIndicator />
+
+        {/* Trip card -------------------------------------------------- */}
         <div className="max-w-4xl mx-auto px-6 py-8">
           <div className="bg-[#F0F0F0] rounded-lg shadow-sm p-6">
-            <div className="flex justify-start items-center">
-              <div className="text-left">
-                <p className="font-bold text-black text-lg">
-                  {formatDisplayDate(bookingData.date, bookingData.time)}
-                </p>
-                <div className="flex items-center mt-2">
-                  <span className="text-base" style={{ color: "#A4A4A4" }}>
-                    {locations.from}
-                  </span>
-                  <span className="mx-4 text-2xl text-gray-600">→</span>
-                  <span className="text-base" style={{ color: "#A4A4A4" }}>
-                    {locations.to}
-                  </span>
-                </div>
-                {distanceInfo && (
-                  <div className="mt-3">
-                    <p className="text-sm" style={{ color: "#A4A4A4" }}>
-                      An estimated travel time of {distanceInfo.duration} to the
-                      destination • {distanceInfo.distance}
-                    </p>
-                  </div>
-                )}
-              </div>
+            <p className="font-bold text-lg">
+              {formatDate(bookingData.date, bookingData.time)}
+            </p>
+            <div className="flex items-center mt-2 text-base text-[#A4A4A4]">
+              <span>{loc.from}</span>
+              <span className="mx-4 text-2xl text-gray-600">→</span>
+              <span>{loc.to}</span>
             </div>
+            {distanceInfo && (
+              <p className="mt-3 text-sm text-[#A4A4A4]">
+                Approximately {distanceInfo.duration} • {distanceInfo.distance}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Main content */}
-        <div className="flex flex-col items-center justify-center max-w-4xl mx-auto gap-4 pt-8">
-          <div className="flex items-center gap-4 w-full px-6">
+        {/* Payment options + form ------------------------------------ */}
+        <div className="flex flex-col items-center max-w-4xl mx-auto gap-4 pt-8">
+          <div className="flex gap-4 w-full px-6">
             <button className="bg-[#B2B2B2] text-white px-4 py-3 rounded-lg w-full">
               Credit card
             </button>
             <button
-              className="bg-white border border-black font-bold text-black px-4 py-3 rounded-lg w-full"
+              className="bg-white border border-black font-bold px-4 py-3 rounded-lg w-full"
               onClick={handleCash}
             >
               Cash
             </button>
           </div>
-          {!processingOpen && (
+
+          {dialog.kind === "NONE" && (
             <div className="w-full px-6">
               <SimpleHyperPayForm
                 amount={reservationData.selectedClassPrice || "0"}
-                onPaymentError={handlePaymentError}
+                onPaymentError={(e) => console.log("HyperPay error", e)}
               />
             </div>
           )}
         </div>
 
-        <ProcessingDialog open={processingOpen} />
+        {/* Dialogs ---------------------------------------------------- */}
+        <ProcessingDialog open={dialog.kind === "PROCESSING"} />
+
         <SuccessDialog
-          open={successOpen}
-          onClose={() => setSuccessOpen(false)}
-          paymentResult={paymentResult}
+          open={dialog.kind === "SUCCESS"}
+          onClose={() => resetAndGo("/")}
+          paymentResult={dialog.result}
+        />
+
+        <FailureDialog
+          open={dialog.kind === "FAILURE"}
+          onClose={() => resetAndGo("/reserve/pick-up-info")}
+          errorMessage={dialog.message}
         />
       </div>
+
       <Footer />
     </>
   );
