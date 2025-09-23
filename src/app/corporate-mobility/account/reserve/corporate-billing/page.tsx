@@ -17,7 +17,7 @@ function PaymentAndCheckoutContent() {
       ...reservationData,
       service: reservationData.selectedClass || "",
     }),
-    [reservationData, reservationData.selectedClass]
+    [reservationData]
   );
 
   useEffect(() => {

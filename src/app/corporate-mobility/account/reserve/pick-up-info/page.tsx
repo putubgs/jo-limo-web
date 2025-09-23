@@ -2,12 +2,74 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, Suspense, useState, useRef } from "react";
-import { useReservationStore } from "@/lib/reservation-store";
+import { useReservationStore, BillingData } from "@/lib/reservation-store";
 import { calculateDistanceAndTime } from "@/lib/distance-calculator";
+
+// Common ISO-3166 country codes for dropdown
+const COUNTRY_CODES = [
+  { code: "JO", name: "Jordan" },
+  { code: "US", name: "United States" },
+  { code: "GB", name: "United Kingdom" },
+  { code: "DE", name: "Germany" },
+  { code: "FR", name: "France" },
+  { code: "IN", name: "India" },
+  { code: "AE", name: "United Arab Emirates" },
+  { code: "SA", name: "Saudi Arabia" },
+  { code: "KW", name: "Kuwait" },
+  { code: "QA", name: "Qatar" },
+  { code: "BH", name: "Bahrain" },
+  { code: "OM", name: "Oman" },
+  { code: "EG", name: "Egypt" },
+  { code: "CA", name: "Canada" },
+  { code: "AU", name: "Australia" },
+  { code: "JP", name: "Japan" },
+  { code: "CN", name: "China" },
+  { code: "BR", name: "Brazil" },
+  { code: "MX", name: "Mexico" },
+  { code: "IT", name: "Italy" },
+  { code: "ES", name: "Spain" },
+  { code: "NL", name: "Netherlands" },
+  { code: "BE", name: "Belgium" },
+  { code: "CH", name: "Switzerland" },
+  { code: "AT", name: "Austria" },
+  { code: "SE", name: "Sweden" },
+  { code: "NO", name: "Norway" },
+  { code: "DK", name: "Denmark" },
+  { code: "FI", name: "Finland" },
+  { code: "IE", name: "Ireland" },
+  { code: "PT", name: "Portugal" },
+  { code: "GR", name: "Greece" },
+  { code: "TR", name: "Turkey" },
+  { code: "PL", name: "Poland" },
+  { code: "CZ", name: "Czech Republic" },
+  { code: "HU", name: "Hungary" },
+  { code: "RO", name: "Romania" },
+  { code: "BG", name: "Bulgaria" },
+  { code: "HR", name: "Croatia" },
+  { code: "SI", name: "Slovenia" },
+  { code: "SK", name: "Slovakia" },
+  { code: "LT", name: "Lithuania" },
+  { code: "LV", name: "Latvia" },
+  { code: "EE", name: "Estonia" },
+  { code: "CY", name: "Cyprus" },
+  { code: "LU", name: "Luxembourg" },
+  { code: "MT", name: "Malta" },
+  { code: "IS", name: "Iceland" },
+  { code: "LI", name: "Liechtenstein" },
+  { code: "MC", name: "Monaco" },
+  { code: "SM", name: "San Marino" },
+  { code: "VA", name: "Vatican City" },
+  { code: "AD", name: "Andorra" },
+];
 
 function PickUpInfoContent() {
   const router = useRouter();
-  const { reservationData, setReservationData } = useReservationStore();
+  const {
+    reservationData,
+    setReservationData,
+    setBillingData,
+    getBillingData,
+  } = useReservationStore();
 
   // Use data from Zustand store instead of URL params
   const initialBooking = reservationData;
@@ -15,6 +77,23 @@ function PickUpInfoContent() {
   // original locations coming from store (Reserve Now popup)
   const urlPickup = initialBooking.pickup;
   const urlDropoff = initialBooking.dropoff;
+
+  // Helper function to check if a location is an airport
+  const isAirportLocation = (location: string): boolean => {
+    const lowerLocation = location.toLowerCase();
+    return (
+      lowerLocation.includes("queen alia international airport") ||
+      lowerLocation.includes("king hussein international airport")
+    );
+  };
+
+  // Check if either pickup or dropoff is an airport
+  const isPickupAirport = isAirportLocation(urlPickup || "");
+  const isDropoffAirport = isAirportLocation(urlDropoff || "");
+  const hasAirportLocation = isPickupAirport || isDropoffAirport;
+
+  // Show pickup sign only when pickup location is an airport
+  const showPickupSign = isPickupAirport;
 
   const [distanceInfo, setDistanceInfo] = useState<{
     distance: string;
@@ -30,6 +109,30 @@ function PickUpInfoContent() {
   const [phoneSearchTerm, setPhoneSearchTerm] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Billing form state
+  const [billingForm, setBillingForm] = useState<BillingData>(() => {
+    const existingBilling = getBillingData();
+    return (
+      existingBilling || {
+        customerEmail: "",
+        customerGivenName: "",
+        customerSurname: "",
+        billingStreet1: "",
+        billingCity: "",
+        billingState: "",
+        billingCountry: "JO", // Default to Jordan
+        billingPostcode: "",
+      }
+    );
+  });
+
+  const handleBillingChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setBillingForm((prev) => ({ ...prev, [name]: value }));
+  };
 
   // Complete country codes data
   const countryCodes = [
@@ -393,20 +496,25 @@ function PickUpInfoContent() {
 
         {/* Main content */}
         <div className="max-w-4xl mx-auto px-6 py-8">
-          {/* Passenger Information Section */}
+          {/* Passenger & Billing Information Section */}
           <h2 className="text-2xl font-semibold text-black mb-6">
-            Passenger information
+            Passenger & Billing Information
           </h2>
           <div className="bg-[#F5F5F5] rounded-lg shadow-sm p-10 mb-8">
-            <div className="grid grid-cols-2 gap-3 mb-3">
+            {/* Personal Information */}
+            <div className="grid grid-cols-2 gap-3 mb-6">
               <div>
                 <label className="block text-gray-700 text-sm mb-2">
                   First Name :
                 </label>
                 <input
                   type="text"
-                  placeholder="First name :"
+                  name="customerGivenName"
+                  value={billingForm.customerGivenName}
+                  onChange={handleBillingChange}
+                  placeholder="First name"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
                 />
               </div>
               <div>
@@ -415,21 +523,30 @@ function PickUpInfoContent() {
                 </label>
                 <input
                   type="text"
-                  placeholder="Last name :"
+                  name="customerSurname"
+                  value={billingForm.customerSurname}
+                  onChange={handleBillingChange}
+                  placeholder="Last name"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            {/* Contact Information */}
+            <div className="grid grid-cols-2 gap-3 mb-6">
               <div>
                 <label className="block text-gray-700 text-sm mb-2">
                   Email :
                 </label>
                 <input
                   type="email"
-                  placeholder="Email :"
+                  name="customerEmail"
+                  value={billingForm.customerEmail}
+                  onChange={handleBillingChange}
+                  placeholder="your.email@example.com"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
                 />
               </div>
               <div>
@@ -552,6 +669,97 @@ function PickUpInfoContent() {
                 </div>
               </div>
             </div>
+
+            {/* Billing Address */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-black mb-4">
+                Billing Address
+              </h3>
+
+              {/* Street Address - Full Width */}
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm mb-2">
+                  Street Address :
+                </label>
+                <input
+                  type="text"
+                  name="billingStreet1"
+                  value={billingForm.billingStreet1}
+                  onChange={handleBillingChange}
+                  placeholder="123 Main Street"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+
+              {/* City, State, Country, Postal Code - 2 Column Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-gray-700 text-sm mb-2">
+                    City :
+                  </label>
+                  <input
+                    type="text"
+                    name="billingCity"
+                    value={billingForm.billingCity}
+                    onChange={handleBillingChange}
+                    placeholder="Amman"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 text-sm mb-2">
+                    State/Province :
+                  </label>
+                  <input
+                    type="text"
+                    name="billingState"
+                    value={billingForm.billingState}
+                    onChange={handleBillingChange}
+                    placeholder="Amman Governorate"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 text-sm mb-2">
+                    Country :
+                  </label>
+                  <select
+                    name="billingCountry"
+                    value={billingForm.billingCountry}
+                    onChange={handleBillingChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select Country</option>
+                    {COUNTRY_CODES.map((country) => (
+                      <option key={country.code} value={country.code}>
+                        {country.code} - {country.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 text-sm mb-2">
+                    Postal Code :
+                  </label>
+                  <input
+                    type="text"
+                    name="billingPostcode"
+                    value={billingForm.billingPostcode}
+                    onChange={handleBillingChange}
+                    placeholder="11118"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Additional Information Section */}
@@ -562,44 +770,57 @@ function PickUpInfoContent() {
             {/* Notes for chauffeur */}
             <div className="">
               <label className="block text-gray-700 text-sm mb-2">
-                Additional notes for the pickup location :
+                Notes for chauffeur :
               </label>
               <textarea
-                placeholder="Include landmarks, gate numbers, or entrances to help the chauffeur find you. Avoid personal or sensitive info."
+                placeholder="Add special requests, e.g. booking itinerary, number of bags, child seats, Include landmarks, gate numbers, or entrances to help the chauffeur find you."
                 rows={6}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               />
             </div>
           </div>
-          <div className="bg-[#F5F5F5] rounded-lg shadow-sm p-8 mb-8">
-            {/* Pick up sign and Flight Number */}
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <label className="block text-gray-700 text-sm mb-2">
-                  Pick up sign :
-                </label>
-                <input
-                  type="text"
-                  placeholder="Your Name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <p className="text-[#A4A4A4] text-[12px] mt-2">
-                  Your chauffeur will display this on their pickup sign when
-                  they greet you
-                </p>
-              </div>
-              <div>
-                <label className="block text-gray-700 text-sm mb-2">
-                  Flight Number :
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. LH 202, US 2457, BA2490"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+
+          {(hasAirportLocation || showPickupSign) && (
+            <div className="bg-[#F5F5F5] rounded-lg shadow-sm p-8 mb-8">
+              {/* Pick up sign and Flight Number */}
+              <div
+                className={`grid ${
+                  showPickupSign && hasAirportLocation
+                    ? "grid-cols-2"
+                    : "grid-cols-1"
+                } gap-6`}
+              >
+                {showPickupSign && (
+                  <div>
+                    <label className="block text-gray-700 text-sm mb-2">
+                      Pick up sign :
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Your Name"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <p className="text-[#A4A4A4] text-[12px] mt-2">
+                      Your chauffeur will display this on their pickup sign when
+                      they greet you
+                    </p>
+                  </div>
+                )}
+                {hasAirportLocation && (
+                  <div>
+                    <label className="block text-gray-700 text-sm mb-2">
+                      Flight Number :
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. LH 202, US 2457, BA2490"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          )}
           <div className="bg-[#F5F5F5] rounded-lg shadow-sm p-8 mb-8">
             {/* Notes for chauffeur */}
             <div className="">
@@ -631,6 +852,9 @@ function PickUpInfoContent() {
           <div className="flex justify-center">
             <button
               onClick={() => {
+                // Save billing data to store
+                setBillingData(billingForm);
+
                 // Update store with any changes made in this step
                 setReservationData({
                   pickup: urlPickup,
@@ -641,7 +865,9 @@ function PickUpInfoContent() {
                   duration: initialBooking.duration,
                 });
                 // Navigate to payment-and-checkout (next step in the flow)
-                router.push("/corporate-mobility/account/reserve/corporate-billing");
+                router.push(
+                  "/corporate-mobility/account/reserve/corporate-billing"
+                );
               }}
               className="w-full text-center bg-[#ABABAB] text-white font-bold text-[16px] px-8 py-4 rounded-lg hover:bg-gray-800 transition-colors"
             >

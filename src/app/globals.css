@@ -10,3 +10,118 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* HyperPay form styling - aggressive override for input text color */
+.paymentWidgets input,
+.paymentWidgets input[type="text"],
+.paymentWidgets input[type="tel"],
+.paymentWidgets input[type="number"],
+.wpwl-form input,
+.wpwl-form input[type="text"],
+.wpwl-form input[type="tel"],
+.wpwl-form input[type="number"],
+.wpwl-wrapper input,
+.wpwl-wrapper input[type="text"],
+.wpwl-wrapper input[type="tel"],
+.wpwl-wrapper input[type="number"],
+.wpwl-control input,
+.wpwl-control input[type="text"],
+.wpwl-control input[type="tel"],
+.wpwl-control input[type="number"],
+form.paymentWidgets input,
+form.paymentWidgets input[type="text"],
+form.paymentWidgets input[type="tel"],
+form.paymentWidgets input[type="number"] {
+  color: #1f2937 !important;
+  -webkit-text-fill-color: #1f2937 !important;
+}
+
+.paymentWidgets input:focus,
+.paymentWidgets input[type="text"]:focus,
+.paymentWidgets input[type="tel"]:focus,
+.paymentWidgets input[type="number"]:focus,
+.wpwl-form input:focus,
+.wpwl-form input[type="text"]:focus,
+.wpwl-form input[type="tel"]:focus,
+.wpwl-form input[type="number"]:focus,
+.wpwl-wrapper input:focus,
+.wpwl-wrapper input[type="text"]:focus,
+.wpwl-wrapper input[type="tel"]:focus,
+.wpwl-wrapper input[type="number"]:focus,
+.wpwl-control input:focus,
+.wpwl-control input[type="text"]:focus,
+.wpwl-control input[type="tel"]:focus,
+.wpwl-control input[type="number"]:focus,
+form.paymentWidgets input:focus,
+form.paymentWidgets input[type="text"]:focus,
+form.paymentWidgets input[type="tel"]:focus,
+form.paymentWidgets input[type="number"]:focus {
+  color: #1f2937 !important;
+  -webkit-text-fill-color: #1f2937 !important;
+}
+
+/* Target all possible HyperPay input classes */
+.wpwl-form .wpwl-control input,
+.wpwl-form .wpwl-wrapper input,
+.wpwl-form .wpwl-control-group input,
+.wpwl-form .wpwl-group input {
+  color: #1f2937 !important;
+  -webkit-text-fill-color: #1f2937 !important;
+}
+
+/* Custom styling for HyperPay input fields */
+.wpwl-form {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid #e1e5e9;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.wpwl-form .wpwl-label {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.wpwl-form .wpwl-input {
+  background: #ffffff;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 16px;
+  color: #1f2937 !important;
+  width: 100%;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.wpwl-form .wpwl-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  outline: none;
+}
+
+.wpwl-form .wpwl-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 16px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.wpwl-form .wpwl-button:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}

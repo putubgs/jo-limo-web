@@ -6,6 +6,17 @@ import { LocationMatch, getPrimaryLocation } from "./location-filter";
 // Add this type for service classes
 export type ServiceClass = "executive" | "luxury" | "mpv" | "suv";
 
+export interface BillingData {
+  customerEmail: string;
+  customerGivenName: string;
+  customerSurname: string;
+  billingStreet1: string;
+  billingCity: string;
+  billingState: string;
+  billingCountry: string;
+  billingPostcode: string;
+}
+
 export interface ReservationData {
   type: "one-way" | "by-hour";
   pickup: string;
@@ -18,6 +29,8 @@ export interface ReservationData {
   // Add these new fields
   pickupLocation?: LocationMatch | null;
   dropoffLocation?: LocationMatch | null;
+  // Billing information for payment
+  billingData?: BillingData;
 }
 
 interface ReservationStore {
@@ -28,6 +41,8 @@ interface ReservationStore {
   setSelectedServiceClass: (serviceClass: ServiceClass, price: string) => void;
   getSelectedServiceClass: () => ServiceClass | undefined;
   getSelectedServicePrice: () => string | undefined;
+  setBillingData: (billingData: BillingData) => void;
+  getBillingData: () => BillingData | undefined;
 }
 
 const defaultReservationData: ReservationData = {
@@ -41,6 +56,7 @@ const defaultReservationData: ReservationData = {
   selectedClassPrice: undefined,
   pickupLocation: null,
   dropoffLocation: null,
+  billingData: undefined,
 };
 
 export const useReservationStore = create<ReservationStore>()(
@@ -99,6 +115,20 @@ export const useReservationStore = create<ReservationStore>()(
 
       getSelectedServicePrice: () => {
         return get().reservationData.selectedClassPrice;
+      },
+
+      setBillingData: (billingData: BillingData) => {
+        console.log(`💳 BILLING DATA SET:`, billingData);
+        set((state) => ({
+          reservationData: {
+            ...state.reservationData,
+            billingData,
+          },
+        }));
+      },
+
+      getBillingData: () => {
+        return get().reservationData.billingData;
       },
 
       clearReservationData: () =>

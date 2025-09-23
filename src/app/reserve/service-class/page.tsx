@@ -39,7 +39,7 @@ function ServiceClassContent() {
       type: bookingData.type,
       duration: bookingData.duration,
     });
-  }, [bookingData]);
+  }, [bookingData, getSelectedServiceClass]);
 
   // Calculate distance when pickup and dropoff are available
   useEffect(() => {

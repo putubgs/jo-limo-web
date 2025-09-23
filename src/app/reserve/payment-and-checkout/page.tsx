@@ -3,15 +3,30 @@
 import { useEffect, Suspense, useMemo } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import PaymentForm from "@/components/PaymentForm";
+import SimpleHyperPayForm from "@/components/SimpleHyperPayForm";
 import { useState } from "react";
 import ProcessingDialog from "@/components/dialogs/ProcessingDialog";
 import SuccessDialog from "@/components/dialogs/SuccessDialog";
 import { useReservationStore } from "@/lib/reservation-store";
 import { calculateDistanceAndTime } from "@/lib/distance-calculator";
+import { useSearchParams } from "next/navigation";
+import type { HyperPayResult } from "@/types/hyperpay";
 
 function PaymentAndCheckoutContent() {
   const { reservationData } = useReservationStore();
+  const searchParams = useSearchParams();
+
+  // State declarations
+  const [processingOpen, setProcessingOpen] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [paymentResult, setPaymentResult] = useState<HyperPayResult | null>(
+    null
+  );
+  const [hasCheckedPayment, setHasCheckedPayment] = useState(false);
+  const [distanceInfo, setDistanceInfo] = useState<{
+    distance: string;
+    duration: string;
+  } | null>(null);
 
   // Use data from Zustand store instead of URL params
   const bookingData = useMemo(
@@ -19,12 +34,78 @@ function PaymentAndCheckoutContent() {
       ...reservationData,
       service: reservationData.selectedClass || "",
     }),
-    [reservationData, reservationData.selectedClass]
+    [reservationData]
   );
 
   useEffect(() => {
     console.log("Booking data:", bookingData);
   }, [bookingData]);
+
+  // Handle payment result when redirected back from HyperPay
+  useEffect(() => {
+    const resourcePath = searchParams.get("resourcePath");
+    const paymentId = searchParams.get("id");
+
+    if (resourcePath && paymentId && !hasCheckedPayment) {
+      // Prevent duplicate API calls
+      setHasCheckedPayment(true);
+
+      // Show processing dialog while checking payment status
+      setProcessingOpen(true);
+
+      // Fetch payment status
+      fetch(
+        `/api/checkout-status?resourcePath=${encodeURIComponent(resourcePath)}`
+      )
+        .then((r) => r.json())
+        .then((data) => {
+          console.log("🔍 PAYMENT STATUS API RESULT:");
+          console.log("📊 Status Code:", data.result?.code);
+          console.log("📝 Description:", data.result?.description);
+          console.log("💰 Amount:", data.amount);
+          console.log("💳 Currency:", data.currency);
+          console.log("🆔 Transaction ID:", data.id);
+          console.log("📄 Full Response:", JSON.stringify(data, null, 2));
+
+          // Check if payment was successful
+          const successCodes = [
+            "000.000.000",
+            "000.000.100",
+            "000.100.110",
+            "000.100.111",
+            "000.100.112",
+          ];
+
+          const isSuccess = successCodes.includes(data.result?.code);
+
+          console.log("✅ Payment Success Check:", {
+            resultCode: data.result?.code,
+            isSuccess,
+            successCodes,
+          });
+
+          // Hide processing dialog and show success dialog
+          setProcessingOpen(false);
+
+          if (isSuccess) {
+            console.log("🎉 PAYMENT SUCCESSFUL!");
+            setPaymentResult(data);
+            // Show success dialog
+            setSuccessOpen(true);
+          } else {
+            console.log("❌ PAYMENT FAILED!");
+            console.error(
+              "Payment failed:",
+              data.result?.description || "Payment failed"
+            );
+          }
+        })
+        .catch((error) => {
+          console.error("❌ Error fetching payment status:", error);
+          setProcessingOpen(false);
+        });
+    }
+  }, [searchParams, hasCheckedPayment]);
 
   // Calculate distance when pickup and dropoff are available
   useEffect(() => {
@@ -44,19 +125,16 @@ function PaymentAndCheckoutContent() {
     }
   }, [bookingData.pickup, bookingData.dropoff]);
 
-  const [processingOpen, setProcessingOpen] = useState(false);
-  const [successOpen, setSuccessOpen] = useState(false);
-  const [distanceInfo, setDistanceInfo] = useState<{
-    distance: string;
-    duration: string;
-  } | null>(null);
-
   const handleCash = () => {
     setProcessingOpen(true);
     setTimeout(() => {
       setProcessingOpen(false);
       setSuccessOpen(true);
     }, 3000);
+  };
+
+  const handlePaymentError = (error: string) => {
+    console.error("Payment error:", error);
   };
 
   // Step indicator component
@@ -161,12 +239,21 @@ function PaymentAndCheckoutContent() {
               Cash
             </button>
           </div>
-          <PaymentForm />
+          {!processingOpen && (
+            <div className="w-full px-6">
+              <SimpleHyperPayForm
+                amount={reservationData.selectedClassPrice || "0"}
+                onPaymentError={handlePaymentError}
+              />
+            </div>
+          )}
         </div>
+
         <ProcessingDialog open={processingOpen} />
         <SuccessDialog
           open={successOpen}
           onClose={() => setSuccessOpen(false)}
+          paymentResult={paymentResult}
         />
       </div>
       <Footer />

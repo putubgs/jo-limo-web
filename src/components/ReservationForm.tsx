@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import FlightIcon from "@mui/icons-material/Flight";
 import { autocomplete } from "@/lib/google-autocomplete";
 import { useReservationStore } from "@/lib/reservation-store";
 import {
@@ -154,6 +155,15 @@ export default function ReservationForm({
     const formattedDate = formatDate(jordanDate);
     setSelectedDate(formattedDate);
     setShowCalendar(false);
+  };
+
+  // Helper function to check if a suggestion is an airport
+  const isAirportLocation = (description: string): boolean => {
+    const lowerDesc = description.toLowerCase();
+    return (
+      lowerDesc.includes("queen alia international airport") ||
+      lowerDesc.includes("king hussein international airport")
+    );
   };
 
   // Calculate autocomplete dropdown position
@@ -402,10 +412,17 @@ export default function ReservationForm({
               onClick={() => handleSuggestionSelect(suggestion, type)}
               className="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
             >
-              <LocationOnIcon
-                className="text-gray-400 mr-2"
-                style={{ width: "16px", height: "16px" }}
-              />
+              {isAirportLocation(suggestion.description) ? (
+                <FlightIcon
+                  className="text-gray-400 mr-2"
+                  style={{ width: "16px", height: "16px" }}
+                />
+              ) : (
+                <LocationOnIcon
+                  className="text-gray-400 mr-2"
+                  style={{ width: "16px", height: "16px" }}
+                />
+              )}
               <span>{suggestion.description}</span>
             </div>
           ))}
