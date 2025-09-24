@@ -16,22 +16,53 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check authentication status
-    const adminAuth = localStorage.getItem("adminAuth");
-
-    if (!adminAuth && pathname !== "/admin/login") {
-      router.push("/admin/login");
-    } else if (adminAuth) {
-      setIsAuthenticated(true);
+    // For login page, don't check authentication
+    if (pathname === "/admin/login") {
+      setLoading(false);
+      return;
     }
 
-    setLoading(false);
+    // Check authentication status by calling the API
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/admin/auth/me", {
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+          router.push("/admin/login");
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        setIsAuthenticated(false);
+        router.push("/admin/login");
+      }
+
+      setLoading(false);
+    };
+
+    checkAuth();
   }, [pathname, router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("adminAuth");
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/admin/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
     router.push("/admin/login");
   };
+
+  // Show login page without layout
+  if (pathname === "/admin/login") {
+    return <>{children}</>;
+  }
 
   // Show loading while checking authentication
   if (loading) {
@@ -43,13 +74,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   // Show login page if not authenticated
-  if (!isAuthenticated && pathname !== "/admin/login") {
+  if (!isAuthenticated) {
     return null;
-  }
-
-  // Show login page without layout
-  if (pathname === "/admin/login") {
-    return <>{children}</>;
   }
 
   const navigationItems = [

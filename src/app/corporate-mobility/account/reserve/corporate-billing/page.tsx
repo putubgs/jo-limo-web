@@ -70,8 +70,33 @@ function PaymentAndCheckoutContent() {
         reservationData.selectedClassPrice &&
         reservationData.billingData;
 
+  // Check localStorage for hasRequiredData to persist across page refreshes
+  const [localHasRequiredData, setLocalHasRequiredData] = useState<
+    boolean | null
+  >(null);
+  const [isCheckingData, setIsCheckingData] = useState(true);
+
+  useEffect(() => {
+    // Check localStorage on component mount
+    const storedHasRequiredData = localStorage.getItem("hasRequiredData");
+    if (storedHasRequiredData !== null) {
+      setLocalHasRequiredData(storedHasRequiredData === "true");
+    } else {
+      // If not in localStorage, calculate and store it
+      const calculated = Boolean(hasRequiredData);
+      setLocalHasRequiredData(calculated);
+      localStorage.setItem("hasRequiredData", calculated.toString());
+    }
+    setIsCheckingData(false);
+  }, [hasRequiredData]);
+
+  // Show loading while checking data
+  if (isCheckingData) {
+    return <div>Loading...</div>;
+  }
+
   // Show error if required data is missing
-  if (!hasRequiredData) {
+  if (localHasRequiredData === false) {
     return (
       <DataValidationError
         title="Page Error!"

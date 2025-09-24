@@ -320,7 +320,7 @@ function ServiceClassContent() {
       <div className="min-h-screen bg-white flex flex-col my-[50px]">
         {/* Header */}
         <StepIndicator />
-        <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="max-w-[584px] mx-auto px-6 py-8">
           <div className="bg-[#F0F0F0] rounded-lg shadow-sm p-6">
             <div className="flex justify-start items-center">
               <div className="text-left">
@@ -352,7 +352,7 @@ function ServiceClassContent() {
         {/* Main content */}
         <div className="px-6">
           {/* Service Class Selection */}
-          <div className="max-w-4xl px-6 mb-8 mx-auto">
+          <div className="max-w-[584px] px-6 mb-8 mx-auto">
             <p className="text-gray-500 text-sm mb-3">
               All price included VAT, fees, and tolls
             </p>
@@ -426,7 +426,7 @@ function ServiceClassContent() {
           </div>
 
           {/* All Classes Include */}
-          <div className="max-w-4xl px-6 mx-auto">
+          <div className="max-w-[584px] px-6 mx-auto">
             <div className="border border-gray-300 rounded-t-lg p-6">
               <h3 className="text-[14px] text-[#ACACAC] mb-4 text-start">
                 All Classes include :
@@ -465,7 +465,7 @@ function ServiceClassContent() {
           </div>
 
           {/* Please Note */}
-          <div className="max-w-4xl px-6 mb-8 mx-auto">
+          <div className="max-w-[584px] px-6 mb-8 mx-auto">
             <div className="border border-gray-300 rounded-b-lg p-6">
               <h3 className="text-[14px] text-[#ACACAC] mb-4 text-start">
                 Please note :

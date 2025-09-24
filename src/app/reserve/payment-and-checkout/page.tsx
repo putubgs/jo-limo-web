@@ -160,8 +160,64 @@ function PaymentAndCheckoutContent() {
         reservationData.selectedClassPrice &&
         reservationData.billingData;
 
+  // Check localStorage for hasRequiredData to persist across page refreshes
+  const [localHasRequiredData, setLocalHasRequiredData] = useState<
+    boolean | null
+  >(null);
+  const [isCheckingData, setIsCheckingData] = useState(true);
+
+  useEffect(() => {
+    console.log("=== PAYMENT PAGE DEBUG ===");
+    console.log("hasRequiredData:", hasRequiredData);
+    console.log("reservationData:", reservationData);
+
+    // Clear localStorage to force fresh calculation
+    localStorage.removeItem("hasRequiredData");
+
+    // Check localStorage on component mount
+    const storedHasRequiredData = localStorage.getItem("hasRequiredData");
+    console.log(
+      "storedHasRequiredData from localStorage:",
+      storedHasRequiredData
+    );
+
+    if (storedHasRequiredData !== null) {
+      const parsedValue = storedHasRequiredData === "true";
+      console.log("Using stored value:", parsedValue);
+      setLocalHasRequiredData(parsedValue);
+    } else {
+      // If not in localStorage, calculate and store it
+      const calculated = Boolean(hasRequiredData);
+      console.log("Calculated value:", calculated);
+      setLocalHasRequiredData(calculated);
+      localStorage.setItem("hasRequiredData", calculated.toString());
+    }
+    setIsCheckingData(false);
+  }, [hasRequiredData, reservationData]);
+
+  // Show loading while checking data
+  if (isCheckingData) {
+    return <div>Loading...</div>;
+  }
+
   // Show error if required data is missing (but not during payment processing)
-  if (!hasRequiredData && dialog.kind === "NONE") {
+  console.log("=== VALIDATION CHECK ===");
+  console.log("localHasRequiredData:", localHasRequiredData);
+  console.log("dialog.kind:", dialog.kind);
+  console.log("hasSettledRef.current:", hasSettledRef.current);
+  console.log(
+    "Will show error:",
+    localHasRequiredData === false &&
+      dialog.kind === "NONE" &&
+      !hasSettledRef.current
+  );
+
+  if (
+    localHasRequiredData === false &&
+    dialog.kind === "NONE" &&
+    !hasSettledRef.current
+  ) {
+    console.log("SHOWING PAGE ERROR!");
     return (
       <DataValidationError
         title="Page Error!"
@@ -194,6 +250,8 @@ function PaymentAndCheckoutContent() {
   const resetAndGo = (path: string) => {
     hasSettledRef.current = false;
     dispatch({ type: "RESET" });
+    // Clear localStorage when navigating away
+    localStorage.removeItem("hasRequiredData");
     router.push(path);
   };
 
@@ -251,7 +309,7 @@ function PaymentAndCheckoutContent() {
         <StepIndicator />
 
         {/* Trip card -------------------------------------------------- */}
-        <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="max-w-[584px] mx-auto px-6 py-8">
           <div className="bg-[#F0F0F0] rounded-lg shadow-sm p-6">
             <p className="font-bold text-lg">
               {formatDate(bookingData.date, bookingData.time)}
@@ -270,7 +328,7 @@ function PaymentAndCheckoutContent() {
         </div>
 
         {/* Payment options + form ------------------------------------ */}
-        <div className="flex flex-col items-center max-w-4xl mx-auto gap-4 pt-8">
+        <div className="flex flex-col items-center max-w-[584px] mx-auto gap-4 pt-8">
           <div className="flex gap-4 w-full px-6">
             <button className="bg-[#B2B2B2] text-white px-4 py-3 rounded-lg w-full">
               Credit card
@@ -284,7 +342,7 @@ function PaymentAndCheckoutContent() {
           </div>
 
           {dialog.kind === "NONE" && (
-            <div className="w-full px-6">
+            <div className="w-full">
               <SimpleHyperPayForm
                 amount={reservationData.selectedClassPrice || "0"}
                 onPaymentError={(e) => console.log("HyperPay error", e)}

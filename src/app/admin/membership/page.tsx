@@ -3,67 +3,83 @@
 import { useState, useEffect } from "react";
 
 interface Membership {
-  membership_id: string;
-  first_name: string;
-  last_name: string;
+  id: string;
+  firstname: string;
+  lastname: string;
   email: string;
-  phone_number: string;
+  phone: string;
+  created_at: string;
+  updated_at?: string;
 }
 
 export default function MembershipApplications() {
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMemberships, setSelectedMemberships] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    // Simulate fetching membership application data
-    const dummyMemberships: Membership[] = [
-      {
-        membership_id: "550e8400-e29b-41d4-a716-446655441001",
-        first_name: "Michael",
-        last_name: "Johnson",
-        email: "michael.johnson@email.com",
-        phone_number: "+962 79 123 4567",
-      },
-      {
-        membership_id: "550e8400-e29b-41d4-a716-446655441002",
-        first_name: "Sarah",
-        last_name: "Wilson",
-        email: "sarah.wilson@gmail.com",
-        phone_number: "+962 77 987 6543",
-      },
-      {
-        membership_id: "550e8400-e29b-41d4-a716-446655441003",
-        first_name: "David",
-        last_name: "Chen",
-        email: "david.chen@techstartup.com",
-        phone_number: "+962 78 456 7890",
-      },
-      {
-        membership_id: "550e8400-e29b-41d4-a716-446655441004",
-        first_name: "Emma",
-        last_name: "Rodriguez",
-        email: "emma.rodriguez@law.com",
-        phone_number: "+962 79 321 0987",
-      },
-      {
-        membership_id: "550e8400-e29b-41d4-a716-446655441005",
-        first_name: "Ahmed",
-        last_name: "Al-Zahra",
-        email: "ahmed.alzahra@gmail.com",
-        phone_number: "+962 78 555 1234",
-      },
-    ];
-    setMemberships(dummyMemberships);
+    fetchMemberships();
   }, []);
+
+  const fetchMemberships = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/membership/list");
+      const data = await response.json();
+
+      if (data.success) {
+        setMemberships(data.memberships);
+      } else {
+        setError(data.error || "Failed to fetch memberships");
+      }
+    } catch (error) {
+      console.error("Error fetching memberships:", error);
+      setError("Failed to fetch memberships");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteMembership = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this membership?")) {
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/membership/delete?id=${id}`, {
+        method: "DELETE",
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setMemberships(memberships.filter((m) => m.id !== id));
+        setSelectedMemberships(
+          selectedMemberships.filter((selectedId) => selectedId !== id)
+        );
+        alert("Membership deleted successfully");
+      } else {
+        alert(data.error || "Failed to delete membership");
+      }
+    } catch (error) {
+      console.error("Error deleting membership:", error);
+      alert("Failed to delete membership");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const filteredMemberships = memberships.filter((membership) => {
     const matchesSearch =
-      `${membership.first_name} ${membership.last_name}`
+      `${membership.firstname} ${membership.lastname}`
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
       membership.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      membership.membership_id.toLowerCase().includes(searchTerm.toLowerCase());
+      membership.phone.includes(searchTerm) ||
+      membership.id.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 
@@ -80,12 +96,12 @@ export default function MembershipApplications() {
       setSelectedMemberships([]);
     } else {
       setSelectedMemberships(
-        filteredMemberships.map((membership) => membership.membership_id)
+        filteredMemberships.map((membership) => membership.id)
       );
     }
   };
 
-  const handleDeleteSelected = () => {
+  const handleDeleteSelected = async () => {
     if (selectedMemberships.length === 0) return;
 
     if (
@@ -93,13 +109,49 @@ export default function MembershipApplications() {
         `Are you sure you want to delete ${selectedMemberships.length} membership(s)?`
       )
     ) {
-      setMemberships((prev) =>
-        prev.filter(
-          (membership) =>
-            !selectedMemberships.includes(membership.membership_id)
-        )
-      );
-      setSelectedMemberships([]);
+      setDeleting(true);
+      try {
+        // Delete each selected membership
+        const deletePromises = selectedMemberships.map((id) =>
+          fetch(`/api/membership/delete?id=${id}`, {
+            method: "DELETE",
+          })
+        );
+
+        const results = await Promise.all(deletePromises);
+        const failedDeletes = [];
+
+        // Check which deletes failed
+        for (let i = 0; i < results.length; i++) {
+          const result = await results[i].json();
+          if (!result.success) {
+            failedDeletes.push(selectedMemberships[i]);
+          }
+        }
+
+        if (failedDeletes.length === 0) {
+          // All deletes successful - update local state
+          setMemberships((prev) =>
+            prev.filter(
+              (membership) => !selectedMemberships.includes(membership.id)
+            )
+          );
+          setSelectedMemberships([]);
+          alert(
+            `Successfully deleted ${selectedMemberships.length} membership(s)`
+          );
+        } else {
+          // Some deletes failed
+          alert(
+            `Failed to delete ${failedDeletes.length} membership(s). Please try again.`
+          );
+        }
+      } catch (error) {
+        console.error("Error deleting selected memberships:", error);
+        alert("An error occurred while deleting memberships");
+      } finally {
+        setDeleting(false);
+      }
     }
   };
 
@@ -145,9 +197,17 @@ export default function MembershipApplications() {
             {selectedMemberships.length > 0 && (
               <button
                 onClick={handleDeleteSelected}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                disabled={deleting}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Delete Selected ({selectedMemberships.length})
+                {deleting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Deleting...
+                  </>
+                ) : (
+                  `Delete Selected (${selectedMemberships.length})`
+                )}
               </button>
             )}
           </div>
@@ -198,50 +258,87 @@ export default function MembershipApplications() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Phone Number
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredMemberships.map((membership) => (
-                <tr key={membership.membership_id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="checkbox"
-                      checked={selectedMemberships.includes(
-                        membership.membership_id
-                      )}
-                      onChange={() =>
-                        handleSelectMembership(membership.membership_id)
-                      }
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {membership.membership_id}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {membership.first_name}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {membership.last_name}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {membership.email}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {membership.phone_number}
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-4 text-center">
+                    <div className="flex justify-center items-center">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                      <span className="ml-2">Loading memberships...</span>
                     </div>
                   </td>
                 </tr>
-              ))}
+              ) : error ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-6 py-4 text-center text-red-600"
+                  >
+                    {error}
+                  </td>
+                </tr>
+              ) : filteredMemberships.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
+                    No memberships found
+                  </td>
+                </tr>
+              ) : (
+                filteredMemberships.map((membership) => (
+                  <tr key={membership.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={selectedMemberships.includes(membership.id)}
+                        onChange={() => handleSelectMembership(membership.id)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {membership.id}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {membership.firstname}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {membership.lastname}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {membership.email}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {membership.phone}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button
+                        onClick={() => handleDeleteMembership(membership.id)}
+                        disabled={deleting}
+                        className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {deleting ? "Deleting..." : "Delete"}
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
