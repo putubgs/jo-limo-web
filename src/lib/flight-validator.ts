@@ -64,10 +64,23 @@ export const validateFlight = async (
       };
     }
 
+    // Filter out null values from the data array
+    const validFlights = data.data.filter(
+      (flight) => flight !== null && flight !== undefined
+    );
+
+    if (validFlights.length === 0) {
+      return {
+        isValid: false,
+        flightFound: false,
+        message: "No valid flight data found. Please verify the flight number.",
+      };
+    }
+
     // Find flight that matches the booking date
     const bookingDateObj = new Date(bookingDate);
-    const matchingFlight = data.data.find((flight) => {
-      if (!flight.DATE) return false;
+    const matchingFlight = validFlights.find((flight) => {
+      if (!flight || !flight.DATE) return false;
 
       const flightDate = new Date(flight.DATE);
       return flightDate.toDateString() === bookingDateObj.toDateString();
