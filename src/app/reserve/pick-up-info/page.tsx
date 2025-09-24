@@ -140,9 +140,7 @@ function PickUpInfoContent() {
         try {
           const result = await validateFlight(
             formattedFlight,
-            initialBooking.date || "",
-            initialBooking.time || "",
-            isPickupAirport
+            initialBooking.date || ""
           );
 
           // Only update if request wasn't cancelled
@@ -796,7 +794,7 @@ function PickUpInfoContent() {
                       <div className="mt-2 flex items-center text-blue-600">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
                         <span className="text-sm">
-                          Verifying the flight details
+                          Verifying the flight number
                         </span>
                       </div>
                     )}

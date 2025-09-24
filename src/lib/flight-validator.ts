@@ -24,9 +24,7 @@ export interface FlightValidationResult {
 
 export const validateFlight = async (
   flightNumber: string,
-  bookingDate: string,
-  bookingTime: string,
-  isPickupAirport: boolean = false
+  bookingDate: string
 ): Promise<FlightValidationResult> => {
   try {
     // Clean flight number (remove spaces, convert to uppercase)
@@ -36,7 +34,7 @@ export const validateFlight = async (
       return {
         isValid: false,
         flightFound: false,
-        message: "Please enter a flight number",
+        message: "The number code not found",
       };
     }
 
@@ -60,7 +58,7 @@ export const validateFlight = async (
       return {
         isValid: false,
         flightFound: false,
-        message: "Flight number not found. Please verify the flight number.",
+        message: "The flight number not found",
       };
     }
 
@@ -73,7 +71,7 @@ export const validateFlight = async (
       return {
         isValid: false,
         flightFound: false,
-        message: "No valid flight data found. Please verify the flight number.",
+        message: "The flight number not found",
       };
     }
 
@@ -90,79 +88,17 @@ export const validateFlight = async (
       return {
         isValid: false,
         flightFound: true,
-        message: `Flight ${cleanFlightNumber} not found for ${bookingDate}. Please check the date.`,
+        message: "The flight number not found",
       };
     }
 
-    // Validate flight route (from/to countries)
-    const flightFrom = matchingFlight.FROM;
-    const flightTo = matchingFlight.TO;
-
-    // Check if flight route makes sense for Jordan
-    const isJordanRoute =
-      flightFrom.includes("Amman") ||
-      flightTo.includes("Amman") ||
-      flightFrom.includes("AMM") ||
-      flightTo.includes("AMM");
-
-    if (!isJordanRoute) {
-      return {
-        isValid: false,
-        flightFound: true,
-        message: `Flight ${cleanFlightNumber} route ${flightFrom} → ${flightTo} doesn't include Jordan. Please verify the flight number.`,
-      };
-    }
-
-    // Additional validation: Check if flight direction matches the booking type
-    const isFlightToJordan =
-      flightTo.includes("Amman") || flightTo.includes("AMM");
-    const isFlightFromJordan =
-      flightFrom.includes("Amman") || flightFrom.includes("AMM");
-
-    if (isPickupAirport && !isFlightToJordan) {
-      return {
-        isValid: false,
-        flightFound: true,
-        message: `Flight ${cleanFlightNumber} route ${flightFrom} → ${flightTo} is not arriving in Jordan. For airport pickup, please enter an arrival flight.`,
-      };
-    }
-
-    if (!isPickupAirport && !isFlightFromJordan) {
-      return {
-        isValid: false,
-        flightFound: true,
-        message: `Flight ${cleanFlightNumber} route ${flightFrom} → ${flightTo} is not departing from Jordan. For airport dropoff, please enter a departure flight.`,
-      };
-    }
-
-    // Check if flight time is reasonable (within 2 hours of booking time)
-    const bookingTimeObj = new Date(`${bookingDate}T${bookingTime}`);
-
-    // Use arrival time for pickup airports (flight coming TO Jordan), departure time for dropoff airports (flight going FROM Jordan)
-    const flightTime = isPickupAirport
-      ? matchingFlight.STA // Arrival time when picking up from airport
-      : matchingFlight.STD; // Departure time when dropping off to airport
-    const flightTimeLabel = isPickupAirport ? "arrives" : "departs";
-    const flightTimeObj = new Date(`${bookingDate}T${flightTime}`);
-
-    const timeDifference = Math.abs(
-      bookingTimeObj.getTime() - flightTimeObj.getTime()
-    );
-    const hoursDifference = timeDifference / (1000 * 60 * 60);
-
-    if (hoursDifference > 2) {
-      return {
-        isValid: false,
-        flightFound: true,
-        message: `Flight ${cleanFlightNumber} (${flightFrom} → ${flightTo}) ${flightTimeLabel} at ${flightTime}, which doesn't match your booking time. Please verify the time.`,
-      };
-    }
+    // Flight found and validated successfully
 
     // Flight is valid
     return {
       isValid: true,
       flightFound: true,
-      message: `Flight ${cleanFlightNumber} confirmed: ${flightFrom} → ${flightTo} on ${matchingFlight.DATE} - ${flightTimeLabel} at ${flightTime}`,
+      message: "The flight number is validated",
       flightData: matchingFlight,
     };
   } catch (error) {
