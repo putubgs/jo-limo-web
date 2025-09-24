@@ -19,6 +19,7 @@ import FailureDialog from "@/components/dialogs/FailureDialog";
 import { useReservationStore } from "@/lib/reservation-store";
 import { calculateDistanceAndTime } from "@/lib/distance-calculator";
 import type { HyperPayResult } from "@/types/hyperpay";
+import DataValidationError from "@/components/DataValidationError";
 
 /* ------------------------------------------------------------------ */
 /*  Dialog reducer                                                     */
@@ -140,6 +141,29 @@ function PaymentAndCheckoutContent() {
       )
       .catch((err) => console.error("distance-calc", err));
   }, [bookingData.pickup, bookingData.dropoff]);
+
+  /* ---------------------------------------------------------------- */
+  /*  Data validation                                                  */
+  /* ---------------------------------------------------------------- */
+  const hasRequiredData =
+    reservationData.pickup &&
+    reservationData.dropoff &&
+    reservationData.pickupLocation &&
+    reservationData.dropoffLocation &&
+    reservationData.selectedClass &&
+    reservationData.selectedClassPrice &&
+    reservationData.billingData;
+
+  // Show error if required data is missing
+  if (!hasRequiredData) {
+    return (
+      <DataValidationError
+        title="Page Error!"
+        message="Please try again"
+        backToHome={true}
+      />
+    );
+  }
 
   /* ---------------------------------------------------------------- */
   /*  Handlers                                                        */

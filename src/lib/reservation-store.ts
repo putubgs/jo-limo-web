@@ -43,6 +43,10 @@ interface ReservationStore {
   getSelectedServicePrice: () => string | undefined;
   setBillingData: (billingData: BillingData) => void;
   getBillingData: () => BillingData | undefined;
+  // Reset all booking state for corporate mobility
+  resetForCorporateMobility: () => void;
+  // Clear only billing data
+  clearBillingData: () => void;
 }
 
 const defaultReservationData: ReservationData = {
@@ -133,6 +137,35 @@ export const useReservationStore = create<ReservationStore>()(
 
       clearReservationData: () =>
         set({ reservationData: defaultReservationData }),
+
+      clearBillingData: () => {
+        console.log("💳 CLEARING BILLING DATA");
+        set((state) => ({
+          reservationData: {
+            ...state.reservationData,
+            billingData: undefined,
+          },
+        }));
+        console.log(
+          "💳 Billing data cleared:",
+          get().reservationData.billingData
+        );
+      },
+
+      resetForCorporateMobility: () => {
+        console.log(
+          "🏢 RESETTING FOR CORPORATE MOBILITY - Clearing all booking state"
+        );
+        console.log(
+          "🏢 Current billing data before reset:",
+          get().reservationData.billingData
+        );
+        set({ reservationData: defaultReservationData });
+        console.log(
+          "🏢 Reset complete - billing data cleared:",
+          get().reservationData.billingData
+        );
+      },
     }),
     {
       name: "reservation-storage",

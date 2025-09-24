@@ -7,6 +7,7 @@ import { calculateDistanceAndTime } from "@/lib/distance-calculator";
 import Image from "next/image";
 import PersonIcon from "@mui/icons-material/Person";
 import LuggageIcon from "@mui/icons-material/Luggage";
+import DataValidationError from "@/components/DataValidationError";
 
 function PaymentAndCheckoutContent() {
   const { reservationData } = useReservationStore();
@@ -19,6 +20,11 @@ function PaymentAndCheckoutContent() {
     }),
     [reservationData]
   );
+
+  const [distanceInfo, setDistanceInfo] = useState<{
+    distance: string;
+    duration: string;
+  } | null>(null);
 
   useEffect(() => {
     console.log("Booking data:", bookingData);
@@ -48,10 +54,26 @@ function PaymentAndCheckoutContent() {
     }
   }, [bookingData.pickup, bookingData.dropoff]);
 
-  const [distanceInfo, setDistanceInfo] = useState<{
-    distance: string;
-    duration: string;
-  } | null>(null);
+  // Data validation - check if required data from previous pages is present
+  const hasRequiredData =
+    reservationData.pickup &&
+    reservationData.dropoff &&
+    reservationData.pickupLocation &&
+    reservationData.dropoffLocation &&
+    reservationData.selectedClass &&
+    reservationData.selectedClassPrice &&
+    reservationData.billingData;
+
+  // Show error if required data is missing
+  if (!hasRequiredData) {
+    return (
+      <DataValidationError
+        title="Page Error!"
+        message="Please try again"
+        backToHome={true}
+      />
+    );
+  }
 
   // Service class data mapping
   const serviceClassData = {

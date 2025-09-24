@@ -1,4 +1,16 @@
+"use client";
+
+import { useEffect } from "react";
+import { useReservationStore } from "@/lib/reservation-store";
+
 export default function Account() {
+  const { resetForCorporateMobility } = useReservationStore();
+
+  // Reset all booking state when user enters corporate mobility account
+  useEffect(() => {
+    resetForCorporateMobility();
+  }, [resetForCorporateMobility]);
+
   return (
     <div className="w-3/4 flex flex-col gap-4">
       <div className="flex flex-col gap-1">

@@ -10,6 +10,7 @@ import InfoIcon from "@mui/icons-material/Info";
 import { useReservationStore, ServiceClass } from "@/lib/reservation-store";
 import { calculateDistanceAndTime } from "@/lib/distance-calculator";
 import { calculatePrice } from "@/lib/pricing-calculator";
+import DataValidationError from "@/components/DataValidationError";
 
 function ServiceClassContent() {
   const router = useRouter();
@@ -28,6 +29,78 @@ function ServiceClassContent() {
 
   // Use data from Zustand store instead of URL params
   const bookingData = reservationData;
+
+  // Data validation
+  const hasLocationData =
+    bookingData.pickup &&
+    bookingData.dropoff &&
+    bookingData.pickupLocation &&
+    bookingData.dropoffLocation;
+
+  const hasNoData =
+    !bookingData.pickup &&
+    !bookingData.dropoff &&
+    !bookingData.pickupLocation &&
+    !bookingData.dropoffLocation;
+
+  // Check if all prices are 0 (location not served)
+  const [, setPricingData] = useState<{
+    [key: string]: { price: number; currency: string };
+  }>({});
+  const [locationNotServed, setLocationNotServed] = useState(false);
+  const [isCheckingLocation, setIsCheckingLocation] = useState(false);
+
+  // Calculate pricing and check if location is served
+  useEffect(() => {
+    if (
+      hasLocationData &&
+      bookingData.pickupLocation &&
+      bookingData.dropoffLocation
+    ) {
+      setIsCheckingLocation(true);
+
+      calculateDistanceAndTime(
+        bookingData.pickupLocation.name,
+        bookingData.dropoffLocation.name
+      )
+        .then(() => {
+          // Calculate pricing for each service class
+          const serviceClasses = ["executive", "luxury", "mpv", "suv"];
+          const pricing: {
+            [key: string]: { price: number; currency: string };
+          } = {};
+
+          serviceClasses.forEach((serviceType) => {
+            const price = calculatePrice(
+              serviceType,
+              bookingData.type,
+              "", // duration not needed for one-way
+              bookingData.pickupLocation,
+              bookingData.dropoffLocation
+            );
+            pricing[serviceType] = { price, currency: "JOD" };
+          });
+
+          setPricingData(pricing);
+
+          // Check if all prices are 0
+          const allPricesZero = Object.values(pricing).every(
+            (p) => p.price === 0
+          );
+          setLocationNotServed(allPricesZero);
+          setIsCheckingLocation(false);
+        })
+        .catch((error) => {
+          console.error("Error calculating pricing:", error);
+          setIsCheckingLocation(false);
+        });
+    }
+  }, [
+    hasLocationData,
+    bookingData.pickupLocation,
+    bookingData.dropoffLocation,
+    bookingData.type,
+  ]);
 
   useEffect(() => {
     console.log("=== SERVICE CLASS DEBUG ===");
@@ -56,6 +129,43 @@ function ServiceClassContent() {
         });
     }
   }, [bookingData.pickup, bookingData.dropoff]);
+
+  // Conditional rendering - show errors if needed
+  // Show error if no data at all
+  if (hasNoData) {
+    return (
+      <DataValidationError
+        title="Page Error!"
+        message="Please try again"
+        backToHome={true}
+      />
+    );
+  }
+
+  // Show error if location not served
+  if (locationNotServed) {
+    return (
+      <DataValidationError
+        title="Location Not Served"
+        message="We do not serve this location yet, please try different location"
+        showBackButton={true}
+        backToHome={false}
+        grayBackButton={true}
+      />
+    );
+  }
+
+  // Show loading while checking location
+  if (isCheckingLocation) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking location availability...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Step indicator component
   const StepIndicator = () => (

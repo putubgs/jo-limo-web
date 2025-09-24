@@ -1,19 +1,27 @@
 "use client";
 
+import { useEffect } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useReservationStore } from "@/lib/reservation-store";
 
 export default function CMAccountLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { resetForCorporateMobility } = useReservationStore();
   const basePath = "/corporate-mobility/account";
   const pathname = usePathname();
   const pageTitle = checkPageTitle();
+
+  // Reset all booking state when user enters corporate mobility account
+  useEffect(() => {
+    resetForCorporateMobility();
+  }, [resetForCorporateMobility]);
 
   // Paths where the section should be hidden
   const excludedPaths = [
