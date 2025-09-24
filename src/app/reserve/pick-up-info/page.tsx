@@ -138,10 +138,7 @@ function PickUpInfoContent() {
         abortControllerRef.current = abortController;
 
         try {
-          const result = await validateFlight(
-            formattedFlight,
-            initialBooking.date || ""
-          );
+          const result = await validateFlight(formattedFlight);
 
           // Only update if request wasn't cancelled
           if (!abortController.signal.aborted) {

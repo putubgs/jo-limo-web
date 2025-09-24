@@ -23,8 +23,7 @@ export interface FlightValidationResult {
 }
 
 export const validateFlight = async (
-  flightNumber: string,
-  bookingDate: string
+  flightNumber: string
 ): Promise<FlightValidationResult> => {
   try {
     // Clean flight number (remove spaces, convert to uppercase)
@@ -75,13 +74,9 @@ export const validateFlight = async (
       };
     }
 
-    // Find flight that matches the booking date
-    const bookingDateObj = new Date(bookingDate);
+    // Find any flight with the matching flight number (ignore date)
     const matchingFlight = validFlights.find((flight) => {
-      if (!flight || !flight.DATE) return false;
-
-      const flightDate = new Date(flight.DATE);
-      return flightDate.toDateString() === bookingDateObj.toDateString();
+      return flight !== null && flight !== undefined;
     });
 
     if (!matchingFlight) {
@@ -98,7 +93,7 @@ export const validateFlight = async (
     return {
       isValid: true,
       flightFound: true,
-      message: "The flight number is validated",
+      message: "The flight number is valid",
       flightData: matchingFlight,
     };
   } catch (error) {
