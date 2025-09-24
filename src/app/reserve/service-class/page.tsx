@@ -32,18 +32,9 @@ function ServiceClassContent() {
   // Use data from Zustand store instead of URL params
   const bookingData = reservationData;
 
-  // Data validation
-  const hasLocationData =
-    bookingData.pickup &&
-    bookingData.dropoff &&
-    bookingData.pickupLocation &&
-    bookingData.dropoffLocation;
-
-  const hasNoData =
-    !bookingData.pickup &&
-    !bookingData.dropoff &&
-    !bookingData.pickupLocation &&
-    !bookingData.dropoffLocation;
+  // Simple validation - just check if we have the basic required data
+  const hasLocationData = bookingData.pickup || bookingData.pickupLocation;
+  const hasNoData = !bookingData.pickup && !bookingData.pickupLocation;
 
   // Check if all prices are 0 (location not served)
   const [, setPricingData] = useState<{
@@ -51,6 +42,29 @@ function ServiceClassContent() {
   }>({});
   const [locationNotServed, setLocationNotServed] = useState(false);
   const [isCheckingLocation, setIsCheckingLocation] = useState(false);
+
+  // Debug logging
+  console.log("=== SERVICE CLASS VALIDATION DEBUG ===");
+  console.log("bookingData:", bookingData);
+  console.log("hasLocationData:", hasLocationData);
+  console.log("hasNoData:", hasNoData);
+  console.log("locationNotServed:", locationNotServed);
+  console.log("isCheckingLocation:", isCheckingLocation);
+
+  // Check which error condition is being triggered
+  if (hasNoData) {
+    console.log("❌ ERROR: hasNoData is true - showing Page Error!");
+  }
+  if (locationNotServed) {
+    console.log(
+      "❌ ERROR: locationNotServed is true - showing Location Not Served!"
+    );
+  }
+  if (isCheckingLocation) {
+    console.log(
+      "⏳ LOADING: isCheckingLocation is true - showing loading state"
+    );
+  }
 
   // Calculate pricing and check if location is served
   useEffect(() => {
@@ -73,13 +87,23 @@ function ServiceClassContent() {
           } = {};
 
           serviceClasses.forEach((serviceType) => {
+            console.log(`🔍 Calculating price for ${serviceType}:`, {
+              serviceType,
+              bookingType: bookingData.type,
+              duration: bookingData.duration,
+              pickupLocation: bookingData.pickupLocation,
+              dropoffLocation: bookingData.dropoffLocation,
+            });
+
             const price = calculatePrice(
               serviceType,
               bookingData.type,
-              "", // duration not needed for one-way
+              bookingData.duration || "", // Use actual duration for hourly reservations
               bookingData.pickupLocation,
               bookingData.dropoffLocation
             );
+
+            console.log(`💰 Price calculated for ${serviceType}: ${price} JOD`);
             pricing[serviceType] = { price, currency: "JOD" };
           });
 
@@ -102,6 +126,7 @@ function ServiceClassContent() {
     bookingData.pickupLocation,
     bookingData.dropoffLocation,
     bookingData.type,
+    bookingData.duration,
   ]);
 
   useEffect(() => {
@@ -130,7 +155,7 @@ function ServiceClassContent() {
           console.error("Failed to calculate distance:", error);
         });
     }
-  }, [bookingData.pickup, bookingData.dropoff]);
+  }, [bookingData.pickup, bookingData.dropoff, bookingData.duration]);
 
   // Conditional rendering - show errors if needed
   // Show error if no data at all

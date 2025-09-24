@@ -26,6 +26,10 @@ export const calculatePrice = (
     return 0;
   }
 
+  console.log(
+    `🔍 PRICING DEBUG: serviceType=${serviceType}, bookingType=${bookingType}, duration="${duration}"`
+  );
+
   // By-the-hour pricing structure
   const pricingStructure = {
     executive: {
@@ -75,5 +79,6 @@ export const calculatePrice = (
   }
 
   console.log(`❌ Unknown duration pattern "${duration}" for ${serviceType}`);
+  console.log(`🔍 FINAL RESULT: ${serviceType} = 0 JOD (unknown duration)`);
   return 0;
 };

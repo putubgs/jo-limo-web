@@ -264,12 +264,17 @@ function PickUpInfoContent() {
 
   // Data validation - check if required data from previous pages is present
   const hasRequiredData =
-    initialBooking.pickup &&
-    initialBooking.dropoff &&
-    initialBooking.pickupLocation &&
-    initialBooking.dropoffLocation &&
-    initialBooking.selectedClass &&
-    initialBooking.selectedClassPrice;
+    initialBooking.type === "by-hour"
+      ? initialBooking.pickup &&
+        initialBooking.pickupLocation &&
+        initialBooking.selectedClass &&
+        initialBooking.selectedClassPrice
+      : initialBooking.pickup &&
+        initialBooking.dropoff &&
+        initialBooking.pickupLocation &&
+        initialBooking.dropoffLocation &&
+        initialBooking.selectedClass &&
+        initialBooking.selectedClassPrice;
 
   // Show error if required data is missing
   if (!hasRequiredData) {
@@ -782,7 +787,9 @@ function PickUpInfoContent() {
                     {isReadingInput && (
                       <div className="mt-2 flex items-center text-blue-600">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                        <span className="text-sm">Reading the flight number</span>
+                        <span className="text-sm">
+                          Reading the flight number
+                        </span>
                       </div>
                     )}
                     {isValidatingFlight && (

@@ -56,13 +56,19 @@ function PaymentAndCheckoutContent() {
 
   // Data validation - check if required data from previous pages is present
   const hasRequiredData =
-    reservationData.pickup &&
-    reservationData.dropoff &&
-    reservationData.pickupLocation &&
-    reservationData.dropoffLocation &&
-    reservationData.selectedClass &&
-    reservationData.selectedClassPrice &&
-    reservationData.billingData;
+    reservationData.type === "by-hour"
+      ? reservationData.pickup &&
+        reservationData.pickupLocation &&
+        reservationData.selectedClass &&
+        reservationData.selectedClassPrice &&
+        reservationData.billingData
+      : reservationData.pickup &&
+        reservationData.dropoff &&
+        reservationData.pickupLocation &&
+        reservationData.dropoffLocation &&
+        reservationData.selectedClass &&
+        reservationData.selectedClassPrice &&
+        reservationData.billingData;
 
   // Show error if required data is missing
   if (!hasRequiredData) {
