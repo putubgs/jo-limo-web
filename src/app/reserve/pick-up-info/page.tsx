@@ -8,11 +8,7 @@ import { useReservationStore, BillingData } from "@/lib/reservation-store";
 import { calculateDistanceAndTime } from "@/lib/distance-calculator";
 import { COUNTRY_CODES, PHONE_COUNTRY_CODES } from "@/data/countries";
 import DataValidationError from "@/components/DataValidationError";
-import {
-  validateFlight,
-  formatFlightNumber,
-  FlightValidationResult,
-} from "@/lib/flight-validator";
+// Flight validation imports removed - keeping API file for future use
 
 function PickUpInfoContent() {
   const router = useRouter();
@@ -25,6 +21,20 @@ function PickUpInfoContent() {
 
   // Use data from Zustand store instead of URL params
   const initialBooking = reservationData;
+
+  // Debug the initial booking data
+  useEffect(() => {
+    console.log("🔍 PICK-UP INFO PAGE - Initial Booking Data:", {
+      initialBooking,
+      hasDate: !!initialBooking.date,
+      hasTime: !!initialBooking.time,
+      hasPickup: !!initialBooking.pickup,
+      hasDropoff: !!initialBooking.dropoff,
+      hasType: !!initialBooking.type,
+      hasDuration: !!initialBooking.duration,
+      hasSelectedClass: !!initialBooking.selectedClass,
+    });
+  }, [initialBooking]);
 
   // original locations coming from store (Reserve Now popup)
   const urlPickup = initialBooking.pickup;
@@ -71,16 +81,15 @@ function PickUpInfoContent() {
   const [countrySearchTerm, setCountrySearchTerm] = useState("");
   const countryDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Flight validation state
+  // Flight number state (no validation)
   const [flightNumber, setFlightNumber] = useState("");
-  const [flightValidation, setFlightValidation] =
-    useState<FlightValidationResult | null>(null);
-  const [isValidatingFlight, setIsValidatingFlight] = useState(false);
-  const [isReadingInput, setIsReadingInput] = useState(false);
 
-  // Debouncing and request cancellation refs
-  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  // Additional booking information state
+  const [pickupSign, setPickupSign] = useState("");
+  const [notesForChauffeur, setNotesForChauffeur] = useState("");
+  const [referenceCode, setReferenceCode] = useState("");
+
+  // Removed flight validation refs
 
   // Billing form state
   const [billingForm, setBillingForm] = useState<BillingData>(() => {
@@ -106,65 +115,9 @@ function PickUpInfoContent() {
     setBillingForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Flight validation handler
-  const handleFlightNumberChange = async (value: string) => {
-    const formattedFlight = formatFlightNumber(value);
-    setFlightNumber(formattedFlight);
-
-    // Clear existing timeout
-    if (debounceTimeout.current) {
-      clearTimeout(debounceTimeout.current);
-    }
-
-    // Cancel previous request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    if (formattedFlight.length >= 3) {
-      // Show "Reading your input..." immediately
-      setIsReadingInput(true);
-      setIsValidatingFlight(false);
-      setFlightValidation(null);
-
-      // Set debounce timeout for 5 seconds
-      debounceTimeout.current = setTimeout(async () => {
-        // Switch to "Verifying flight..." when API call starts
-        setIsReadingInput(false);
-        setIsValidatingFlight(true);
-
-        // Create new abort controller
-        const abortController = new AbortController();
-        abortControllerRef.current = abortController;
-
-        try {
-          const result = await validateFlight(formattedFlight);
-
-          // Only update if request wasn't cancelled
-          if (!abortController.signal.aborted) {
-            setFlightValidation(result);
-          }
-        } catch (error) {
-          // Only update if request wasn't cancelled
-          if (!abortController.signal.aborted) {
-            console.error("Flight validation error:", error);
-            setFlightValidation({
-              isValid: false,
-              flightFound: false,
-              message: "Unable to verify flight. Please try again.",
-            });
-          }
-        } finally {
-          if (!abortController.signal.aborted) {
-            setIsValidatingFlight(false);
-          }
-        }
-      }, 3000); // 5 second debounce
-    } else {
-      setFlightValidation(null);
-      setIsValidatingFlight(false);
-      setIsReadingInput(false);
-    }
+  // Simple flight number handler (no validation)
+  const handleFlightNumberChange = (value: string) => {
+    setFlightNumber(value);
   };
 
   // Filter countries based on search term
@@ -728,6 +681,8 @@ function PickUpInfoContent() {
                 Notes for chauffeur :
               </label>
               <textarea
+                value={notesForChauffeur}
+                onChange={(e) => setNotesForChauffeur(e.target.value)}
                 placeholder="Add special requests, e.g. booking itinerary, number of bags, child seats, Include landmarks, gate numbers, or entrances to help the chauffeur find you."
                 rows={6}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
@@ -752,6 +707,8 @@ function PickUpInfoContent() {
                     </label>
                     <input
                       type="text"
+                      value={pickupSign}
+                      onChange={(e) => setPickupSign(e.target.value)}
                       placeholder="Your Name"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
@@ -771,41 +728,8 @@ function PickUpInfoContent() {
                       value={flightNumber}
                       onChange={(e) => handleFlightNumberChange(e.target.value)}
                       placeholder="e.g. LH 202, US 2457, BA2490"
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent ${
-                        flightValidation?.isValid
-                          ? "border-green-500 focus:ring-green-500"
-                          : flightValidation && !flightValidation.isValid
-                          ? "border-red-500 focus:ring-red-500"
-                          : "border-gray-300 focus:ring-blue-500"
-                      }`}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
-                    {isReadingInput && (
-                      <div className="mt-2 flex items-center text-blue-600">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                        <span className="text-sm">
-                          Reading the flight number
-                        </span>
-                      </div>
-                    )}
-                    {isValidatingFlight && (
-                      <div className="mt-2 flex items-center text-blue-600">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                        <span className="text-sm">
-                          Verifying the flight number
-                        </span>
-                      </div>
-                    )}
-                    {flightValidation && (
-                      <div
-                        className={`mt-2 text-sm ${
-                          flightValidation.isValid
-                            ? "text-green-600"
-                            : "text-red-600"
-                        }`}
-                      >
-                        {flightValidation.message}
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
@@ -819,6 +743,8 @@ function PickUpInfoContent() {
               </label>
               <input
                 type="text"
+                value={referenceCode}
+                onChange={(e) => setReferenceCode(e.target.value)}
                 placeholder="For corporate reservations, the entered details will appear on the official invoice."
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
@@ -830,11 +756,8 @@ function PickUpInfoContent() {
             <button
               onClick={() => {
                 // Validate flight number if required (airport locations)
-                if (
-                  hasAirportLocation &&
-                  (!flightNumber || !flightValidation?.isValid)
-                ) {
-                  alert("Please enter a valid flight number to continue.");
+                if (hasAirportLocation && !flightNumber) {
+                  alert("Please enter a flight number to continue.");
                   return;
                 }
 
@@ -849,15 +772,17 @@ function PickUpInfoContent() {
                   time: initialBooking.time,
                   type: initialBooking.type,
                   duration: initialBooking.duration,
+                  mobileNumber: `${selectedCountry.code} ${phoneNumber}`,
+                  pickupSign: pickupSign,
+                  flightNumber: flightNumber,
+                  notesForChauffeur: notesForChauffeur,
+                  referenceCode: referenceCode,
                 });
                 // Navigate to payment-and-checkout (next step in the flow)
                 router.push("/reserve/payment-and-checkout");
               }}
               className="w-full text-center bg-[#ABABAB] text-white font-bold text-[16px] px-8 py-4 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={
-                hasAirportLocation &&
-                (!flightNumber || !flightValidation?.isValid)
-              }
+              disabled={hasAirportLocation && !flightNumber}
             >
               Continue
             </button>

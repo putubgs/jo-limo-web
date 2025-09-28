@@ -31,6 +31,12 @@ export interface ReservationData {
   dropoffLocation?: LocationMatch | null;
   // Billing information for payment
   billingData?: BillingData;
+  // Additional booking information
+  mobileNumber?: string;
+  pickupSign?: string;
+  flightNumber?: string;
+  notesForChauffeur?: string;
+  referenceCode?: string;
 }
 
 interface ReservationStore {

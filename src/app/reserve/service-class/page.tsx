@@ -16,8 +16,12 @@ import DataValidationError from "@/components/DataValidationError";
 
 function ServiceClassContent() {
   const router = useRouter();
-  const { reservationData, setSelectedServiceClass, getSelectedServiceClass } =
-    useReservationStore();
+  const {
+    reservationData,
+    setSelectedServiceClass,
+    getSelectedServiceClass,
+    setReservationData,
+  } = useReservationStore();
 
   // Initialize selectedService from store
   const [selectedService, setSelectedService] = useState<ServiceClass | "">(
@@ -31,6 +35,19 @@ function ServiceClassContent() {
 
   // Use data from Zustand store instead of URL params
   const bookingData = reservationData;
+
+  // Debug the booking data
+  useEffect(() => {
+    console.log("🔍 SERVICE CLASS PAGE - Booking Data:", {
+      bookingData,
+      hasDate: !!bookingData.date,
+      hasTime: !!bookingData.time,
+      hasPickup: !!bookingData.pickup,
+      hasDropoff: !!bookingData.dropoff,
+      hasType: !!bookingData.type,
+      hasDuration: !!bookingData.duration,
+    });
+  }, [bookingData]);
 
   // Simple validation - just check if we have the basic required data
   const hasLocationData = bookingData.pickup || bookingData.pickupLocation;
@@ -305,10 +322,28 @@ function ServiceClassContent() {
 
       console.log("💰 Calculated price (number):", priceNumber);
       console.log("💰 Calculated price (string):", priceString);
+      console.log(
+        "🔍 SERVICE CLASS - About to save service class, current booking data:",
+        bookingData
+      );
 
       // Pass the string to the store method
       setSelectedServiceClass(selectedService, priceString);
 
+      // IMPORTANT: Also ensure all existing booking data is preserved
+      console.log(
+        "🔍 SERVICE CLASS - Preserving existing booking data:",
+        bookingData
+      );
+      setReservationData({
+        ...bookingData, // Preserve all existing data
+        selectedClass: selectedService,
+        selectedClassPrice: priceString,
+      });
+
+      console.log(
+        "🔍 SERVICE CLASS - Service class saved and data preserved, navigating to pick-up info"
+      );
       // Navigate to pick-up info
       router.push("/reserve/pick-up-info");
     }

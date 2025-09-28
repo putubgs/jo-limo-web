@@ -354,7 +354,9 @@ export default function ReservationForm({
     };
 
     // Save data to Zustand store
+    console.log("💾 RESERVATION FORM - Saving booking data:", bookingData);
     setReservationData(bookingData);
+    console.log("💾 RESERVATION FORM - Data saved to store");
 
     // Call custom onContinue if provided, otherwise navigate
     if (onContinue) {

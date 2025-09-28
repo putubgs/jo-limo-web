@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
   Suspense,
+  useCallback,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/header";
@@ -18,6 +19,7 @@ import SuccessDialog from "@/components/dialogs/SuccessDialog";
 import FailureDialog from "@/components/dialogs/FailureDialog";
 import { useReservationStore } from "@/lib/reservation-store";
 import { calculateDistanceAndTime } from "@/lib/distance-calculator";
+import { createBookingHistory } from "@/lib/booking-history";
 import type { HyperPayResult } from "@/types/hyperpay";
 import DataValidationError from "@/components/DataValidationError";
 
@@ -59,7 +61,167 @@ const reducer = (state: DialogState, action: DialogAction): DialogState => {
 function PaymentAndCheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { reservationData } = useReservationStore();
+  const { reservationData, getBillingData, setReservationData } =
+    useReservationStore();
+
+  // Track when data restoration is complete
+  const [isDataRestored, setIsDataRestored] = useState(false);
+
+  // Debug reservation data on component mount and redirect if missing
+  useEffect(() => {
+    console.log("🔍 PAYMENT PAGE - Reservation Data Check:", {
+      reservationData,
+      hasDate: !!reservationData.date,
+      hasTime: !!reservationData.time,
+      hasPickup: !!reservationData.pickup,
+      hasDropoff: !!reservationData.dropoff,
+      hasSelectedClass: !!reservationData.selectedClass,
+      hasBillingData: !!getBillingData(),
+    });
+
+    // TRACE REAL DATA: Let's see what's actually in the store
+    console.log(
+      "🔍 FULL RESERVATION DATA OBJECT:",
+      JSON.stringify(reservationData, null, 2)
+    );
+
+    // Check if we have real data, if not, try to restore from localStorage
+    if (
+      !reservationData.date &&
+      !reservationData.time &&
+      !reservationData.pickup
+    ) {
+      console.log(
+        "❌ No real data found, checking localStorage for restoration"
+      );
+
+      // Check localStorage directly
+      const rawStorage = localStorage.getItem("reservation-storage");
+      console.log("🔍 RAW localStorage:", rawStorage);
+
+      if (rawStorage) {
+        try {
+          const parsed = JSON.parse(rawStorage);
+          console.log("🔍 PARSED localStorage:", parsed);
+
+          if (parsed.state?.reservationData) {
+            console.log("🔄 FOUND DATA IN localStorage, restoring...");
+            setReservationData(parsed.state.reservationData);
+            return;
+          }
+        } catch (e) {
+          console.error("❌ Failed to parse localStorage:", e);
+        }
+      }
+
+      console.log(
+        "❌ No data found anywhere - user needs to complete booking flow"
+      );
+    } else {
+      console.log("✅ REAL DATA FOUND:", {
+        date: reservationData.date,
+        time: reservationData.time,
+        pickup: reservationData.pickup,
+        dropoff: reservationData.dropoff,
+        type: reservationData.type,
+        selectedClass: reservationData.selectedClass,
+        selectedClassPrice: reservationData.selectedClassPrice,
+      });
+    }
+
+    // Check if we have minimal required data for payment
+    const hasMinimalData =
+      reservationData.date &&
+      reservationData.time &&
+      (reservationData.pickup ||
+        (reservationData.type === "by-hour" && reservationData.pickup));
+
+    if (!hasMinimalData && !searchParams.get("resourcePath")) {
+      console.log(
+        "❌ Missing reservation data - checking localStorage for backup"
+      );
+
+      // Try to restore from localStorage
+      const storedData = localStorage.getItem("reservation-storage");
+      console.log("🔍 Raw localStorage data:", storedData);
+
+      if (storedData) {
+        try {
+          const parsed = JSON.parse(storedData);
+          console.log("📦 Found stored reservation data:", parsed);
+
+          if (parsed.state && parsed.state.reservationData) {
+            const storedReservationData = parsed.state.reservationData;
+            console.log(
+              "🔍 Stored reservation data details:",
+              storedReservationData
+            );
+            console.log("🔍 RAW stored data values:", {
+              date: storedReservationData.date,
+              time: storedReservationData.time,
+              pickup: storedReservationData.pickup,
+              dropoff: storedReservationData.dropoff,
+              type: storedReservationData.type,
+              duration: storedReservationData.duration,
+              selectedClass: storedReservationData.selectedClass,
+              selectedClassPrice: storedReservationData.selectedClassPrice,
+            });
+
+            if (
+              storedReservationData.date &&
+              storedReservationData.time &&
+              storedReservationData.pickup
+            ) {
+              console.log(
+                "✅ Stored data looks valid, but Zustand store is empty"
+              );
+              console.log("Attempting to restore data from localStorage...");
+
+              // Try to restore the data
+              console.log("🔄 Attempting to restore data...");
+              setReservationData(storedReservationData);
+              console.log("🔄 Data restoration attempted");
+
+              // Force a re-render by updating state
+              setTimeout(() => {
+                console.log(
+                  "🔄 Checking if data was restored after timeout..."
+                );
+                console.log(
+                  "🔄 Current reservation data should be updated on next render"
+                );
+              }, 100);
+
+              return; // Don't redirect, let the component re-render with restored data
+            } else {
+              console.log("❌ Stored data is also incomplete:", {
+                hasDate: !!storedReservationData.date,
+                hasTime: !!storedReservationData.time,
+                hasPickup: !!storedReservationData.pickup,
+                storedData: storedReservationData,
+              });
+            }
+          }
+        } catch (e) {
+          console.error("Failed to parse stored reservation data:", e);
+        }
+      }
+
+      console.log("❌ Redirecting to home due to missing data");
+      router.push("/");
+      return;
+    }
+
+    // Mark data restoration as complete
+    console.log("✅ Data restoration check complete");
+    setIsDataRestored(true);
+  }, [
+    reservationData,
+    router,
+    searchParams,
+    getBillingData,
+    setReservationData,
+  ]);
 
   /* ---------------------------------------------------------------- */
   /*  Dialog state (useReducer)                                       */
@@ -82,6 +244,65 @@ function PaymentAndCheckoutContent() {
     [reservationData]
   );
 
+  // Create booking function - defined early to avoid conditional hook calls
+  const createBooking = useCallback(
+    async (
+      paymentMethod: "credit/debit" | "cash",
+      paymentResult?: HyperPayResult
+    ) => {
+      try {
+        const billingData = getBillingData();
+        if (!billingData) {
+          console.error("No billing data available for booking creation");
+          return;
+        }
+
+        // Check if we have the minimum required data for booking
+        if (
+          !reservationData.date ||
+          !reservationData.time ||
+          !reservationData.pickup
+        ) {
+          console.error("Insufficient reservation data for booking creation:", {
+            date: reservationData.date,
+            time: reservationData.time,
+            pickup: reservationData.pickup,
+            fullData: reservationData,
+          });
+          console.error(
+            "This usually means the user accessed the payment page without completing the booking flow"
+          );
+
+          console.log("❌ Cannot create booking - insufficient data");
+          return;
+        }
+
+        console.log("🚀 CREATING BOOKING WITH REAL DATA:", {
+          reservationData: JSON.stringify(reservationData, null, 2),
+          billingData: JSON.stringify(billingData, null, 2),
+          paymentMethod,
+          paymentStatus:
+            paymentMethod === "credit/debit" ? "completed" : "pending",
+        });
+
+        await createBookingHistory({
+          reservationData,
+          billingData,
+          paymentMethod,
+          paymentStatus:
+            paymentMethod === "credit/debit" ? "completed" : "pending",
+          paymentResult,
+        });
+
+        console.log("✅ Booking history created successfully with REAL DATA!");
+      } catch (error) {
+        console.error("Failed to create booking history:", error);
+        // Don't fail the payment flow if booking creation fails
+      }
+    },
+    [reservationData, getBillingData]
+  );
+
   /* ---------------------------------------------------------------- */
   /*  Payment-status check (after redirect)                           */
   /* ---------------------------------------------------------------- */
@@ -89,7 +310,23 @@ function PaymentAndCheckoutContent() {
     const resourcePath = searchParams.get("resourcePath");
     const paymentId = searchParams.get("id");
 
-    if (!resourcePath || !paymentId || hasSettledRef.current) return;
+    // Wait for data restoration to complete before processing payment
+    if (
+      !resourcePath ||
+      !paymentId ||
+      hasSettledRef.current ||
+      !isDataRestored
+    ) {
+      console.log("⏳ Payment status check waiting for data restoration:", {
+        hasResourcePath: !!resourcePath,
+        hasPaymentId: !!paymentId,
+        hasSettled: hasSettledRef.current,
+        isDataRestored,
+      });
+      return;
+    }
+
+    console.log("🚀 Payment status check proceeding with restored data");
 
     dispatch({ type: "PROCESSING" });
 
@@ -97,7 +334,7 @@ function PaymentAndCheckoutContent() {
       `/api/checkout-status?resourcePath=${encodeURIComponent(resourcePath)}`
     )
       .then((r) => r.json())
-      .then((data: HyperPayResult) => {
+      .then(async (data: HyperPayResult) => {
         if (hasSettledRef.current) return; // already handled
 
         const okCodes = [
@@ -111,6 +348,10 @@ function PaymentAndCheckoutContent() {
 
         if (success) {
           hasSettledRef.current = true;
+
+          // Create booking history for successful HyperPay payment
+          await createBooking("credit/debit", data);
+
           dispatch({ type: "SUCCESS", payload: data });
         } else {
           hasSettledRef.current = true;
@@ -125,7 +366,7 @@ function PaymentAndCheckoutContent() {
           payload: "Network error. Please try again.",
         });
       });
-  }, [searchParams]);
+  }, [searchParams, createBooking, isDataRestored]);
 
   /* ---------------------------------------------------------------- */
   /*  Distance calculation                                            */
@@ -230,19 +471,26 @@ function PaymentAndCheckoutContent() {
   /* ---------------------------------------------------------------- */
   /*  Handlers                                                        */
   /* ---------------------------------------------------------------- */
+
   const handleCash = () => {
     dispatch({ type: "PROCESSING" });
-    setTimeout(() => {
+    setTimeout(async () => {
       if (hasSettledRef.current) return;
       hasSettledRef.current = true;
+
+      const cashPaymentResult = {
+        id: `CASH-${Date.now()}`,
+        amount: reservationData.selectedClassPrice || "0",
+        currency: "JOD",
+        result: { code: "000.000.000", description: "Cash accepted" },
+      } as HyperPayResult;
+
+      // Create booking history for cash payment
+      await createBooking("cash", cashPaymentResult);
+
       dispatch({
         type: "SUCCESS",
-        payload: {
-          id: `CASH-${Date.now()}`,
-          amount: reservationData.selectedClassPrice || "0",
-          currency: "SAR",
-          result: { code: "000.000.000", description: "Cash accepted" },
-        } as HyperPayResult,
+        payload: cashPaymentResult,
       });
     }, 2000);
   };
