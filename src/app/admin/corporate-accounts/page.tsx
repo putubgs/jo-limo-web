@@ -11,7 +11,10 @@ interface CorporateAccount {
   company_email: string;
   phone_number: string;
   billing_address: string;
-  password: string;
+  password?: string; // This will be populated from form data, not from API
+  created_at?: string;
+  updated_at?: string;
+  is_active?: boolean;
 }
 
 type FormMode = "create" | "edit" | "view" | null;
@@ -31,6 +34,8 @@ export default function CorporateAccounts() {
     email: string;
   }>({ show: false, reference: "", email: "" });
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [passwordValidation, setPasswordValidation] = useState({
     isValid: false,
     errors: [] as string[],
@@ -71,46 +76,29 @@ export default function CorporateAccounts() {
     return isValid;
   };
 
+  // Fetch corporate accounts from API
+  const fetchAccounts = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/admin/corporate-accounts");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch accounts");
+      }
+
+      setAccounts(data.accounts || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch accounts");
+      console.error("Error fetching accounts:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    // Simulate fetching corporate account data
-    const dummyAccounts: CorporateAccount[] = [
-      {
-        company_id: "550e8400-e29b-41d4-a716-446655440001",
-        corporate_reference: "CORP-240101-001",
-        company_name: "Jordan Tech Solutions",
-        company_website: "https://jordantech.jo",
-        company_address:
-          "Abdali Boulevard, Building 7, Floor 12, Amman, Jordan",
-        company_email: "contact@jordantech.jo",
-        phone_number: "+962 6 123 4567",
-        billing_address:
-          "Abdali Boulevard, Building 7, Floor 12, Amman, Jordan",
-        password: "JTS2024!secure",
-      },
-      {
-        company_id: "550e8400-e29b-41d4-a716-446655440002",
-        corporate_reference: "CORP-240105-002",
-        company_name: "Petra Business Group",
-        company_website: "https://petrabusiness.com",
-        company_address: "Rainbow Street 45, Jabal Amman, Amman, Jordan",
-        company_email: "info@petrabusiness.com",
-        phone_number: "+962 6 987 6543",
-        billing_address: "Rainbow Street 45, Jabal Amman, Amman, Jordan",
-        password: "PBG2024@strong",
-      },
-      {
-        company_id: "550e8400-e29b-41d4-a716-446655440003",
-        corporate_reference: "CORP-240110-003",
-        company_name: "Dead Sea Enterprises",
-        company_website: "https://deadseaenterprises.jo",
-        company_address: "King Hussein Business Park, Amman, Jordan",
-        company_email: "hello@deadseaenterprises.jo",
-        phone_number: "+962 6 456 7890",
-        billing_address: "King Hussein Business Park, Amman, Jordan",
-        password: "DSE2024#complex",
-      },
-    ];
-    setAccounts(dummyAccounts);
+    fetchAccounts();
   }, []);
 
   const filteredAccounts = accounts.filter((account) => {
@@ -140,7 +128,7 @@ export default function CorporateAccounts() {
     }
   };
 
-  const handleDeleteSelected = () => {
+  const handleDeleteSelected = async () => {
     if (selectedAccounts.length === 0) return;
 
     if (
@@ -148,10 +136,36 @@ export default function CorporateAccounts() {
         `Are you sure you want to delete ${selectedAccounts.length} account(s)?`
       )
     ) {
-      setAccounts((prev) =>
-        prev.filter((acc) => !selectedAccounts.includes(acc.company_id))
-      );
-      setSelectedAccounts([]);
+      setLoading(true);
+      try {
+        const response = await fetch(
+          "/api/admin/corporate-accounts/bulk-delete",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ ids: selectedAccounts }),
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to delete accounts");
+        }
+
+        // Refresh the accounts list
+        await fetchAccounts();
+        setSelectedAccounts([]);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to delete accounts"
+        );
+        console.error("Error deleting accounts:", err);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -174,7 +188,7 @@ export default function CorporateAccounts() {
     setFormData({
       corporate_reference: "",
       company_name: "",
-      company_website: "",
+      company_website: "-",
       company_address: "",
       company_email: "",
       phone_number: "",
@@ -187,17 +201,25 @@ export default function CorporateAccounts() {
     setFormMode("edit");
     setCurrentAccount(account);
     setShowPassword(false); // Reset password visibility
-    setFormData(account);
+    setFormData({
+      ...account,
+      company_website: account.company_website || "-", // Show "-" if no website
+      password: "", // Clear password field for editing - user can enter new password
+    });
   };
 
   const handleViewAccount = (account: CorporateAccount) => {
     setFormMode("view");
     setCurrentAccount(account);
     setShowPassword(false); // Reset password visibility
-    setFormData(account);
+    setFormData({
+      ...account,
+      company_website: account.company_website || "-", // Show "-" if no website
+      password: "••••••••••••", // Show placeholder for password in view mode
+    });
   };
 
-  const handleSaveAccount = () => {
+  const handleSaveAccount = async () => {
     if (formMode === "create") {
       // Validate password before saving
       const isPasswordValid = validatePassword(formData.password || "");
@@ -206,21 +228,42 @@ export default function CorporateAccounts() {
         return;
       }
 
-      const newAccount: CorporateAccount = {
-        ...(formData as CorporateAccount),
-        company_id: `550e8400-e29b-41d4-a716-${Date.now()}`,
-      };
-      setAccounts((prev) => [...prev, newAccount]);
+      setLoading(true);
+      try {
+        const response = await fetch("/api/admin/create-account", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
 
-      // Show success message
-      setSuccessMessage({
-        show: true,
-        reference: formData.corporate_reference || "",
-        email: formData.company_email || "",
-      });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to create account");
+        }
+
+        // Refresh the accounts list
+        await fetchAccounts();
+
+        // Show success message
+        setSuccessMessage({
+          show: true,
+          reference: formData.corporate_reference || "",
+          email: formData.company_email || "",
+        });
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to create account"
+        );
+        console.error("Error creating account:", err);
+      } finally {
+        setLoading(false);
+      }
     } else if (formMode === "edit" && currentAccount) {
-      // Validate password for edit mode if password is being changed
-      if (formData.password && formData.password !== currentAccount.password) {
+      // Validate password for edit mode only if a new password is provided
+      if (formData.password && formData.password.trim() !== "") {
         const isPasswordValid = validatePassword(formData.password);
         if (!isPasswordValid) {
           alert("Please ensure the password meets all security requirements.");
@@ -228,13 +271,35 @@ export default function CorporateAccounts() {
         }
       }
 
-      setAccounts((prev) =>
-        prev.map((acc) =>
-          acc.company_id === currentAccount.company_id
-            ? { ...(formData as CorporateAccount) }
-            : acc
-        )
-      );
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `/api/admin/corporate-accounts/${currentAccount.company_id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formData),
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to update account");
+        }
+
+        // Refresh the accounts list
+        await fetchAccounts();
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to update account"
+        );
+        console.error("Error updating account:", err);
+      } finally {
+        setLoading(false);
+      }
     }
     setFormMode(null);
     setCurrentAccount(null);
@@ -273,7 +338,8 @@ export default function CorporateAccounts() {
         </div>
         <button
           onClick={handleCreateAccount}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          disabled={loading}
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <svg
             className="w-4 h-4 mr-2"
@@ -291,6 +357,43 @@ export default function CorporateAccounts() {
           Create Account
         </button>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-5 w-5 text-red-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">Error</h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p>{error}</p>
+              </div>
+              <div className="mt-4">
+                <button
+                  onClick={() => setError(null)}
+                  className="bg-red-50 px-2 py-1.5 rounded-md text-sm font-medium text-red-800 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-red-50 focus:ring-red-600"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Success Modal */}
       {successMessage.show && (
@@ -359,7 +462,7 @@ export default function CorporateAccounts() {
                       <span className="font-semibold">
                         {successMessage.email}
                       </span>{" "}
-                      for the client&apos;s records and secure access.
+                      via email for the client&apos;s records and secure access.
                     </p>
                   </div>
                 </div>
@@ -386,8 +489,9 @@ export default function CorporateAccounts() {
                     </p>
                     <p className="text-sm text-yellow-700 mt-1">
                       The corporate reference and account password have been
-                      successfully created. Please save these credentials
-                      securely for future account access and management.
+                      successfully created and sent via email. Please ensure the
+                      client saves these credentials securely for future account
+                      access and management.
                     </p>
                   </div>
                 </div>
@@ -488,90 +592,102 @@ export default function CorporateAccounts() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Select
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Corporate Reference
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Company
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Contact
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Website
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredAccounts.map((account) => (
-                <tr key={account.company_id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="checkbox"
-                      checked={selectedAccounts.includes(account.company_id)}
-                      onChange={() => handleSelectAccount(account.company_id)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                      {account.corporate_reference}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {account.company_name}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {account.company_email}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {account.phone_number}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-blue-600 hover:text-blue-800">
-                      <a
-                        href={account.company_website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {account.company_website}
-                      </a>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                    <button
-                      onClick={() => handleViewAccount(account)}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      View
-                    </button>
-                    <button
-                      onClick={() => handleEditAccount(account)}
-                      className="text-green-600 hover:text-green-900"
-                    >
-                      Edit
-                    </button>
-                  </td>
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-2 text-gray-600">Loading accounts...</span>
+            </div>
+          ) : (
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Select
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Corporate Reference
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Company
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Contact
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Website
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredAccounts.map((account) => (
+                  <tr key={account.company_id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={selectedAccounts.includes(account.company_id)}
+                        onChange={() => handleSelectAccount(account.company_id)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                        {account.corporate_reference}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {account.company_name}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {account.company_email}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {account.phone_number}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-blue-600 hover:text-blue-800">
+                        {account.company_website &&
+                        account.company_website !== "-" ? (
+                          <a
+                            href={account.company_website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {account.company_website}
+                          </a>
+                        ) : (
+                          <span className="text-gray-500">-</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                      <button
+                        onClick={() => handleViewAccount(account)}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        View
+                      </button>
+                      <button
+                        onClick={() => handleEditAccount(account)}
+                        className="text-green-600 hover:text-green-900"
+                      >
+                        Edit
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
-        {filteredAccounts.length === 0 && (
+        {!loading && filteredAccounts.length === 0 && (
           <div className="text-center py-12">
             <svg
               className="mx-auto h-12 w-12 text-gray-400"
@@ -738,7 +854,12 @@ export default function CorporateAccounts() {
                               d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                             />
                           </svg>
-                          Account Password *
+                          Account Password{" "}
+                          {formMode === "create"
+                            ? "*"
+                            : formMode === "edit"
+                            ? "(leave empty to keep current)"
+                            : ""}
                         </label>
                         <div className="relative">
                           <input
@@ -760,8 +881,14 @@ export default function CorporateAccounts() {
                                   : "border-red-300 focus:ring-red-500 focus:border-red-500"
                                 : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                             }`}
-                            placeholder="Create a secure password"
-                            required
+                            placeholder={
+                              formMode === "create"
+                                ? "Create a secure password"
+                                : formMode === "edit"
+                                ? "Enter new password (leave empty to keep current)"
+                                : "Password hidden"
+                            }
+                            required={formMode === "create"}
                           />
                           {formMode !== "view" && (
                             <button
@@ -809,102 +936,107 @@ export default function CorporateAccounts() {
                         </div>
 
                         {/* Password Requirements */}
-                        {formMode !== "view" && formData.password && (
-                          <div className="mt-3 p-3 bg-gray-50 rounded-lg border">
-                            <p className="text-sm font-medium text-gray-700 mb-2">
-                              Password Requirements:
-                            </p>
-                            <div className="space-y-1">
-                              {[
-                                {
-                                  key: "minLength",
-                                  text: "At least 8 characters",
-                                },
-                                {
-                                  key: "hasUppercase",
-                                  text: "One uppercase letter (A-Z)",
-                                },
-                                {
-                                  key: "hasLowercase",
-                                  text: "One lowercase letter (a-z)",
-                                },
-                                { key: "hasNumber", text: "One number (0-9)" },
-                                {
-                                  key: "hasSpecialChar",
-                                  text: "One special character (!@#$%^&*)",
-                                },
-                              ].map(({ key, text }) => (
-                                <div
-                                  key={key}
-                                  className="flex items-center text-sm"
-                                >
-                                  {passwordValidation.requirements[
-                                    key as keyof typeof passwordValidation.requirements
-                                  ] ? (
-                                    <svg
-                                      className="w-4 h-4 text-green-500 mr-2"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M5 13l4 4L19 7"
-                                      />
-                                    </svg>
-                                  ) : (
-                                    <svg
-                                      className="w-4 h-4 text-red-500 mr-2"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M6 18L18 6M6 6l12 12"
-                                      />
-                                    </svg>
-                                  )}
-                                  <span
-                                    className={
-                                      passwordValidation.requirements[
-                                        key as keyof typeof passwordValidation.requirements
-                                      ]
-                                        ? "text-green-700"
-                                        : "text-red-700"
-                                    }
+                        {formMode !== "view" &&
+                          formData.password &&
+                          formData.password.trim() !== "" && (
+                            <div className="mt-3 p-3 bg-gray-50 rounded-lg border">
+                              <p className="text-sm font-medium text-gray-700 mb-2">
+                                Password Requirements:
+                              </p>
+                              <div className="space-y-1">
+                                {[
+                                  {
+                                    key: "minLength",
+                                    text: "At least 8 characters",
+                                  },
+                                  {
+                                    key: "hasUppercase",
+                                    text: "One uppercase letter (A-Z)",
+                                  },
+                                  {
+                                    key: "hasLowercase",
+                                    text: "One lowercase letter (a-z)",
+                                  },
+                                  {
+                                    key: "hasNumber",
+                                    text: "One number (0-9)",
+                                  },
+                                  {
+                                    key: "hasSpecialChar",
+                                    text: "One special character (!@#$%^&*)",
+                                  },
+                                ].map(({ key, text }) => (
+                                  <div
+                                    key={key}
+                                    className="flex items-center text-sm"
                                   >
-                                    {text}
+                                    {passwordValidation.requirements[
+                                      key as keyof typeof passwordValidation.requirements
+                                    ] ? (
+                                      <svg
+                                        className="w-4 h-4 text-green-500 mr-2"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M5 13l4 4L19 7"
+                                        />
+                                      </svg>
+                                    ) : (
+                                      <svg
+                                        className="w-4 h-4 text-red-500 mr-2"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M6 18L18 6M6 6l12 12"
+                                        />
+                                      </svg>
+                                    )}
+                                    <span
+                                      className={
+                                        passwordValidation.requirements[
+                                          key as keyof typeof passwordValidation.requirements
+                                        ]
+                                          ? "text-green-700"
+                                          : "text-red-700"
+                                      }
+                                    >
+                                      {text}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                              {passwordValidation.isValid && (
+                                <div className="mt-2 flex items-center text-sm text-green-700">
+                                  <svg
+                                    className="w-4 h-4 text-green-500 mr-2"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
+                                  </svg>
+                                  <span className="font-medium">
+                                    Password meets all requirements!
                                   </span>
                                 </div>
-                              ))}
+                              )}
                             </div>
-                            {passwordValidation.isValid && (
-                              <div className="mt-2 flex items-center text-sm text-green-700">
-                                <svg
-                                  className="w-4 h-4 text-green-500 mr-2"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                  />
-                                </svg>
-                                <span className="font-medium">
-                                  Password meets all requirements!
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        )}
+                          )}
                       </div>
                     </div>
                   </div>
@@ -971,17 +1103,16 @@ export default function CorporateAccounts() {
                               d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"
                             />
                           </svg>
-                          Company Website *
+                          Company Website
                         </label>
                         <input
-                          type="url"
+                          type="text"
                           name="company_website"
                           value={formData.company_website || ""}
                           onChange={handleFormInputChange}
                           disabled={formMode === "view"}
                           className="block w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm disabled:bg-gray-100 py-3 px-4"
-                          placeholder="https://company.com"
-                          required
+                          placeholder="https://company.com or - if no website"
                         />
                       </div>
                     </div>
@@ -1178,31 +1309,44 @@ export default function CorporateAccounts() {
                       <button
                         type="button"
                         onClick={() => setFormMode(null)}
-                        className="px-6 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                        disabled={loading}
+                        className="px-6 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Cancel
                       </button>
                       {formMode !== "view" && (
                         <button
                           type="submit"
-                          className="px-6 py-2 bg-blue-600 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 flex items-center"
+                          disabled={loading}
+                          className="px-6 py-2 bg-blue-600 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <svg
-                            className="w-4 h-4 mr-2"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 4v16m8-8H4"
-                            />
-                          </svg>
-                          {formMode === "create"
-                            ? "Create Corporate Account"
-                            : "Update Account"}
+                          {loading ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              {formMode === "create"
+                                ? "Creating..."
+                                : "Updating..."}
+                            </>
+                          ) : (
+                            <>
+                              <svg
+                                className="w-4 h-4 mr-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 4v16m8-8H4"
+                                />
+                              </svg>
+                              {formMode === "create"
+                                ? "Create Corporate Account"
+                                : "Update Account"}
+                            </>
+                          )}
                         </button>
                       )}
                     </div>

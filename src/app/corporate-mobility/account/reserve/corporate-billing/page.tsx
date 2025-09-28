@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, Suspense, useMemo } from "react";
+import { useEffect, Suspense, useMemo, useRef, useCallback } from "react";
 import { useState } from "react";
 import { useReservationStore } from "@/lib/reservation-store";
 import { calculateDistanceAndTime } from "@/lib/distance-calculator";
@@ -26,6 +26,11 @@ function PaymentAndCheckoutContent() {
     duration: string;
   } | null>(null);
 
+  const [bookingCreated, setBookingCreated] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+  const [isCreatingBooking, setIsCreatingBooking] = useState(false);
+  const hasSubmittedRef = useRef(false);
+
   useEffect(() => {
     console.log("Booking data:", bookingData);
     console.log("Selected service:", reservationData.selectedClass);
@@ -35,6 +40,122 @@ function PaymentAndCheckoutContent() {
     reservationData.selectedClass,
     reservationData.selectedClassPrice,
   ]);
+
+  // Data validation - check if required data from previous pages is present
+  const hasRequiredData =
+    reservationData.type === "by-hour"
+      ? reservationData.pickup &&
+        reservationData.pickupLocation &&
+        reservationData.selectedClass &&
+        reservationData.selectedClassPrice &&
+        reservationData.billingData
+      : reservationData.pickup &&
+        reservationData.dropoff &&
+        reservationData.pickupLocation &&
+        reservationData.dropoffLocation &&
+        reservationData.selectedClass &&
+        reservationData.selectedClassPrice &&
+        reservationData.billingData;
+
+  // Create a stable callback for booking creation
+  const createCorporateBooking = useCallback(async () => {
+    if (
+      bookingCreated ||
+      isCreatingBooking ||
+      bookingError ||
+      hasSubmittedRef.current
+    ) {
+      return; // Don't create if already created, creating, has error, or already submitted
+    }
+
+    // Check if we have all required data
+    if (!hasRequiredData) {
+      return;
+    }
+
+    hasSubmittedRef.current = true; // Mark as submitted to prevent duplicate calls
+    console.log("Creating corporate booking - preventing duplicates");
+    setIsCreatingBooking(true);
+    setBookingError(null);
+
+    try {
+      // Prepare booking data
+      const bookingPayload = {
+        first_name: reservationData.billingData?.customerGivenName || "",
+        last_name: reservationData.billingData?.customerSurname || "",
+        email: reservationData.billingData?.customerEmail || "",
+        mobile_number: reservationData.mobileNumber || "",
+        pickup_sign: reservationData.pickupSign || null,
+        flight_number: reservationData.flightNumber || null,
+        notes_for_the_chauffeur: reservationData.notesForChauffeur || null,
+        booking_type: reservationData.type,
+        pick_up_location: reservationData.pickup,
+        drop_off_location:
+          reservationData.type === "one-way"
+            ? reservationData.dropoff
+            : reservationData.pickup,
+        duration:
+          reservationData.type === "by-hour" ? reservationData.duration : null,
+        date_and_time: new Date(
+          `${reservationData.date} ${reservationData.time}`
+        ).toISOString(),
+        selected_class: reservationData.selectedClass,
+        price: parseFloat(reservationData.selectedClassPrice || "0") || 0,
+      };
+
+      console.log("Creating corporate booking with payload:", bookingPayload);
+
+      const response = await fetch("/api/corporate-mobility/booking/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(bookingPayload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        console.log("Corporate booking created successfully:", data.booking);
+        setBookingCreated(true);
+      } else {
+        console.error("Failed to create booking:", data);
+        setBookingError(
+          data.error || data.details || "Failed to create booking"
+        );
+      }
+    } catch (error) {
+      console.error("Error creating booking:", error);
+      setBookingError("Failed to create booking");
+    } finally {
+      setIsCreatingBooking(false);
+    }
+  }, [
+    bookingCreated,
+    isCreatingBooking,
+    bookingError,
+    hasRequiredData,
+    reservationData.billingData?.customerGivenName,
+    reservationData.billingData?.customerSurname,
+    reservationData.billingData?.customerEmail,
+    reservationData.mobileNumber,
+    reservationData.pickupSign,
+    reservationData.flightNumber,
+    reservationData.notesForChauffeur,
+    reservationData.type,
+    reservationData.pickup,
+    reservationData.dropoff,
+    reservationData.duration,
+    reservationData.date,
+    reservationData.time,
+    reservationData.selectedClass,
+    reservationData.selectedClassPrice,
+  ]);
+
+  // Create booking automatically when component mounts and has required data
+  useEffect(() => {
+    createCorporateBooking();
+  }, [createCorporateBooking]);
 
   // Calculate distance when pickup and dropoff are available
   useEffect(() => {
@@ -53,22 +174,6 @@ function PaymentAndCheckoutContent() {
         });
     }
   }, [bookingData.pickup, bookingData.dropoff]);
-
-  // Data validation - check if required data from previous pages is present
-  const hasRequiredData =
-    reservationData.type === "by-hour"
-      ? reservationData.pickup &&
-        reservationData.pickupLocation &&
-        reservationData.selectedClass &&
-        reservationData.selectedClassPrice &&
-        reservationData.billingData
-      : reservationData.pickup &&
-        reservationData.dropoff &&
-        reservationData.pickupLocation &&
-        reservationData.dropoffLocation &&
-        reservationData.selectedClass &&
-        reservationData.selectedClassPrice &&
-        reservationData.billingData;
 
   // Check localStorage for hasRequiredData to persist across page refreshes
   const [localHasRequiredData, setLocalHasRequiredData] = useState<
@@ -272,18 +377,20 @@ function PaymentAndCheckoutContent() {
           </div>
         </div>
 
-        {/* Success message */}
-        <div className="text-center text-[16px]">
-          <p className="font-bold">
-            Your chauffeur has been successfully reserved and billed to your
-            company account.
-          </p>
-          <p>
-            For any changes or cancellations, please contact our team at
-            0921-820-198.
-          </p>
-          <p className="text-[#7C7C7C] underline pt-10">Download Invoice</p>
-        </div>
+        {/* Success message - integrated into the design */}
+        {bookingCreated && (
+          <div className="text-center text-[16px]">
+            <p className="font-bold">
+              Your chauffeur has been successfully reserved and billed to your
+              company account.
+            </p>
+            <p>
+              For any changes or cancellations, please contact our team at
+              0921-820-198.
+            </p>
+            <p className="text-[#7C7C7C] underline pt-10">Download Invoice</p>
+          </div>
+        )}
       </div>
     </>
   );

@@ -16,16 +16,69 @@ export async function middleware(request: NextRequest) {
 
     // Verify the token
     const payload = await verifyToken(token);
-    if (!payload) {
+    if (!payload || payload.role !== "admin") {
       // Redirect to admin login if token is invalid
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
 
     // Add user info to headers for use in admin pages
     const response = NextResponse.next();
-    response.headers.set("x-user-id", payload.id);
-    response.headers.set("x-user-email", payload.email);
-    response.headers.set("x-user-role", payload.role);
+    response.headers.set("x-user-id", String(payload.id));
+    response.headers.set("x-user-email", String(payload.email));
+    response.headers.set("x-user-role", String(payload.role));
+
+    return response;
+  }
+
+  // Check if the request is for corporate mobility routes
+  if (pathname.startsWith("/corporate-mobility")) {
+    // Handle login page - redirect to account if already authenticated
+    if (pathname === "/corporate-mobility/login") {
+      const token = request.cookies.get("corporate-auth-token")?.value;
+
+      if (token) {
+        const payload = await verifyToken(token);
+
+        if (payload && payload.role === "corporate") {
+          // User is authenticated, redirect to account
+          return NextResponse.redirect(
+            new URL("/corporate-mobility/account", request.url)
+          );
+        }
+      }
+
+      return NextResponse.next();
+    }
+
+    // Protect all other corporate mobility routes
+    const token = request.cookies.get("corporate-auth-token")?.value;
+
+    if (!token) {
+      // No token, redirect to login
+      return NextResponse.redirect(
+        new URL("/corporate-mobility/login", request.url)
+      );
+    }
+
+    const payload = await verifyToken(token);
+
+    if (!payload || payload.role !== "corporate") {
+      // Invalid or expired token, redirect to login
+      return NextResponse.redirect(
+        new URL("/corporate-mobility/login", request.url)
+      );
+    }
+
+    // Add user info to headers for use in corporate pages
+    const response = NextResponse.next();
+    response.headers.set("x-user-id", String(payload.id));
+    response.headers.set("x-user-email", String(payload.email));
+    response.headers.set("x-user-role", String(payload.role));
+    response.headers.set(
+      "x-corporate-reference",
+      String(payload.corporate_reference || "")
+    );
+    response.headers.set("x-company-name", String(payload.company_name || ""));
 
     return response;
   }
@@ -34,5 +87,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/corporate-mobility/:path*"],
 };

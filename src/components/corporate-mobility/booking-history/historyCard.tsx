@@ -7,6 +7,7 @@ interface HistoryCardProps {
   pickup: string;
   dropoff: string;
   price: string;
+  onDetailClick?: () => void;
 }
 
 export default function HistoryCard({
@@ -16,6 +17,7 @@ export default function HistoryCard({
   pickup,
   dropoff,
   price,
+  onDetailClick,
 }: HistoryCardProps) {
   return (
     <div className="flex w-full rounded-lg border border-[#F2F2F2] h-[181px]">
@@ -36,7 +38,12 @@ export default function HistoryCard({
           <p className="text-[16px] font-bold">{price}</p>
           <div className="flex gap-3 text-[#B2B2B2] text-[12px]">
             <p className="underline cursor-pointer">Invoice</p>
-            <p className="underline cursor-pointer">Detail</p>
+            <p
+              className="underline cursor-pointer hover:text-gray-600"
+              onClick={onDetailClick}
+            >
+              Detail
+            </p>
           </div>
         </div>
       </div>

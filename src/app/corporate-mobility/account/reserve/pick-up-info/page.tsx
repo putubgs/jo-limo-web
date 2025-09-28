@@ -553,6 +553,8 @@ function PickUpInfoContent() {
                   time: initialBooking.time,
                   type: initialBooking.type,
                   duration: initialBooking.duration,
+                  mobileNumber: phoneNumber,
+                  flightNumber: flightNumber,
                 });
                 // Navigate to payment-and-checkout (next step in the flow)
                 router.push(
