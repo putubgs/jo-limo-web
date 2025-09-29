@@ -71,14 +71,6 @@ export async function POST(request: Request) {
       process.env.PAYMENT_ENTITY_ID?.length === 32 ? "TEST" : "PRODUCTION",
   });
 
-  console.log("💰 Payment Details:", {
-    amount,
-    currency: "JOD",
-    paymentType: "DB",
-    testMode: "EXTERNAL",
-    merchantTransactionId,
-  });
-
   console.log("👤 Customer Info:", {
     customerEmail,
     customerGivenName,
@@ -93,12 +85,25 @@ export async function POST(request: Request) {
     billingPostcode,
   });
 
+  // Determine if we're in test mode based on the base URL
+  const isTestMode =
+    process.env.NEXT_PUBLIC_PAYMENT_BASE_URL?.includes("test.oppwa.com") ||
+    process.env.NEXT_PUBLIC_PAYMENT_BASE_URL?.includes("eu-test.oppwa.com");
+
+  console.log("💰 Payment Details:", {
+    amount,
+    currency: "JOD",
+    paymentType: "DB",
+    testMode: isTestMode ? "EXTERNAL" : "NOT_SET",
+    merchantTransactionId,
+  });
+
   const params = new URLSearchParams({
     entityId: process.env.PAYMENT_ENTITY_ID!,
     amount: Number(amount).toFixed(2),
     currency: "JOD",
     paymentType: "DB",
-    testMode: "EXTERNAL",
+    ...(isTestMode && { testMode: "EXTERNAL" }), // Only add testMode for test environment
     merchantTransactionId,
     "customer.email": customerEmail,
     "billing.street1": billingStreet1,

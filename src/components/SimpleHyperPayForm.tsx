@@ -192,9 +192,16 @@ export default function SimpleHyperPayForm({
               // Set form action to redirect back to payment page with success/error handling
               frm.action = '/reserve/payment-and-checkout?checkoutId=${checkoutId}&merchantTxId=${merchantTxId}&amount=${amount}';
 
+              // Determine if we're in test mode based on the base URL
+              var isTestMode = "${
+                process.env.NEXT_PUBLIC_PAYMENT_BASE_URL
+              }".includes("test.oppwa.com") || 
+                               "${
+                                 process.env.NEXT_PUBLIC_PAYMENT_BASE_URL
+                               }".includes("eu-test.oppwa.com");
+
               // Add required fields as hidden inputs to prevent parameter duplication
               var fields = {
-                testMode: "EXTERNAL",
                 merchantTransactionId: "${merchantTxId}",
                 "customer.email": "${billingData?.customerEmail || ""}",
                 "customer.givenName": "${billingData?.customerGivenName || ""}",
@@ -207,6 +214,11 @@ export default function SimpleHyperPayForm({
                 "billing.postcode": "${billingData?.billingPostcode || ""}",
                 "billing.country": "${billingData?.billingCountry || ""}"
               };
+
+              // Only add testMode for test environment
+              if (isTestMode) {
+                fields.testMode = "EXTERNAL";
+              }
 
               Object.entries(fields).forEach(function([name, value]) {
                 if (!frm.querySelector('input[name="' + name + '"]') && value) {
