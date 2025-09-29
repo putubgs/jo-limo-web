@@ -114,8 +114,8 @@ export async function POST(request: Request) {
     "customer.givenName": customerGivenName,
     "customer.surname": customerSurname,
     shopperResultUrl: `${
-      process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-    }/reserve/payment-and-checkout`,
+      process.env.NEXT_PUBLIC_SHOPPER_RESULT_URL
+    }`,
     "customParameters[3DS2_enrolled]": "true",
   });
 
