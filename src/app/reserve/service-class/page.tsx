@@ -213,16 +213,21 @@ function ServiceClassContent() {
 
   // Step indicator component
   const StepIndicator = () => (
-    <div className="relative w-full max-w-[550px] mx-auto py-8">
+    <div className="relative w-full max-w-[550px] mx-auto md:py-8">
       {/* Background line - absolute positioned behind */}
-      <div className="absolute top-10 left-12 right-8 h-0.5 bg-gray-300 transform -translate-y-1/2 w-[440px]"></div>
+      <div className="absolute md:top-10 top-[76px] left-12 right-8 h-0.5 bg-gray-300 transform -translate-y-1/2 md:w-[23vw] w-[78vw]"></div>
+
+      <div className="flex md:hidden pb-8 px-8 justify-between items-center">
+        <p className="text-[24px] font-bold">Service Class</p>
+        <p>Step 1 of 3</p>
+      </div>
 
       {/* Flex container for bullets and text - in front */}
-      <div className="relative flex justify-between items-center">
+      <div className="relative flex justify-between items-center px-8 md:px-0">
         {/* Step 1 - Current */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full bg-black mb-2"></div>
-          <span className="text-sm font-bold text-black bg-[#F0F0F0] rounded-full p-1 px-2">
+          <span className="text-sm md:block hidden font-bold text-black bg-[#F0F0F0] rounded-full p-1 px-2">
             Service Class
           </span>
         </div>
@@ -230,13 +235,17 @@ function ServiceClassContent() {
         {/* Step 2 */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full border-2 border-gray-300 bg-white mb-2"></div>
-          <span className="text-sm text-gray-500 p-1">Pick-up Info</span>
+          <span className="text-sm md:block hidden text-gray-500 p-1">
+            Pick-up Info
+          </span>
         </div>
 
         {/* Step 3 */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full border-2 border-gray-300 bg-white mb-2"></div>
-          <span className="text-sm text-gray-500 p-1">Payment & Checkout</span>
+          <span className="text-sm md:block hidden text-gray-500 p-1">
+            Payment & Checkout
+          </span>
         </div>
       </div>
     </div>
@@ -359,21 +368,30 @@ function ServiceClassContent() {
           <div className="bg-[#F0F0F0] rounded-lg shadow-sm p-6">
             <div className="flex justify-start items-center">
               <div className="text-left">
-                <p className="font-bold text-black text-lg">
+                <p className="font-bold text-black md:text-lg text-[15px]">
                   {formatDisplayDate(bookingData.date, bookingData.time)}
                 </p>
                 <div className="flex items-center mt-2">
-                  <span className="text-base" style={{ color: "#A4A4A4" }}>
+                  <span
+                    className="md:text-base text-[15px]"
+                    style={{ color: "#A4A4A4" }}
+                  >
                     {locations.from}
                   </span>
                   <span className="mx-4 text-2xl text-gray-600">→</span>
-                  <span className="text-base" style={{ color: "#A4A4A4" }}>
+                  <span
+                    className="md:text-base text-[15px]"
+                    style={{ color: "#A4A4A4" }}
+                  >
                     {locations.to}
                   </span>
                 </div>
                 {distanceInfo && (
                   <div className="mt-3">
-                    <p className="text-sm" style={{ color: "#A4A4A4" }}>
+                    <p
+                      className="md:text-sm text-[15px]"
+                      style={{ color: "#A4A4A4" }}
+                    >
                       An estimated travel time of {distanceInfo.duration} to the
                       destination • {distanceInfo.distance}
                     </p>
@@ -387,7 +405,10 @@ function ServiceClassContent() {
         {/* Main content */}
         <div className="px-6">
           {/* Service Class Selection */}
-          <div className="max-w-[584px] px-6 mb-8 mx-auto">
+          <div className="max-w-[584px] md:px-6 mb-8 mx-auto">
+            <p className="md:hidden block text-[20px] font-bold">
+              Select a Vehicle
+            </p>
             <p className="text-gray-500 text-sm mb-3">
               All price included VAT, fees, and tolls
             </p>
@@ -410,19 +431,21 @@ function ServiceClassContent() {
                   onClick={() => handleServiceSelection(service.id)}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-12">
-                      <Image
-                        src={service.image}
-                        alt={`${service.name} Vehicle`}
-                        width={147}
-                        height={64}
-                      />
+                    <div className="flex items-center space-x-6 md:space-x-12">
+                      <div className="relative w-[108px] h-[64px] md:w-[147px] md:h-[75px] flex-shrink-0">
+                        <Image
+                          src={service.image}
+                          alt={`${service.name} Vehicle`}
+                          fill
+                          className={service.image === "/images/mercedes_bens_img.png" ? "object-contain" : "object-cover"}
+                        />
+                      </div>
                       <div>
                         <h3 className="text-xl font-semibold text-black mb-1">
                           {service.name}
                         </h3>
                         <p
-                          className={`mb-2 ${
+                          className={`mb-2 md:block hidden ${
                             selectedService === service.id
                               ? "text-black"
                               : "text-gray-600"
@@ -442,7 +465,7 @@ function ServiceClassContent() {
                         </div>
                       </div>
                     </div>
-                    <div className="text-right pb-12">
+                    <div className="text-right pb-[24px] md:pb-12">
                       <div className="text-[16px] font-bold text-black">
                         {calculatePrice(
                           service.id,
@@ -461,7 +484,7 @@ function ServiceClassContent() {
           </div>
 
           {/* All Classes Include */}
-          <div className="max-w-[584px] px-6 mx-auto">
+          <div className="max-w-[584px] md:px-6 mx-auto">
             <div className="border border-gray-300 rounded-t-lg p-6">
               <h3 className="text-[14px] text-[#ACACAC] mb-4 text-start">
                 All Classes include :
@@ -500,7 +523,7 @@ function ServiceClassContent() {
           </div>
 
           {/* Please Note */}
-          <div className="max-w-[584px] px-6 mb-8 mx-auto">
+          <div className="max-w-[584px] md:px-6 mb-8 mx-auto">
             <div className="border border-gray-300 rounded-b-lg p-6">
               <h3 className="text-[14px] text-[#ACACAC] mb-4 text-start">
                 Please note :
@@ -532,7 +555,7 @@ function ServiceClassContent() {
           </div>
 
           {/* Terms & Continue Button */}
-          <div className="flex items-center justify-center space-x-12">
+          <div className="flex flex-col md:flex-row items-center justify-center md:space-x-12 space-y-6 md:space-y-0">
             <button
               onClick={() => setShowTermsPopup(true)}
               className="text-[16px] text-[#7C7C7C] underline hover:text-gray-600 transition-colors"
