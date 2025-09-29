@@ -219,7 +219,7 @@ function ServiceClassContent() {
 
       <div className="flex md:hidden pb-8 px-8 justify-between items-center">
         <p className="text-[24px] font-bold">Service Class</p>
-        <p>Step 1 of 3</p>
+        <p>Step 2 of 3</p>
       </div>
 
       {/* Flex container for bullets and text - in front */}
@@ -389,7 +389,7 @@ function ServiceClassContent() {
                 {distanceInfo && (
                   <div className="mt-3">
                     <p
-                      className="md:text-sm text-[15px]"
+                      className="text-sm"
                       style={{ color: "#A4A4A4" }}
                     >
                       An estimated travel time of {distanceInfo.duration} to the
