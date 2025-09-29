@@ -6,15 +6,18 @@ export default function AboutUs() {
   return (
     <>
       <Header />
-      <section className="flex flex-col items-center justify-center text-center mt-[50px] mb-[100px] max-w-[900px] mx-auto gap-[50px]">
-        <h1 className="text-[64px]">International Chauffeur Charter with AirportConnect</h1>
+      <section className="flex flex-col items-center justify-center text-center mt-[25px] md:mt-[50px] mb-[50px] md:mb-[100px] max-w-[350px] md:max-w-[900px] mx-auto gap-[25px] md:gap-[50px] px-4">
+        <h1 className="text-[28px] md:text-[64px] leading-tight">
+          International Chauffeur Charter with AirportConnect
+        </h1>
         <Image
           src="/images/global_limo.png"
           alt="The Global Limo Image"
-          width={350}
-          height={238}
+          width={280}
+          height={190}
+          className="md:w-[350px] md:h-[238px] w-[280px] h-[190px]"
         />
-        <div className="flex flex-col text-center gap-6 text-[16px]">
+        <div className="flex flex-col text-center gap-4 md:gap-6 text-[14px] md:text-[16px]">
           <p>
             Seamless inbound and outbound airports transfers with
             AirportConnect, we coordinate your journey from departure to
@@ -26,7 +29,9 @@ export default function AboutUs() {
             comfort worldwide.
           </p>
         </div>
-        <p className="text-[16px] font-bold">ARRIVE PREPARED. DEPART IN COMFORT. TRAVEL CONNECTED</p>
+        <p className="text-[14px] md:text-[16px] font-bold px-2">
+          ARRIVE PREPARED. DEPART IN COMFORT. TRAVEL CONNECTED
+        </p>
       </section>
       <Footer />
     </>

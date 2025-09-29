@@ -106,8 +106,8 @@ export default function CitiesAndClasses() {
               </div>
             </div>
           </Link>
-          <Link 
-            href="/services/mpv" 
+          <Link
+            href="/services/mpv"
             className="w-full md:w-3/4 border-t border-gray-200"
           >
             <div className="pt-3 md:pt-2 flex justify-between">
@@ -132,8 +132,8 @@ export default function CitiesAndClasses() {
               </div>
             </div>
           </Link>
-          <Link 
-            href="/services/suv" 
+          <Link
+            href="/services/suv"
             className="w-full md:w-3/4 border-t border-gray-200"
           >
             <div className="pt-3 md:pt-2 flex justify-between">
