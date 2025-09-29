@@ -56,8 +56,8 @@ export default function MembershipApplication() {
   return (
     <>
       <Header />
-      <section className="flex items-center justify-center py-[150px]">
-        <div className="flex flex-col items-center max-w-[587px] w-full gap-8">
+      <section className="flex items-center justify-center py-[150px] px-4 md:px-0">
+        <div className="flex flex-col items-center md:max-w-[587px] w-full gap-8">
           <p className="text-[36px]">Apply For Membership</p>
           <form onSubmit={handleSubmit} className="w-full gap-1 flex flex-col">
             <input
