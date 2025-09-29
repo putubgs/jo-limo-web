@@ -16,27 +16,27 @@ export default function SuccessDialog({ open, onClose, paymentResult }: Props) {
 
   return (
     <Dialog open={open} onClose={() => {}} disableEscapeKeyDown>
-      <div className="flex flex-col items-center space-y-6 px-24 py-12 text-center">
-        <div className="relative size-20">
+      <div className="flex flex-col items-center space-y-4 md:space-y-6 px-6 md:px-24 py-8 md:py-12 text-center">
+        <div className="relative size-16 md:size-20">
           <Image src="/images/check-circle.png" alt="Success" fill />
         </div>
-        <h3 className="text-xl font-bold">Payment Successful</h3>
+        <h3 className="text-lg md:text-xl font-bold">Payment Successful</h3>
         <p className="text-xs text-[#838383]">
           Your payment has been processed successfully
         </p>
 
         {paymentResult && (
-          <div className="bg-gray-50 rounded-lg p-4 mt-4 text-left">
-            <p className="text-sm text-gray-600">Transaction ID:</p>
-            <p className="font-mono text-sm font-bold break-all">
+          <div className="bg-gray-50 rounded-lg p-3 md:p-4 mt-4 text-left w-full max-w-sm">
+            <p className="text-xs md:text-sm text-gray-600">Transaction ID:</p>
+            <p className="font-mono text-xs md:text-sm font-bold break-all">
               {paymentResult.id}
             </p>
-            <p className="text-sm text-gray-600 mt-2">Amount:</p>
-            <p className="text-lg font-bold">
+            <p className="text-xs md:text-sm text-gray-600 mt-2">Amount:</p>
+            <p className="text-base md:text-lg font-bold">
               {paymentResult.amount} {paymentResult.currency}
             </p>
-            <p className="text-sm text-gray-600 mt-2">Status:</p>
-            <p className="text-sm font-semibold text-green-600">
+            <p className="text-xs md:text-sm text-gray-600 mt-2">Status:</p>
+            <p className="text-xs md:text-sm font-semibold text-green-600">
               {paymentResult.result.description}
             </p>
           </div>

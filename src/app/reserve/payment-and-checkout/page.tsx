@@ -508,29 +508,40 @@ function PaymentAndCheckoutContent() {
   /* ---------------------------------------------------------------- */
 
   const StepIndicator = () => (
-    <div className="relative w-full max-w-[550px] mx-auto py-8">
-      <div className="absolute top-10 left-9 right-8 h-0.5 bg-gray-300 -translate-y-1/2 w-[440px]" />
-      <div className="relative flex justify-between items-center">
-        {["Service Class", "Pick-up Info", "Payment & Checkout"].map(
-          (label, i) => (
-            <div key={label} className="flex flex-col items-center">
-              <div
-                className={`w-4 h-4 rounded-full mb-2 ${
-                  i === 2 ? "bg-black" : "bg-gray-400"
-                }`}
-              />
-              <span
-                className={`text-sm ${
-                  i === 2
-                    ? "font-bold text-black bg-[#F0F0F0] rounded-full p-1 px-2"
-                    : "text-gray-500 p-1"
-                }`}
-              >
-                {label}
-              </span>
-            </div>
-          )
-        )}
+    <div className="relative w-full max-w-[550px] mx-auto md:py-8">
+      {/* Background line - absolute positioned behind */}
+      <div className="absolute md:top-10 top-[76px] left-12 right-8 h-0.5 bg-black md:bg-gray-300 transform -translate-y-1/2 md:w-[22vw] w-[78vw]"></div>
+
+      <div className="flex md:hidden pb-8 px-8 justify-between items-center">
+        <p className="text-[24px] font-bold">Payment & Checkout</p>
+        <p>Step 3 of 3</p>
+      </div>
+
+      {/* Flex container for bullets and text - in front */}
+      <div className="relative flex justify-between items-center px-8 md:px-0">
+        {/* Step 1 - Current */}
+        <div className="flex flex-col items-center">
+          <div className="w-4 h-4 rounded-full md:bg-gray-400 bg-black mb-2"></div>
+          <span className="text-sm md:block hidden text-gray-500 p-1">
+            Service Class
+          </span>
+        </div>
+
+        {/* Step 2 */}
+        <div className="flex flex-col items-center">
+          <div className="w-4 h-4 rounded-full md:bg-gray-400 bg-black mb-2"></div>
+          <span className="text-sm md:block hidden text-gray-500 p-1">
+            Pick-up Info
+          </span>
+        </div>
+
+        {/* Step 3 */}
+        <div className="flex flex-col items-center">
+          <div className="w-4 h-4 rounded-full bg-black mb-2"></div>
+          <span className="text-sm md:block hidden font-bold text-black bg-[#F0F0F0] rounded-full p-1 px-2">
+            Payment & Checkout
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -559,18 +570,21 @@ function PaymentAndCheckoutContent() {
         {/* Trip card -------------------------------------------------- */}
         <div className="max-w-[584px] mx-auto px-6 py-8">
           <div className="bg-[#F0F0F0] rounded-lg shadow-sm p-6">
-            <p className="font-bold text-lg">
+            <p className="font-bold md:text-lg text-[15px]">
               {formatDate(bookingData.date, bookingData.time)}
             </p>
-            <div className="flex items-center mt-2 text-base text-[#A4A4A4]">
+            <div className="flex items-center mt-2 md:text-base text-[15px] text-[#A4A4A4]">
               <span>{loc.from}</span>
               <span className="mx-4 text-2xl text-gray-600">→</span>
               <span>{loc.to}</span>
             </div>
             {distanceInfo && (
-              <p className="mt-3 text-sm text-[#A4A4A4]">
-                Approximately {distanceInfo.duration} • {distanceInfo.distance}
-              </p>
+              <div className="mt-3">
+                <p className="text-sm" style={{ color: "#A4A4A4" }}>
+                  An estimated travel time of {distanceInfo.duration} to the
+                  destination • {distanceInfo.distance}
+                </p>
+              </div>
             )}
           </div>
         </div>

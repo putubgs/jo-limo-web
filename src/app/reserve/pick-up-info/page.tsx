@@ -284,7 +284,7 @@ function PickUpInfoContent() {
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full bg-black mb-2"></div>
           <span className="text-sm md:block hidden font-bold text-black bg-[#F0F0F0] rounded-full p-1 px-2">
-            Service Class
+            Pick-up Info
           </span>
         </div>
 
