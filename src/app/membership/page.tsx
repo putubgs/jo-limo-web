@@ -106,10 +106,10 @@ export default function Membership() {
     <>
       <Header />
       {/* Hero */}
-      <section className="mx-auto px-4 text-center pt-20 gap-10 flex flex-col">
-        <div className="flex flex-col gap-10 items-center">
-          <h1 className="text-[64px]">Jo Limo Membership</h1>
-          <p className="mt-4 max-w-[850px] mx-auto text-[20px]">
+      <section className="mx-auto px-4 text-center md:pt-20 pt-10 gap-10 flex flex-col">
+        <div className="flex flex-col md:gap-10 gap-5 items-center">
+          <h1 className="md:text-[64px] text-[36px]">Jo Limo Membership</h1>
+          <p className="md:mt-4 max-w-[850px] mx-auto md:text-[20px] text-[16px]">
             Upgrade your travel experience with Jo Limo Membership. Unlock
             exclusive perks such as special discounts, tailored services, and
             hassle-free monthly billing. Joining is simple—apply today and enjoy
@@ -117,45 +117,15 @@ export default function Membership() {
           </p>
           <Link
             href="/membership/application-form"
-            className="mt-6 px-10 py-5 bg-black text-white uppercase text-sm hover:bg-gray-800 w-fit text-[20px] font-bold"
+            className="mt-6 md:px-10 px-6 md:py-5 py-3 md:rounded-none rounded-lg bg-black text-white uppercase text-sm hover:bg-gray-800 w-fit text-[20px] font-bold"
           >
             Become a jo limo member
           </Link>
         </div>
-
-        {/* <div className="mt-8 w-full px-20">
-          <Image
-            src="/images/executive-img.webp"
-            alt="Executive Mercedes-E-Class"
-            width={1200}
-            height={700}
-            className="w-full h-auto object-cover"
-          />
-        </div> */}
       </section>
 
       {/* Details */}
       <section className="mx-auto px-4 py-12 w-full flex flex-col mt-10 items-center justify-center max-w-[850px]">
-        {/* <div className="flex flex-col w-full items-center justify-center">
-          <div className="flex flex-col w-full justify-center max-w-[850px]">
-            <h2 className="text-[40px]">ONLY THE BEST, NOTHING LESS</h2>
-            <p className="mt-4 text-[16px]">
-              Indulge in the ultimate luxury with the Mercedes-Benz E-Class, a
-              masterpiece of comfort and style. Expertly driven by a
-              professional Jo Limo chauffeur, this vehicle offers an
-              unparalleled experience for those who demand the best.
-            </p>
-            <p className="pt-4">
-              Your chauffeur will customize the temperature and music to your
-              exact preferences, creating the perfect atmosphere for your
-              journey. Relax and enjoy exclusive amenities, including access to
-              Wi-Fi features in the armrest, a complementary bottle of water,
-              and convenient charging options. Every detail is designed to
-              ensure your complete comfort and satisfaction from start to
-              finish.
-            </p>
-          </div>
-        </div> */}
         <div className="relative items-center">
           <Image
             src="/images/membership-img.webp"
@@ -182,7 +152,7 @@ export default function Membership() {
               return (
                 <div
                   key={typeof title === "string" ? title : `benefit-${index}`}
-                  className="flex justify-between items-start pt-4 pb-16 gap-10"
+                  className="flex flex-col md:flex-row justify-between items-start md:pt-4 pt-2 md:pb-16 pb-8 md:gap-10 gap-4"
                 >
                   {/* Left column */}
                   <div className="flex flex-col">
@@ -192,7 +162,7 @@ export default function Membership() {
                     </span>
                   </div>
                   {/* Right column */}
-                  <div className="w-1/2">
+                  <div className="w-full md:w-1/2">
                     <p className="text-[16px] text-black">{description}</p>
 
                     {isEmployeeTravel && (
