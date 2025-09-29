@@ -65,7 +65,7 @@ function PaymentAndCheckoutContent() {
       bookingError ||
       hasSubmittedRef.current
     ) {
-      return; // Don't create if already created, creating, has error, or already submitted
+      return; 
     }
 
     // Check if we have all required data

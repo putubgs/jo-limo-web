@@ -3,12 +3,13 @@ import Footer from "@/components/footer";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import Link from "next/link";
 import HomeClientWrapper from "./HomeClientWrapper";
+import ReservationForm from "@/components/ReservationForm";
 
 export default function Home() {
   return (
     <HomeClientWrapper>
       <Header />
-      <div className="px-20 flex flex-col gap-10">
+      <div className="md:px-20 flex flex-col md:gap-10">
         <div
           className="
     relative
@@ -17,7 +18,8 @@ export default function Home() {
     justify-end
     text-bottom
     w-full
-    min-h-[980px]
+    md:min-h-[980px]
+    min-h-[220px]
     bg-[url('/images/img-lp-1.webp')]
     bg-no-repeat bg-center
     bg-[length:100%_auto]
@@ -26,7 +28,7 @@ export default function Home() {
     pb-10
   "
         >
-          <div className="relative text-center w-[500px] z-20 flex flex-col gap-3">
+          <div className="relative md:block hidden text-center w-[500px] z-20 flex flex-col gap-3">
             <p className="font-bold text-[20px]">SEAMLESS EXPERIENCE</p>
             <p>
               Dedicated to seamless, executive travel with professionalism and
@@ -35,7 +37,7 @@ export default function Home() {
           </div>
           <Link
             href="/services/business-transfer"
-            className="relative flex gap-1 items-center text-[16px] z-20 hover:text-gray-400"
+            className="relative md:flex hidden flex gap-1 items-center text-[16px] z-20 hover:text-gray-400"
           >
             <p>LEARN MORE</p>
             <ArrowBackIosNewRoundedIcon
@@ -45,38 +47,44 @@ export default function Home() {
           </Link>
 
           <div
-            className="absolute bottom-0 left-0 w-full h-[300px]
+            className="absolute md:block hidden bottom-0 left-0 w-full h-[300px]
       bg-gradient-to-t from-black to-transparent
       pointer-events-none
       z-10"
           />
         </div>
+        <div className="md:hidden">
+          <ReservationForm
+        variant="page"
+        continueUrl="/reserve/service-class"
+          />
+        </div>
 
         <div
           className="
-    relative
+          relative
     flex 
     flex-col items-center
     justify-end
     text-bottom
     w-full
-    min-h-[980px]
-    bg-[url('/images/img-lp-2.webp')]
+    md:min-h-[980px]
+    md:bg-[url('/images/img-lp-2.webp')]
     bg-no-repeat bg-center
-    bg-[length:100%_auto]
+    md:bg-[length:100%_auto]
     text-white
     gap-10
-    pb-10
-    mb-10
+    md:pb-10
+    md:mb-10
   "
         >
-          <div className="relative text-center w-[500px] z-20 flex flex-col gap-3">
+          <div className="relative md:block hidden text-center w-[500px] z-20 flex flex-col gap-3">
             <p className="font-bold text-[20px]">JO SUV</p>
             <p>JO’s SUV most refined class</p>
           </div>
           <Link
             href="/services/suv"
-            className="relative flex gap-1 items-center text-[16px] z-20 hover:text-gray-400"
+            className="relative md:flex hidden flex gap-1 items-center text-[16px] z-20 hover:text-gray-400"
           >
             <p>LEARN MORE</p>
             <ArrowBackIosNewRoundedIcon
@@ -86,7 +94,7 @@ export default function Home() {
           </Link>
 
           <div
-            className="absolute bottom-0 left-0 w-full h-[300px]
+            className="absolute md:block hidden bottom-0 left-0 w-full h-[300px]
       bg-gradient-to-t from-black to-transparent
       pointer-events-none
       z-10"
