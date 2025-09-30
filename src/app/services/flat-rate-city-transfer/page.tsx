@@ -9,22 +9,24 @@ export default function FlatRateCityTransfer() {
     <>
       <Header />
       {/* Hero */}
-      <section className="mx-auto px-4 text-center pt-20 gap-10 flex flex-col">
-        <div className="flex flex-col gap-10 items-center">
-          <h1 className="text-[64px]">Flat Rate City Transfer</h1>
-          <p className="mt-4 max-w-[850px] mx-auto text-[20px]">
+      <section className="mx-auto md:px-4 px-0 text-center pt-10 md:pt-20 gap-6 md:gap-10 flex flex-col">
+        <div className="flex flex-col gap-6 md:gap-10 items-center">
+          <h1 className="text-[32px] md:text-[64px] leading-tight px-2">
+            Flat Rate City Transfer
+          </h1>
+          <p className="mt-2 md:mt-4 max-w-[350px] md:max-w-[850px] mx-auto text-[16px] md:text-[20px] px-2">
             Flat rate drop-offs. Anytime, anywhere within the city. No
             surprises.
           </p>
           <Link
             href="/"
-            className="mt-6 px-10 py-5 bg-black text-white uppercase text-sm hover:bg-gray-800 w-fit text-[20px] font-bold"
+            className="md:rounded-none rounded-lg mt-4 md:mt-6 px-6 md:px-10 py-3 md:py-5 bg-black text-white uppercase text-sm hover:bg-gray-800 w-fit text-[16px] md:text-[20px] font-bold"
           >
             Reserve Your Journey
           </Link>
         </div>
 
-        <div className="mt-8 w-full px-20">
+        <div className="md:mt-8 mt-4 md:w-full w-screen md:px-20">
           <Image
             src="/images/rate-flat-city-transfer.webp"
             alt="Executive Mercedes-E-Class"
@@ -36,10 +38,12 @@ export default function FlatRateCityTransfer() {
       </section>
 
       {/* Details */}
-      <section className="mx-auto px-4 pt-12 pb-24 w-full flex flex-col mt-10 items-center justify-center max-w-[770px] gap-[100px]">
-        <div className="flex flex-col gap-4">
-          <h1 className="text-[40px]">YOUR RIDE, YOUR CITY</h1>
-          <p className="text-[16px]">
+      <section className="mx-auto md:px-4 px-0 md:pt-12 pt-0 pb-20 md:pb-24 w-full flex flex-col mt-6 md:mt-10 items-center justify-center max-w-[350px] md:max-w-[770px] gap-10 md:gap-[100px]">
+        <div className="flex flex-col gap-3 md:gap-4">
+          <h1 className="text-[20px] md:text-[40px] leading-tight">
+            YOUR RIDE, YOUR CITY
+          </h1>
+          <p className="text-[14px] md:text-[16px]">
             Enjoy stress-free travel with Jo Limo&apos;s flat-rate city
             transfers. Whether you&apos;re heading across town in Amman or
             exploring the beauty of Aqaba, our transparent pricing and
@@ -48,7 +52,73 @@ export default function FlatRateCityTransfer() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-[100px] w-full">
+        {/* Mobile: Single Table */}
+        <div className="md:hidden w-full">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-3 text-[14px] font-normal text-black uppercase">
+                  FLAT RATE WITHIN
+                </th>
+                <th className="text-center py-3 text-[14px] font-normal text-black uppercase">
+                  AMMAN
+                </th>
+                <th className="text-center py-3 text-[14px] font-normal text-black uppercase">
+                  AQABA
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-gray-200">
+                <td className="py-3 text-[12px] text-gray-600 uppercase">
+                  EXECUTIVE MERCEDES E-CLASS
+                </td>
+                <td className="py-3 text-center text-[14px] font-bold text-black">
+                  12 JOD
+                </td>
+                <td className="py-3 text-center text-[14px] font-bold text-black">
+                  8 JOD
+                </td>
+              </tr>
+              <tr className="border-b border-gray-200">
+                <td className="py-3 text-[12px] text-gray-600 uppercase">
+                  LUXURY MERCEDES S-CLASS
+                </td>
+                <td className="py-3 text-center text-[14px] font-bold text-black">
+                  28 JOD
+                </td>
+                <td className="py-3 text-center text-[14px] font-bold text-black">
+                  27 JOD
+                </td>
+              </tr>
+              <tr className="border-b border-gray-200">
+                <td className="py-3 text-[12px] text-gray-600 uppercase">
+                  SUV CADILLAC ESCALADE
+                </td>
+                <td className="py-3 text-center text-[14px] font-bold text-black">
+                  26 JOD
+                </td>
+                <td className="py-3 text-center text-[14px] font-bold text-black">
+                  25 JOD
+                </td>
+              </tr>
+              <tr className="border-b border-gray-200">
+                <td className="py-3 text-[12px] text-gray-600 uppercase">
+                  MPV MERCEDES V-CLASS
+                </td>
+                <td className="py-3 text-center text-[14px] font-bold text-black">
+                  36 JOD
+                </td>
+                <td className="py-3 text-center text-[14px] font-bold text-black">
+                  34 JOD
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Desktop: Two Columns */}
+        <div className="hidden md:grid grid-cols-2 gap-[100px] w-full">
           {/* Amman Column */}
           <div className="flex flex-col">
             <h2 className="text-[24px] mb-8 text-center border-b border-gray-200 pb-2">
@@ -120,7 +190,9 @@ export default function FlatRateCityTransfer() {
         </div>
       </section>
 
-      <AppBanner />
+      <div className="md:block hidden">
+        <AppBanner />
+      </div>
 
       <Footer />
     </>
