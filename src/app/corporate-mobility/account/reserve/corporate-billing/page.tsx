@@ -65,7 +65,7 @@ function PaymentAndCheckoutContent() {
       bookingError ||
       hasSubmittedRef.current
     ) {
-      return; 
+      return;
     }
 
     // Check if we have all required data
@@ -250,28 +250,37 @@ function PaymentAndCheckoutContent() {
 
   // Step indicator component
   const StepIndicator = () => (
-    <div className="relative w-full max-w-[550px] mx-auto py-8">
+    <div className="relative w-full max-w-[550px] mx-auto md:py-8">
       {/* Background line - absolute positioned behind */}
-      <div className="absolute top-10 left-10 right-8 h-0.5 bg-gray-300 transform -translate-y-1/2 w-[440px]"></div>
+      <div className="absolute md:top-10 top-[76px] left-10 right-8 h-0.5 bg-gray-300 transform -translate-y-1/2 md:w-[440px] w-[78vw]"></div>
+
+      <div className="flex md:hidden pb-8 px-8 justify-between items-center">
+        <p className="text-[24px] font-bold">Corporate Billing</p>
+        <p>Step 3 of 3</p>
+      </div>
 
       {/* Flex container for bullets and text - in front */}
-      <div className="relative flex justify-between items-center">
+      <div className="relative flex justify-between items-center px-8 md:px-0">
         {/* Step 1 - Completed */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full bg-gray-400 mb-2"></div>
-          <span className="text-sm text-gray-500 p-1">Service Class</span>
+          <span className="text-sm md:block hidden text-gray-500 p-1">
+            Service Class
+          </span>
         </div>
 
         {/* Step 2 - Completed */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full bg-gray-400 mb-2"></div>
-          <span className="text-sm text-gray-500 p-1">Pick-up Info</span>
+          <span className="text-sm md:block hidden text-gray-500 p-1">
+            Pick-up Info
+          </span>
         </div>
 
         {/* Step 3 - Current */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full bg-black mb-2"></div>
-          <span className="text-sm font-bold text-black bg-[#F0F0F0] rounded-full p-1 px-2">
+          <span className="text-sm md:block hidden font-bold text-black bg-[#F0F0F0] rounded-full p-1 px-2">
             Corporate Billing
           </span>
         </div>
@@ -307,7 +316,7 @@ function PaymentAndCheckoutContent() {
       <div className=" bg-white flex flex-col my-[50px]">
         {/* Header */}
         <StepIndicator />
-        <div className="max-w-4xl mx-auto px-6 pt-8">
+        <div className="max-w-[584px] mx-auto px-6 pt-8">
           <div className="bg-[#F0F0F0] rounded-t-lg shadow-sm p-6">
             <div className="flex justify-start items-center">
               <div className="text-left">
@@ -338,21 +347,23 @@ function PaymentAndCheckoutContent() {
 
         {/* Main content - Display selected service */}
         <div className="px-6">
-          <div className="max-w-4xl px-6 mb-8 mx-auto">
+          <div className="max-w-[584px] md:px-6 mb-8 mx-auto">
             <div className="border border-gray-300 rounded-b-lg border-2 p-6 transition-colors cursor-pointer">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-12">
-                  <Image
-                    src={selectedServiceData.image}
-                    alt={`${selectedServiceData.name} Vehicle`}
-                    width={147}
-                    height={64}
-                  />
+                <div className="flex items-center space-x-6 md:space-x-12">
+                  <div className="relative w-[108px] h-[64px] md:w-[147px] md:h-[75px] flex-shrink-0">
+                    <Image
+                      src={selectedServiceData.image}
+                      alt={`${selectedServiceData.name} Vehicle`}
+                      width={147}
+                      height={64}
+                    />
+                  </div>
                   <div>
                     <h3 className="text-xl font-semibold text-black mb-1">
                       {selectedServiceData.name}
                     </h3>
-                    <p className="mb-2 text-gray-600">
+                    <p className="mb-2 md:block hidden text-gray-600">
                       {selectedServiceData.description}
                     </p>
                     <div className="flex items-center space-x-4 text-[#B2B2B2] text-sm">
@@ -367,7 +378,7 @@ function PaymentAndCheckoutContent() {
                     </div>
                   </div>
                 </div>
-                <div className="text-right pb-12">
+                <div className="text-right pb-[24px] md:pb-12">
                   <div className="text-[16px] font-bold text-black">
                     {reservationData.selectedClassPrice || "0"} JOD
                   </div>
@@ -379,7 +390,7 @@ function PaymentAndCheckoutContent() {
 
         {/* Success message - integrated into the design */}
         {bookingCreated && (
-          <div className="text-center text-[16px]">
+          <div className="max-w-[584px] mx-auto px-6 text-center text-[16px]">
             <p className="font-bold">
               Your chauffeur has been successfully reserved and billed to your
               company account.

@@ -35,8 +35,6 @@ export default function BookingHistory() {
     "all" | "pending" | "completed" | "cancelled"
   >("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [monthFilter, setMonthFilter] = useState<string>("");
-  const [yearFilter, setYearFilter] = useState<string>("");
   const [selectedBookings, setSelectedBookings] = useState<string[]>([]);
   const [viewingBooking, setViewingBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,7 +45,6 @@ export default function BookingHistory() {
     limit: 10,
     total: 0,
   });
-  const [totalAmount, setTotalAmount] = useState(0);
 
   // Function to fetch bookings from API
   const fetchBookings = useCallback(async () => {
@@ -65,12 +62,6 @@ export default function BookingHistory() {
       if (searchTerm) {
         params.append("search", searchTerm);
       }
-      if (monthFilter) {
-        params.append("month", monthFilter);
-      }
-      if (yearFilter) {
-        params.append("year", yearFilter);
-      }
 
       const response = await fetch(`/api/admin/booking-history?${params}`);
 
@@ -84,13 +75,6 @@ export default function BookingHistory() {
         ...prev,
         total: data.total || 0,
       }));
-
-      // Calculate total amount from displayed bookings
-      const total = (data.bookings || []).reduce(
-        (sum: number, booking: Booking) => sum + booking.price,
-        0
-      );
-      setTotalAmount(total);
     } catch (err) {
       console.error("Error fetching bookings:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch bookings");
@@ -104,20 +88,11 @@ export default function BookingHistory() {
     filter,
     searchTerm,
     paymentStatusFilter,
-    monthFilter,
-    yearFilter,
   ]);
 
   useEffect(() => {
     fetchBookings();
-  }, [
-    pagination.page,
-    filter,
-    paymentStatusFilter,
-    monthFilter,
-    yearFilter,
-    fetchBookings,
-  ]);
+  }, [pagination.page, filter, paymentStatusFilter, fetchBookings]);
 
   // Handle search input change (no auto-search)
   const handleSearchChange = (value: string) => {
@@ -143,18 +118,6 @@ export default function BookingHistory() {
     newPaymentStatusFilter: "all" | "pending" | "completed" | "cancelled"
   ) => {
     setPaymentStatusFilter(newPaymentStatusFilter);
-    setPagination((prev) => ({ ...prev, page: 1 })); // Reset to first page when filtering
-  };
-
-  // Handle month filter change
-  const handleMonthFilterChange = (newMonth: string) => {
-    setMonthFilter(newMonth);
-    setPagination((prev) => ({ ...prev, page: 1 })); // Reset to first page when filtering
-  };
-
-  // Handle year filter change
-  const handleYearFilterChange = (newYear: string) => {
-    setYearFilter(newYear);
     setPagination((prev) => ({ ...prev, page: 1 })); // Reset to first page when filtering
   };
 
@@ -308,31 +271,6 @@ export default function BookingHistory() {
         <p className="mt-2 text-gray-600">
           Manage and review all booking records
         </p>
-        {!loading && bookings.length > 0 && (
-          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <div className="flex items-center">
-              <svg
-                className="w-5 h-5 text-green-600 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-                />
-              </svg>
-              <span className="text-sm font-medium text-green-800">
-                Total Amount for Current View:{" "}
-                <span className="font-bold text-lg">
-                  {totalAmount.toFixed(2)} JOD
-                </span>
-              </span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Filters and Search */}
@@ -395,50 +333,6 @@ export default function BookingHistory() {
                 <option value="pending">Pending</option>
                 <option value="completed">Completed</option>
                 <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
-
-            {/* Month Filter */}
-            <div className="flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-md">
-              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                Month:
-              </label>
-              <select
-                value={monthFilter}
-                onChange={(e) => handleMonthFilterChange(e.target.value)}
-                className="block w-32 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white"
-              >
-                <option value="">All Months</option>
-                <option value="01">January</option>
-                <option value="02">February</option>
-                <option value="03">March</option>
-                <option value="04">April</option>
-                <option value="05">May</option>
-                <option value="06">June</option>
-                <option value="07">July</option>
-                <option value="08">August</option>
-                <option value="09">September</option>
-                <option value="10">October</option>
-                <option value="11">November</option>
-                <option value="12">December</option>
-              </select>
-            </div>
-
-            {/* Year Filter */}
-            <div className="flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-md">
-              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                Year:
-              </label>
-              <select
-                value={yearFilter}
-                onChange={(e) => handleYearFilterChange(e.target.value)}
-                className="block w-24 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white"
-              >
-                <option value="">All Years</option>
-                <option value="2025">2025</option>
-                <option value="2026">2026</option>
-                <option value="2027">2027</option>
-                <option value="2028">2028</option>
               </select>
             </div>
           </div>

@@ -219,7 +219,7 @@ function ServiceClassContent() {
 
       <div className="flex md:hidden pb-8 px-8 justify-between items-center">
         <p className="text-[24px] font-bold">Service Class</p>
-        <p>Step 2 of 3</p>
+        <p>Step 1 of 3</p>
       </div>
 
       {/* Flex container for bullets and text - in front */}

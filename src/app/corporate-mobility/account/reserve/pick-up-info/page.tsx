@@ -198,22 +198,35 @@ function PickUpInfoContent() {
 
   // Step indicator component
   const StepIndicator = () => (
-    <div className="relative w-full max-w-[550px] mx-auto py-8">
+    <div className="relative w-full max-w-[550px] mx-auto md:py-8">
       {/* Background line - absolute positioned behind */}
-      <div className="absolute top-10 left-12 right-8 h-0.5 bg-gray-300 transform -translate-y-1/2 w-[440px]"></div>
+      <div className="absolute md:top-10 top-[76px] left-12 right-8 h-0.5 transform -translate-y-1/2 md:w-[23vw] w-[78vw]">
+        <div className="md:hidden flex h-full">
+          <div className="w-1/2 h-full bg-black"></div>
+          <div className="w-1/2 h-full bg-gray-300"></div>
+        </div>
+        <div className="hidden md:block w-full h-full bg-gray-300"></div>
+      </div>
+
+      <div className="flex md:hidden pb-8 px-8 justify-between items-center">
+        <p className="text-[24px] font-bold"> Pick-up Info</p>
+        <p>Step 2 of 3</p>
+      </div>
 
       {/* Flex container for bullets and text - in front */}
-      <div className="relative flex justify-between items-center">
+      <div className="relative flex justify-between items-center px-8 md:px-0">
         {/* Step 1 - Current */}
         <div className="flex flex-col items-center">
-          <div className="w-4 h-4 rounded-full bg-gray-400 mb-2"></div>
-          <span className="text-sm text-gray-500 p-1">Service Class</span>
+          <div className="w-4 h-4 rounded-full md:bg-gray-400 bg-black mb-2"></div>
+          <span className="text-sm md:block hidden text-gray-500 p-1">
+            Service Class
+          </span>
         </div>
 
         {/* Step 2 */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full bg-black mb-2"></div>
-          <span className="text-sm font-bold text-black bg-[#F0F0F0] rounded-full p-1 px-2">
+          <span className="text-sm md:block hidden font-bold text-black bg-[#F0F0F0] rounded-full p-1 px-2">
             Pick-up Info
           </span>
         </div>
@@ -221,7 +234,9 @@ function PickUpInfoContent() {
         {/* Step 3 */}
         <div className="flex flex-col items-center">
           <div className="w-4 h-4 rounded-full border-2 border-gray-300 bg-white mb-2"></div>
-          <span className="text-sm text-gray-500 p-1">Corporate Billing</span>
+          <span className="text-sm md:block hidden text-gray-500 p-1">
+            Payment & Checkout
+          </span>
         </div>
       </div>
     </div>
@@ -251,7 +266,7 @@ function PickUpInfoContent() {
       <div className="min-h-screen bg-white flex flex-col my-[50px]">
         <StepIndicator />
 
-        <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="max-w-[584px] mx-auto px-6 py-8">
           <div className="bg-[#F0F0F0] rounded-lg shadow-sm p-6">
             <div className="flex justify-start items-center">
               <div className="text-left">
@@ -281,17 +296,17 @@ function PickUpInfoContent() {
         </div>
 
         {/* Main content */}
-        <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="max-w-[584px] mx-auto px-6 py-8">
           {/* Passenger Information Section */}
           <h2 className="text-2xl font-semibold text-black mb-6">
             Passenger Information
           </h2>
-          <div className="bg-[#F5F5F5] rounded-lg shadow-sm p-10 mb-8">
+          <div className="bg-[#F5F5F5] rounded-lg shadow-sm p-6 md:p-10 mb-8">
             {/* Personal Information */}
-            <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
               <div>
                 <label className="block text-gray-700 text-sm mb-2">
-                  First Name :
+                  First Name <span className="text-red-500">*</span> :
                 </label>
                 <input
                   type="text"
@@ -305,7 +320,7 @@ function PickUpInfoContent() {
               </div>
               <div>
                 <label className="block text-gray-700 text-sm mb-2">
-                  Last Name :
+                  Last Name <span className="text-red-500">*</span> :
                 </label>
                 <input
                   type="text"
@@ -320,10 +335,10 @@ function PickUpInfoContent() {
             </div>
 
             {/* Contact Information */}
-            <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
               <div>
                 <label className="block text-gray-700 text-sm mb-2">
-                  Email :
+                  Email <span className="text-red-500">*</span> :
                 </label>
                 <input
                   type="email"
@@ -488,7 +503,7 @@ function PickUpInfoContent() {
                 {showPickupSign && (
                   <div>
                     <label className="block text-gray-700 text-sm mb-2">
-                      Pick up sign :
+                      Pick up sign <span className="text-red-500">*</span> :
                     </label>
                     <input
                       type="text"

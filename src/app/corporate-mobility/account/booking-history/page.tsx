@@ -125,7 +125,7 @@ export default function BookingHistory() {
   }
 
   return (
-    <div className="w-3/4 flex flex-col gap-4">
+    <div className="md:w-3/4 w-full flex flex-col gap-4 pb-[100px] md:pb-0 md:px-0 px-6">
       {bookings.map((booking, index) => (
         <HistoryCard
           key={booking.booking_id || index}
