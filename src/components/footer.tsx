@@ -115,7 +115,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 items-center w-full text-center font-plus-jakarta-sans">
+      <div className="flex flex-col gap-2 items-center w-full text-center font-plus-jakarta-sans md:text-[16px] text-[12px]">
         <p>© 2025 Jordan Limousine Services LLC.</p>
         <p>
           JORDAN LIMOUSINE SERVICES LLC. REGISTERED IN JORDAN WITH COMPANY

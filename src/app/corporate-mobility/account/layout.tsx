@@ -102,28 +102,28 @@ export default function CMAccountLayout({
     <>
       <Header />
       {shouldShowSection ? (
-        <section className="flex flex-col mx-auto w-full max-w-[1350px] py-[70px]">
-          <div className="flex justify-between items-center">
+        <section className="flex flex-col mx-auto w-full max-w-[1350px] md:py-[70px] py-[0px]">
+          <div className="md:flex hidden justify-between items-center">
             <p>CORPORATE MOBILITY ACCOUNT</p>
             <div className="flex items-center gap-4">
               <p>{pageTitle}</p>
             </div>
           </div>
-          <hr className="h-px my-4 bg-[#B2B2B2] border-0"></hr>
-          <div className="flex w-full gap-[100px] pt-8">
-            <div className="flex flex-col gap-2 w-1/4">
-              <div className="flex flex-col ">
-                <p className="text-[36px]">Welcome back,</p>
-                <p className="text-[36px] -mt-3">{user.company_name}!</p>
+          <hr className="h-px my-4 md:block hidden bg-[#B2B2B2] border-0"></hr>
+          <div className="flex md:flex-row flex-col w-full md:gap-[100px] gap-12 md:pt-8 pt-4 items-center md:items-start">
+            <div className="flex flex-col gap-2 w-full md:w-1/4 px-[50px] md:px-0 text-center md:text-start">
+              <div className="flex flex-col">
+                <p className="md:text-[36px] text-[24px]">Welcome back,</p>
+                <p className="md:text-[36px] text-[24px] -mt-3">{user.company_name}!</p>
               </div>
-              <p className="text-[20px] text-[#3D3D3D]">
+              <p className="md:text-[20px] text-[16px] text-[#3D3D3D]">
                 How can we assist you today?
               </p>
 
               {pathname !== `${basePath}/reserve` ? (
                 <Link
                   href={`${basePath}/reserve`}
-                  className="text-white bg-black py-4 rounded-lg font-bold my-4 text-center"
+                  className="text-white w-full md:text-[16px] text-[12px] bg-black py-4 rounded-lg font-bold my-4 text-center"
                 >
                   RESERVE NOW
                 </Link>
@@ -133,7 +133,7 @@ export default function CMAccountLayout({
 
               <Link
                 href={`${basePath}/booking-history`}
-                className="flex items-center gap-2 text-[16px]"
+                className="flex mx-auto md:mx-0 items-center gap-2 md:text-[16px] text-[14px]"
               >
                 {pathname == `${basePath}/booking-history` ? (
                   <p className="font-bold">VIEW BOOKING HISTORY</p>
@@ -147,7 +147,7 @@ export default function CMAccountLayout({
               </Link>
               <Link
                 href={basePath}
-                className="flex items-center gap-2 text-[16px] pt-2"
+                className="flex mx-auto md:mx-0 items-center gap-2 md:text-[16px] text-[14px] pt-2"
               >
                 {pathname == basePath ? (
                   <p className="font-bold">CORPORATE ACCOUNT PROFILE</p>

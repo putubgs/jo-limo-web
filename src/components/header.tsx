@@ -16,14 +16,16 @@ export default function Header() {
   const [reservationOpen, setReservationOpen] = useState(pathname === "/");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Close dropdowns on scroll
+  // Close dropdowns when page scrolls
   useEffect(() => {
     if (!reservationOpen && !servicesOpen && !mobileMenuOpen) return;
+
     const handleScroll = () => {
       setReservationOpen(false);
       setServicesOpen(false);
       setMobileMenuOpen(false);
     };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [reservationOpen, servicesOpen, mobileMenuOpen]);
@@ -33,21 +35,11 @@ export default function Header() {
     if (!reservationOpen) return;
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      console.log("Click detected:", target);
-      console.log(
-        "Is reservation dropdown?",
-        target.closest(".reservation-dropdown")
-      );
-      console.log(
-        "Is reserve now button?",
-        target.closest(".reserve-now-button")
-      );
 
       if (
         !target.closest(".reservation-dropdown") &&
         !target.closest(".reserve-now-button")
       ) {
-        console.log("Closing reservation dropdown");
         setReservationOpen(false);
       }
     };
@@ -65,10 +57,33 @@ export default function Header() {
         !target.closest(".mobile-menu-button")
       ) {
         setMobileMenuOpen(false);
+        setServicesOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [mobileMenuOpen]);
+
+  // Prevent body scroll when mobile menu is open - MOBILE ONLY
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+
+    if (mobileMenuOpen && isMobile) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [mobileMenuOpen]);
+
+  // Always close services submenu when mobile menu closes
+  useEffect(() => {
+    if (!mobileMenuOpen) {
+      setServicesOpen(false);
+    }
   }, [mobileMenuOpen]);
 
   const servicesList = [
@@ -114,10 +129,8 @@ export default function Header() {
     }
   }
 
-  // Mobile menu handler - close services submenu when opening mobile menu
   const handleMobileMenuToggle = () => {
     setMobileMenuOpen(!mobileMenuOpen);
-    // Always close services submenu when toggling mobile menu
     setServicesOpen(false);
     setReservationOpen(false);
   };
@@ -129,7 +142,7 @@ export default function Header() {
         className={[
           "relative flex flex-col items-center justify-center",
           "bg-[url('/images/black-line-header.png')] bg-cover bg-top",
-          "w-full h-20 md:h-52", // Shorter height on mobile
+          "w-full h-20 md:h-52",
           showBorder ? "border-b" : "",
         ].join(" ")}
       >
@@ -225,7 +238,6 @@ export default function Header() {
                   </div>
                 );
               }
-              // All others still use the toggle/nav handler
               return (
                 <button
                   key={item}
@@ -250,7 +262,6 @@ export default function Header() {
             />
           </Link>
 
-          {/* Hamburger Menu Button */}
           <button
             onClick={handleMobileMenuToggle}
             className="mobile-menu-button p-2 text-black hover:text-gray-600 transition-colors"
@@ -277,8 +288,8 @@ export default function Header() {
           onClick={() => setServicesOpen(false)}
           className="
             fixed inset-x-0 bottom-0
-            top-[13rem]
-            bg-black bg-opacity-50
+            md:top-[13rem]
+            md:bg-black md:bg-opacity-50
             transition-opacity duration-700
             z-40
           "
@@ -288,18 +299,17 @@ export default function Header() {
       {/* ——— Services Dropdown ——— */}
       <div
         className={`
-          absolute top-full left-0 w-full bg-white shadow-lg
-          overflow-hidden z-50
+          md:services-dropdown absolute top-full left-0 w-full bg-white shadow-lg
+           z-50
           transition-all duration-700 ease-in-out pb-10
           ${
             servicesOpen
-              ? "max-h-[600px] opacity-100"
+              ? "max-h-[80vh] md:max-h-[600px] opacity-100"
               : "max-h-0 opacity-0 pointer-events-none"
           }
         `}
       >
-        <div className="max-w-7xl mx-auto px-8 py-8 flex gap-12">
-          {/* Left: links */}
+        <div className="max-w-7xl mx-auto px-8 py-8 flex flex-col md:flex-row gap-12">
           <div className="flex-shrink-0 flex flex-col gap-4 text-lg text-gray-700">
             {servicesList.map(({ label, slug }) => (
               <Link
@@ -312,8 +322,7 @@ export default function Header() {
               </Link>
             ))}
           </div>
-          {/* Right: images */}
-          <div className="flex gap-8">
+          <div className="hidden md:flex gap-8">
             <div className="flex flex-col">
               <Link
                 href="/services/airport-transfer"
@@ -357,33 +366,25 @@ export default function Header() {
         <div
           onClick={() => setMobileMenuOpen(false)}
           className="
-            md:hidden absolute top-full left-0 right-0 bg-black bg-opacity-50
+            md:hidden fixed inset-0 md:bg-black md:bg-opacity-50
             transition-opacity duration-300
             z-40
           "
-          style={{
-            height: "100vh",
-          }}
         />
       )}
 
       {/* ——— Mobile Menu Dropdown ——— */}
       <div
         className={`
-          mobile-menu md:hidden absolute top-full left-0 w-full bg-white shadow-lg border-t
-          overflow-hidden z-50
+          mobile-menu md:hidden fixed top-20 left-0 right-0 bottom-0 bg-white 
+          overflow-y-auto z-50
           transition-all duration-300 ease-in-out
-          ${
-            mobileMenuOpen
-              ? "max-h-screen opacity-100"
-              : "max-h-0 opacity-0 pointer-events-none"
-          }
+          ${mobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"}
         `}
       >
-        <div className="py-4">
-          {/* Mobile Navigation Items */}
+        <div className="pb-6">
           {navItems
-            .filter((item) => item !== "RESERVE NOW") // Remove RESERVE NOW from mobile menu
+            .filter((item) => item !== "RESERVE NOW")
             .map((item) => {
               if (item === "MEMBERSHIP") {
                 return (
@@ -461,7 +462,6 @@ export default function Header() {
                         {servicesOpen ? "−" : "+"}
                       </span>
                     </button>
-                    {/* Mobile Services Submenu */}
                     {servicesOpen && (
                       <div className="bg-gray-50">
                         {servicesList.map(({ label, slug }) => (

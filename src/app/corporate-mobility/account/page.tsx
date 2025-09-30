@@ -85,7 +85,7 @@ export default function Account() {
   }
 
   return (
-    <div className="w-3/4 flex flex-col gap-4">
+    <div className="w-3/4 flex flex-col gap-4 pb-12 md:pb-0">
       <div className="flex flex-col gap-1">
         <label className="text-[#494949] font-bold">Company Name : </label>
         <input
