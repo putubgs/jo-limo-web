@@ -56,7 +56,7 @@ export default function LoginCorporateMobility() {
   return (
     <>
       <Header />
-      <section className="flex items-center justify-center py-[150px]">
+      <section className="flex items-center justify-center md:py-[150px] py-[50px]">
         <div className="flex flex-col items-center md:max-w-[700px] px-5 md:px-0 w-full gap-2 text-center">
           <p className="text-[36px] w-full leading-tight">
             Login to Your Corporate Mobility Account

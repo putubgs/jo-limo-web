@@ -195,6 +195,9 @@ export default function ReservationForm({
     if (type === "pickup") {
       setPickupLocation(value);
       setPickupError(null);
+      // Close other dropdowns
+      setShowDropoffSuggestions(false);
+      setShowFromSuggestions(false);
       if (value.length > 2) {
         setPickupLoading(true);
         const response = await autocomplete(value);
@@ -209,6 +212,9 @@ export default function ReservationForm({
     } else if (type === "dropoff") {
       setDropoffLocation(value);
       setDropoffError(null);
+      // Close other dropdowns
+      setShowPickupSuggestions(false);
+      setShowFromSuggestions(false);
       if (value.length > 2) {
         setDropoffLoading(true);
         const response = await autocomplete(value);
@@ -223,6 +229,9 @@ export default function ReservationForm({
     } else if (type === "from") {
       setFromLocation(value);
       setFromError(null);
+      // Close other dropdowns
+      setShowPickupSuggestions(false);
+      setShowDropoffSuggestions(false);
       if (value.length > 2) {
         setFromLoading(true);
         const response = await autocomplete(value);
@@ -384,12 +393,22 @@ export default function ReservationForm({
   ) =>
     showSuggestions && (
       <div
-        className="autocomplete-container fixed bg-white border border-gray-300 rounded-md shadow-lg z-[120] max-h-60 overflow-y-auto"
-        style={{
-          top: `${autocompletePosition.top}px`,
-          left: `${autocompletePosition.left}px`,
-          width: `${autocompletePosition.width}px`,
-        }}
+        className={`autocomplete-container ${
+          variant === "popup" ? "fixed" : "absolute"
+        } bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto z-[120]`}
+        style={
+          variant === "popup"
+            ? {
+                top: `${autocompletePosition.top}px`,
+                left: `${autocompletePosition.left}px`,
+                width: `${autocompletePosition.width}px`,
+              }
+            : {
+                top: "100%",
+                left: "0",
+                width: "100%",
+              }
+        }
       >
         {loading && (
           <div className="flex items-center px-3 py-2 text-sm text-gray-500">
@@ -498,6 +517,32 @@ export default function ReservationForm({
           </svg>
         )}
       </div>
+
+      {/* Autocomplete dropdown positioned relative to this specific input */}
+      {type === "pickup" &&
+        renderAutocompleteDropdown(
+          "pickup",
+          pickupSuggestions,
+          pickupLoading,
+          pickupError,
+          showPickupSuggestions
+        )}
+      {type === "dropoff" &&
+        renderAutocompleteDropdown(
+          "dropoff",
+          dropoffSuggestions,
+          dropoffLoading,
+          dropoffError,
+          showDropoffSuggestions
+        )}
+      {type === "from" &&
+        renderAutocompleteDropdown(
+          "from",
+          fromSuggestions,
+          fromLoading,
+          fromError,
+          showFromSuggestions
+        )}
     </div>
   );
 
@@ -550,13 +595,6 @@ export default function ReservationForm({
                   setShowPickupSuggestions(false);
                 }
               )}
-              {renderAutocompleteDropdown(
-                "pickup",
-                pickupSuggestions,
-                pickupLoading,
-                pickupError,
-                showPickupSuggestions
-              )}
 
               {/* Drop off Location */}
               {renderLocationField(
@@ -568,13 +606,6 @@ export default function ReservationForm({
                   setDropoffLocation("");
                   setShowDropoffSuggestions(false);
                 }
-              )}
-              {renderAutocompleteDropdown(
-                "dropoff",
-                dropoffSuggestions,
-                dropoffLoading,
-                dropoffError,
-                showDropoffSuggestions
               )}
             </>
           ) : (
@@ -589,13 +620,6 @@ export default function ReservationForm({
                   setFromLocation("");
                   setShowFromSuggestions(false);
                 }
-              )}
-              {renderAutocompleteDropdown(
-                "from",
-                fromSuggestions,
-                fromLoading,
-                fromError,
-                showFromSuggestions
               )}
 
               {/* Duration */}
