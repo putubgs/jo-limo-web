@@ -256,8 +256,8 @@ export default function Header() {
           <Link href={"/"}>
             <Image
               alt="Jo Limo Logo"
-              src="/images/jolimo-logo.png"
-              width={60}
+              src="/images/jolimo_mobile.png"
+              width={130}
               height={60}
             />
           </Link>
