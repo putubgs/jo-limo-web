@@ -134,7 +134,7 @@ export default function IntercityModal({
     >
       <div
         className="flex flex-col relative bg-white
-                      px-[30px] py-[75px]
+                      md:px-[30px] px-4 py-[60px] md:py-[75px]
                       w-11/12 max-w-[750px]"
       >
         {/* Close button */}
@@ -146,9 +146,9 @@ export default function IntercityModal({
         </button>
 
         {/* Title */}
-        <p className="text-[20px] pb-[75px] text-center">CITY-TO-CITY TRANSFER</p>
+        <p className="md:text-[20px] text-[16px] pb-[75px] text-center">CITY-TO-CITY TRANSFER</p>
 
-        {/* Tabs container */}
+        {/* Tabs */}
         <div className="relative mb-6">
           <div className="border-t border-gray-200" />
           <div className="max-w-[400px]">
@@ -158,8 +158,8 @@ export default function IntercityModal({
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`
-                    relative flex-1 px-6 py-3
-                    text-center uppercase font-medium text-[16px]
+                    relative flex-1 px-2 sm:px-6 py-3
+                    text-center uppercase font-medium text-[12px] sm:text-[16px]
                     ${
                       activeTab === tab
                         ? "text-black"
@@ -188,7 +188,7 @@ export default function IntercityModal({
                 <button
                   onClick={() => toggleSegment(sidx)}
                   className="w-full flex justify-between items-center
-                             px-4 py-4 text-[16px] text-black"
+                             px-4 py-4 md:text-[16px] text-[14px] text-black"
                 >
                   <span>{title}</span>
                   <ArrowBackIosNewRoundedIcon
@@ -216,7 +216,7 @@ export default function IntercityModal({
                       <div
                         key={route}
                         className="flex justify-between items-center
-                                   py-3 text-[14px] text-gray-700"
+                                   py-3 md:text-[14px] text-[12px] text-gray-700"
                       >
                         <span className="text-gray-500">{route}</span>
                         <span className="text-black">{price}</span>

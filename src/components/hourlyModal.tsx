@@ -118,7 +118,7 @@ export default function HourlyModal({
     >
       <div
         className="flex flex-col relative bg-white
-                      px-[30px] py-[75px]
+                      md:px-[30px] px-4 py-[60px] md:py-[75px]
                       w-11/12 max-w-[750px]"
       >
         {/* Close */}
@@ -130,7 +130,7 @@ export default function HourlyModal({
         </button>
 
         {/* Title */}
-        <p className="text-[20px] pb-[75px] text-center">
+        <p className="md:text-[20px] text-[16px] pb-[75px] text-center">
           HOURLY AND FULL DAY HIRE
         </p>
 
@@ -144,8 +144,8 @@ export default function HourlyModal({
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`
-                    relative flex-1 px-6 py-3
-                    text-center uppercase font-medium text-[16px]
+                    relative flex-1 px-2 sm:px-6 py-3
+                    text-center uppercase font-medium text-[12px] sm:text-[16px]
                     ${
                       activeTab === tab
                         ? "text-black"
@@ -176,7 +176,7 @@ export default function HourlyModal({
             <div
               key={label}
               className="flex justify-between items-center px-4 py-3
-                         text-[14px] text-gray-700 border-t"
+                         md:text-[14px] text-[12px] text-gray-700 border-t"
             >
               <span className="text-gray-500">{label}</span>
               <span className="text-black">{price}</span>
@@ -185,13 +185,13 @@ export default function HourlyModal({
 
           {/* Waiting Time */}
           <div className="px-4 py-4">
-            <h3 className="text-[16px] text-black uppercase">Waiting Time</h3>
+            <h3 className="md:text-[16px] text-[13px] text-black uppercase">Waiting Time</h3>
           </div>
           {waiting.map(({ label, price }) => (
             <div
               key={label}
               className="flex justify-between items-center px-4 py-3
-                         text-[14px] text-gray-700 border-t"
+                         md:text-[14px] text-[12px] text-gray-700 border-t"
             >
               <span className="text-gray-500">{label}</span>
               <span className="text-black">{price}</span>
@@ -200,7 +200,7 @@ export default function HourlyModal({
 
           {/* Cancellation Fees */}
           <div className="px-4 py-4">
-            <h3 className="text-[16px] text-black uppercase">
+            <h3 className="md:text-[16px] text-[13px] text-black uppercase">
               Cancellation Fees
             </h3>
           </div>
@@ -208,7 +208,7 @@ export default function HourlyModal({
             <div
               key={label}
               className="flex justify-between items-center px-4 py-3
-                         text-[14px] text-gray-700 border-t"
+                         md:text-[14px] text-[12px] text-gray-700 border-t"
             >
               <span className="text-gray-500">{label}</span>
               <span className="text-black">{price}</span>
@@ -217,13 +217,13 @@ export default function HourlyModal({
 
           {/* Extra Charges */}
           <div className="px-4 py-4">
-            <h3 className="text-[16px] text-black uppercase">Extra Charges</h3>
+            <h3 className="md:text-[16px] text-[13px] text-black uppercase">Extra Charges</h3>
           </div>
           {extra.map(({ label, price }) => (
             <div
               key={label}
               className="flex justify-between items-center px-4 py-3
-                         text-[14px] text-gray-700"
+                         md:text-[14px] text-[12px] text-gray-700"
             >
               <span className="text-gray-500">{label}</span>
               <span className="text-black">{price}</span>
