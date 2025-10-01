@@ -2,7 +2,8 @@
 
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { COUNTRY_DATA } from "@/data/countries";
 
 export default function MembershipApplication() {
   const [formData, setFormData] = useState({
@@ -15,6 +16,52 @@ export default function MembershipApplication() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  // Phone number state
+  const [selectedCountry, setSelectedCountry] = useState(COUNTRY_DATA[0]); // Default to Jordan
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [isPhoneDropdownOpen, setIsPhoneDropdownOpen] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsPhoneDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Format phone number with spaces
+  const formatPhoneNumber = (value: string) => {
+    const cleaned = value.replace(/\D/g, "");
+    const match = cleaned.match(/^(\d{0,4})(\d{0,6})$/);
+    if (match) {
+      return [match[1], match[2]].filter(Boolean).join(" ");
+    }
+    return cleaned;
+  };
+
+  const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value.replace(/\D/g, "");
+    if (input.length <= 10) {
+      setPhoneNumber(input);
+    }
+  };
+
+  // Filter countries based on search
+  const filteredCountries = COUNTRY_DATA.filter(
+    (country) =>
+      country.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+      country.phoneCode.includes(countrySearch)
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -22,12 +69,18 @@ export default function MembershipApplication() {
     setMessage("");
 
     try {
+      // Combine country code with phone number
+      const fullPhoneNumber = `${selectedCountry.phoneCode}${phoneNumber}`;
+
       const response = await fetch("/api/membership/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          phone: fullPhoneNumber,
+        }),
       });
 
       const data = await response.json();
@@ -35,6 +88,8 @@ export default function MembershipApplication() {
       if (data.success) {
         setMessage("Membership application submitted successfully!");
         setFormData({ firstname: "", lastname: "", email: "", phone: "" });
+        setPhoneNumber("");
+        setSelectedCountry(COUNTRY_DATA[0]);
       } else {
         setError(data.error || "Failed to submit application");
       }
@@ -85,14 +140,110 @@ export default function MembershipApplication() {
               placeholder="E-mail"
               required
             />
-            <input
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              className="border border-[#CACACA] w-full p-3 rounded-sm outline-none"
-              placeholder="Phone Number"
-              required
-            />
+            {/* Phone Number with Country Code Dropdown */}
+            <div className="relative" ref={dropdownRef}>
+              <div className="flex bg-white rounded-sm overflow-hidden border border-[#CACACA]">
+                {/* Country Code Dropdown */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsPhoneDropdownOpen(!isPhoneDropdownOpen);
+                  }}
+                  className="px-4 py-3 bg-transparent focus:outline-none text-black text-lg min-w-[90px] border-r border-[#CACACA] flex items-center justify-between hover:bg-gray-50"
+                >
+                  <span>{selectedCountry.phoneCode}</span>
+                  <svg
+                    className={`w-4 h-4 ml-2 transition-transform ${
+                      isPhoneDropdownOpen ? "rotate-180" : ""
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                {/* Phone Number Input */}
+                <input
+                  type="tel"
+                  placeholder="---- ------"
+                  value={formatPhoneNumber(phoneNumber)}
+                  onChange={handlePhoneNumberChange}
+                  onKeyPress={(e) => {
+                    if (
+                      !/[0-9]/.test(e.key) &&
+                      e.key !== "Backspace" &&
+                      e.key !== "Delete" &&
+                      e.key !== "Tab" &&
+                      e.key !== "Enter"
+                    ) {
+                      e.preventDefault();
+                    }
+                  }}
+                  onPaste={(e) => {
+                    e.preventDefault();
+                    const paste = e.clipboardData.getData("text");
+                    const numericPaste = paste.replace(/[^0-9]/g, "");
+                    setPhoneNumber(numericPaste);
+                  }}
+                  className="w-full px-4 py-3 bg-transparent focus:outline-none text-black text-lg"
+                  inputMode="numeric"
+                  required
+                />
+              </div>
+
+              {/* Dropdown Menu */}
+              {isPhoneDropdownOpen && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-[#CACACA] rounded-sm shadow-lg">
+                  {/* Search Input */}
+                  <div className="p-2 border-b border-[#CACACA] sticky top-0 bg-white">
+                    <input
+                      type="text"
+                      placeholder="Search country..."
+                      value={countrySearch}
+                      onChange={(e) => setCountrySearch(e.target.value)}
+                      className="w-full px-3 py-2 border border-[#CACACA] rounded-sm outline-none focus:border-gray-400"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                  {/* Country List */}
+                  <div className="max-h-60 overflow-y-auto">
+                    {filteredCountries.length > 0 ? (
+                      filteredCountries.map((country) => (
+                        <button
+                          key={country.isoCode}
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setSelectedCountry(country);
+                            setIsPhoneDropdownOpen(false);
+                            setCountrySearch("");
+                          }}
+                          className="w-full px-4 py-2 text-left hover:bg-gray-100 flex justify-between items-center"
+                        >
+                          <span className="text-black">{country.name}</span>
+                          <span className="text-gray-600">
+                            {country.phoneCode}
+                          </span>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-3 text-gray-500 text-center">
+                        No countries found
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
             <button
               type="submit"
               disabled={loading}
