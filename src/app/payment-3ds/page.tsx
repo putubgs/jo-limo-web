@@ -204,11 +204,11 @@ function Payment3DSContent() {
             strategy="afterInteractive"
           />
 
-          <div className="mt-4 sm:mt-6 text-center">
+          {/* <div className="mt-4 sm:mt-6 text-center">
             <p className="text-xs sm:text-sm text-gray-400">
               Powered by HyperPay
             </p>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

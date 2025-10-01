@@ -107,7 +107,7 @@ export default function LoginCorporateMobility() {
             <p className="text-center text-[14px] md:text-[16px] text-black px-10 text-[#656565]">
               Not a Jo Limo partner yet? Partner with us and elevate your
               business mobility.{" "}
-              <Link href={"#"} className="underline text-blue-500">
+              <Link href={"/corporate-mobility/register"} className="underline text-blue-500">
                 Apply Now
               </Link>
             </p>

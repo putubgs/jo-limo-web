@@ -254,9 +254,9 @@ export default function SimpleHyperPayForm({
         strategy="afterInteractive"
       />
 
-      <div className="mt-4 text-center">
+      {/* <div className="mt-4 text-center">
         <p className="text-xs text-gray-400">Powered by HyperPay</p>
-      </div>
+      </div> */}
     </div>
   );
 }

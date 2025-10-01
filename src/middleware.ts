@@ -50,7 +50,12 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
-    // Protect all other corporate mobility routes
+    // Allow public access to register page and other non-account pages
+    if (!pathname.includes("/account")) {
+      return NextResponse.next();
+    }
+
+    // Protect only routes containing /account
     const token = request.cookies.get("corporate-auth-token")?.value;
 
     if (!token) {
