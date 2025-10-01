@@ -510,7 +510,7 @@ function PaymentAndCheckoutContent() {
   const StepIndicator = () => (
     <div className="relative w-full max-w-[550px] mx-auto md:py-8">
       {/* Background line - absolute positioned behind */}
-      <div className="absolute md:top-10 top-[76px] left-12 right-8 h-0.5 bg-black md:bg-gray-300 transform -translate-y-1/2 md:w-[22vw] w-[78vw]"></div>
+      <div className="absolute md:top-10 top-[76px] left-12 right-8 h-0.5 bg-black md:bg-gray-300 transform -translate-y-1/2 md:w-[440px] w-[78vw]"></div>
 
       <div className="flex md:hidden pb-8 px-8 justify-between items-center">
         <p className="text-[24px] font-bold">Payment & Checkout</p>
