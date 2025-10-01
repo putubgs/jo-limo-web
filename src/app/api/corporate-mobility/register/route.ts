@@ -68,9 +68,7 @@ Company Email: ${company_email}
 Phone Number: ${phone_number}
 Company Address: ${company_address}
 Billing Address: ${billing_address}
-
-Date: ${new Date().toLocaleString()}
-      `.trim();
+`.trim();
 
       const msg = {
         to: "b2b@jo-limo.com",
