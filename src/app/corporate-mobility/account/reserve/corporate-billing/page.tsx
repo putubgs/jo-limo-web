@@ -396,8 +396,7 @@ function PaymentAndCheckoutContent() {
               company account.
             </p>
             <p>
-              For any changes or cancellations, please contact our team at
-              0921-820-198.
+              For any changes or cancellations, please contact our team at +962-79-169-8125.
             </p>
             <p className="text-[#7C7C7C] underline pt-10">Download Invoice</p>
           </div>

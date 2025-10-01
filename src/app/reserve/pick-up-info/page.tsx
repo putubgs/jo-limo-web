@@ -332,11 +332,17 @@ function PickUpInfoContent() {
                   {formatDisplayDate(bookingData.date, bookingData.time)}
                 </p>
                 <div className="flex items-center mt-2">
-                  <span className="md:text-base text-[15px]" style={{ color: "#A4A4A4" }}>
+                  <span
+                    className="md:text-base text-[15px]"
+                    style={{ color: "#A4A4A4" }}
+                  >
                     {locations.from}
                   </span>
                   <span className="mx-4 text-2xl text-gray-600">→</span>
-                  <span className="md:text-base text-[15px]" style={{ color: "#A4A4A4" }}>
+                  <span
+                    className="md:text-base text-[15px]"
+                    style={{ color: "#A4A4A4" }}
+                  >
                     {locations.to}
                   </span>
                 </div>
@@ -770,12 +776,79 @@ function PickUpInfoContent() {
           <div className="flex justify-center">
             <button
               onClick={() => {
-                // Validate flight number if required (airport locations)
-                if (hasAirportLocation && !flightNumber) {
-                  alert("Please enter a flight number to continue.");
+                // Validate required customer information
+                if (!billingForm.customerGivenName.trim()) {
+                  alert(
+                    "⚠️ First Name is required. Please fill in this field."
+                  );
                   return;
                 }
 
+                if (!billingForm.customerSurname.trim()) {
+                  alert("⚠️ Last Name is required. Please fill in this field.");
+                  return;
+                }
+
+                if (!billingForm.customerEmail.trim()) {
+                  alert("⚠️ Email is required. Please fill in this field.");
+                  return;
+                }
+
+                // Validate email format
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(billingForm.customerEmail)) {
+                  alert("⚠️ Please enter a valid email address.");
+                  return;
+                }
+
+                if (!phoneNumber.trim()) {
+                  alert(
+                    "⚠️ Mobile Number is required. Please provide a valid mobile number."
+                  );
+                  return;
+                }
+
+                // Validate billing address fields
+                if (!billingForm.billingStreet1.trim()) {
+                  alert(
+                    "⚠️ Street Address is required. Please fill in this field."
+                  );
+                  return;
+                }
+
+                if (!billingForm.billingCity.trim()) {
+                  alert("⚠️ City is required. Please fill in this field.");
+                  return;
+                }
+
+                if (!billingForm.billingState.trim()) {
+                  alert(
+                    "⚠️ State/Province is required. Please fill in this field."
+                  );
+                  return;
+                }
+
+                if (!billingForm.billingCountry) {
+                  alert("⚠️ Country is required. Please select a country.");
+                  return;
+                }
+
+                if (!billingForm.billingPostcode.trim()) {
+                  alert(
+                    "⚠️ Postal Code is required. Please fill in this field."
+                  );
+                  return;
+                }
+
+                // Validate flight number if required (airport locations)
+                if (hasAirportLocation && !flightNumber.trim()) {
+                  alert(
+                    "⚠️ Flight Number is required for airport transfers. Please fill in this field."
+                  );
+                  return;
+                }
+
+                // All validations passed, proceed
                 // Save billing data to store
                 setBillingData(billingForm);
 
@@ -796,8 +869,7 @@ function PickUpInfoContent() {
                 // Navigate to payment-and-checkout (next step in the flow)
                 router.push("/reserve/payment-and-checkout");
               }}
-              className="w-full text-center bg-[#ABABAB] text-white font-bold text-[16px] px-8 py-4 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={hasAirportLocation && !flightNumber}
+              className="w-full text-center bg-[#ABABAB] text-white font-bold text-[16px] px-8 py-4 rounded-lg hover:bg-gray-800 transition-colors"
             >
               Continue
             </button>
