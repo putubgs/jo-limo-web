@@ -285,7 +285,7 @@ function PaymentAndCheckoutContent() {
             paymentMethod === "credit/debit" ? "completed" : "pending",
         });
 
-        await createBookingHistory({
+        const result = await createBookingHistory({
           reservationData,
           billingData,
           paymentMethod,
@@ -295,9 +295,23 @@ function PaymentAndCheckoutContent() {
         });
 
         console.log("✅ Booking history created successfully with REAL DATA!");
+        console.log("✅ Booking result:", result);
       } catch (error) {
-        console.error("Failed to create booking history:", error);
-        // Don't fail the payment flow if booking creation fails
+        console.error(
+          "❌ CRITICAL ERROR: Failed to create booking history:",
+          error
+        );
+        console.error(
+          "❌ Error details:",
+          error instanceof Error ? error.message : String(error)
+        );
+        console.error("❌ Full error object:", JSON.stringify(error, null, 2));
+        // Re-throw the error so we know booking failed even if payment succeeded
+        throw new Error(
+          `Booking creation failed: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        );
       }
     },
     [reservationData, getBillingData]
@@ -335,6 +349,13 @@ function PaymentAndCheckoutContent() {
     )
       .then((r) => r.json())
       .then(async (data: HyperPayResult) => {
+        console.log(
+          "💳 PAYMENT STATUS RESPONSE:",
+          JSON.stringify(data, null, 2)
+        );
+        console.log("💳 Result code:", data.result?.code);
+        console.log("💳 Result description:", data.result?.description);
+
         if (hasSettledRef.current) return; // already handled
 
         const okCodes = [
@@ -345,20 +366,63 @@ function PaymentAndCheckoutContent() {
           "000.100.112",
         ];
         const success = okCodes.includes(data.result.code);
+        console.log(
+          "💳 Payment success:",
+          success,
+          "| Code:",
+          data.result.code
+        );
 
         if (success) {
+          console.log("✅ Payment was successful, creating booking...");
           hasSettledRef.current = true;
 
           // Create booking history for successful HyperPay payment
-          await createBooking("credit/debit", data);
-
-          dispatch({ type: "SUCCESS", payload: data });
+          try {
+            console.log("📝 Calling createBooking...");
+            await createBooking("credit/debit", data);
+            console.log("✅ createBooking completed successfully");
+            dispatch({ type: "SUCCESS", payload: data });
+          } catch (bookingError) {
+            console.error(
+              "❌ Payment succeeded but booking creation failed:",
+              bookingError
+            );
+            console.error("❌ Booking error type:", typeof bookingError);
+            console.error("❌ Booking error details:", {
+              message:
+                bookingError instanceof Error
+                  ? bookingError.message
+                  : String(bookingError),
+              stack:
+                bookingError instanceof Error ? bookingError.stack : "No stack",
+            });
+            dispatch({
+              type: "FAILURE",
+              payload: `Payment processed but booking creation failed. Please contact support with your payment details. Error: ${
+                bookingError instanceof Error
+                  ? bookingError.message
+                  : String(bookingError)
+              }`,
+            });
+          }
         } else {
+          console.log("❌ Payment was NOT successful");
+          console.log("❌ Payment result code:", data.result.code);
+          console.log("❌ Payment description:", data.result.description);
           hasSettledRef.current = true;
           dispatch({ type: "FAILURE", payload: data.result.description });
         }
       })
-      .catch(() => {
+      .catch((fetchError) => {
+        console.error("❌ FETCH ERROR checking payment status:", fetchError);
+        console.error("❌ Fetch error details:", {
+          message:
+            fetchError instanceof Error
+              ? fetchError.message
+              : String(fetchError),
+          stack: fetchError instanceof Error ? fetchError.stack : "No stack",
+        });
         if (hasSettledRef.current) return;
         hasSettledRef.current = true;
         dispatch({
@@ -510,7 +574,7 @@ function PaymentAndCheckoutContent() {
   const StepIndicator = () => (
     <div className="relative w-full max-w-[550px] mx-auto md:py-8">
       {/* Background line - absolute positioned behind */}
-      <div className="absolute md:top-10 top-[76px] left-12 right-8 h-0.5 bg-black md:bg-gray-300 transform -translate-y-1/2 md:w-[440px] w-[78vw]"></div>
+      <div className="absolute md:top-10 top-[76px] left-12 right-8 h-0.5 bg-black md:bg-gray-300 transform -translate-y-1/2 md:w-[430px] w-[78vw]"></div>
 
       <div className="flex md:hidden pb-8 px-8 justify-between items-center">
         <p className="text-[24px] font-bold">Payment & Checkout</p>

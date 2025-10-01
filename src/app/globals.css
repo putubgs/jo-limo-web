@@ -107,7 +107,7 @@ form.paymentWidgets input[type="number"]:focus {
 }
 
 .wpwl-form .wpwl-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #000000;
   color: #ffffff;
   border: none;
   border-radius: 8px;
@@ -121,7 +121,7 @@ form.paymentWidgets input[type="number"]:focus {
 }
 
 .wpwl-form .wpwl-button:hover {
-  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  background: #000000;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }

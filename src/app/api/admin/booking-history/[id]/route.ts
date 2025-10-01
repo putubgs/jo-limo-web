@@ -106,9 +106,10 @@ export async function PUT(
       );
     }
 
-    // Get current timestamp in Jordan timezone (UTC+3)
+    // Store Jordan Time (UTC+3) directly in database
     const now = new Date();
-    const timestamp = now.toISOString(); // Store as UTC, display will handle timezone conversion
+    const jordanTime = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+    const timestamp = jordanTime.toISOString();
 
     // Update the booking with updated_at timestamp
     const { data, error } = await supabase

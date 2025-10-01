@@ -6,7 +6,9 @@ import { cookies } from "next/headers";
 // POST - Create a new booking
 export async function POST(request: NextRequest) {
   try {
+    console.log("📥 Received booking creation request");
     const body: CreateBookingRequest = await request.json();
+    console.log("📄 Request body:", JSON.stringify(body, null, 2));
 
     // Validate required fields
     const requiredFields = [
@@ -52,9 +54,10 @@ export async function POST(request: NextRequest) {
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 
-    // Get current timestamp in Jordan timezone (UTC+3)
+    // Store Jordan Time (UTC+3) directly in database
     const now = new Date();
-    const timestamp = now.toISOString(); // Store as UTC, display will handle timezone conversion
+    const jordanTime = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+    const timestamp = jordanTime.toISOString();
 
     // Insert the booking into the database
     const { data, error } = await supabase
@@ -87,18 +90,31 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error("Database error:", error);
+      console.error("❌ Database error:", error);
+      console.error("❌ Error details:", JSON.stringify(error, null, 2));
       return NextResponse.json(
         { error: "Failed to create booking", details: error.message },
         { status: 500 }
       );
     }
 
+    console.log("✅ Booking created successfully:", data);
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
-    console.error("API error:", error);
+    console.error("❌ API error:", error);
+    console.error(
+      "❌ Error message:",
+      error instanceof Error ? error.message : String(error)
+    );
+    console.error(
+      "❌ Error stack:",
+      error instanceof Error ? error.stack : "No stack trace"
+    );
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }

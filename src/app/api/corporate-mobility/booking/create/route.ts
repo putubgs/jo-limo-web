@@ -67,9 +67,9 @@ export async function POST(request: NextRequest) {
 
     const supabase = createClient(cookieStore);
 
-    // Get current timestamp in Jordan timezone (UTC+3)
+    // Store Jordan Time (UTC+3) directly in database
     const now = new Date();
-    const jordanTime = new Date(now.getTime() + 3 * 60 * 60 * 1000); // Add 3 hours for Jordan time
+    const jordanTime = new Date(now.getTime() + 3 * 60 * 60 * 1000);
     const timestamp = jordanTime.toISOString();
 
     // Generate reference code for corporate bookings

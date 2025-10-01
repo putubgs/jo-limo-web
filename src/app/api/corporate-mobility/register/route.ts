@@ -59,6 +59,19 @@ export async function POST(request: NextRequest) {
 
     // Send simple text email with application details
     try {
+      // Format date in Jordan timezone (UTC+3) for display in email
+      const now = new Date();
+      const jordanTime = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+      const formattedDate = jordanTime.toLocaleString("en-US", {
+        timeZone: "UTC",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+
       const emailContent = `
 New Corporate Account Registration
 
@@ -68,6 +81,8 @@ Company Email: ${company_email}
 Phone Number: ${phone_number}
 Company Address: ${company_address}
 Billing Address: ${billing_address}
+
+Date Submitted: ${formattedDate} (Jordan Time)
 `.trim();
 
       const msg = {

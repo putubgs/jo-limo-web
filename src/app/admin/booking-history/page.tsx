@@ -758,7 +758,7 @@ export default function BookingHistory() {
                     Booking Details (
                     {viewingBooking.created_at
                       .replace("T", " ")
-                      .replace(/\.\d+$/, "")}
+                      .replace(/\.\d+Z$/, "") + " (Jordan Time)"}
                     )
                   </h3>
                   <p className="text-blue-100 text-sm mt-1">

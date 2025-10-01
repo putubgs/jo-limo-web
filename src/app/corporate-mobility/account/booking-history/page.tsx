@@ -65,17 +65,20 @@ export default function BookingHistory() {
     setSelectedBooking(null);
   };
 
-  // Helper function to format date and time
+  // Helper function to format date and time - already in Jordan Time from database
   const formatDateTime = (dateTimeString: string) => {
     const date = new Date(dateTimeString);
-    return date.toLocaleString("en-US", {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return (
+      date.toLocaleString("en-US", {
+        timeZone: "UTC", // Database already stores Jordan time
+        weekday: "short",
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }) + " (Jordan Time)"
+    );
   };
 
   // Helper function to get vehicle image based on selected class
