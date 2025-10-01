@@ -27,6 +27,7 @@ export default function CMAccountLayout({
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [signingOut, setSigningOut] = useState(false);
   const pageTitle = checkPageTitle();
 
   // Reset all booking state when user enters corporate mobility account
@@ -79,6 +80,33 @@ export default function CMAccountLayout({
     }
   }
 
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    console.log("🚪 Starting sign out process...");
+
+    try {
+      const response = await fetch("/api/corporate-mobility/auth/logout", {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        console.log("✅ Logout successful");
+        // Clear any local state
+        setUser(null);
+        resetForCorporateMobility();
+        console.log("🔄 Redirecting to login page...");
+        // Redirect to login
+        router.push("/corporate-mobility/login");
+      } else {
+        console.error("❌ Logout failed - response not ok");
+        setSigningOut(false);
+      }
+    } catch (error) {
+      console.error("❌ Logout error:", error);
+      setSigningOut(false);
+    }
+  };
+
   if (loading) {
     return (
       <>
@@ -114,7 +142,9 @@ export default function CMAccountLayout({
             <div className="flex flex-col gap-2 w-full md:w-1/4 px-[50px] md:px-0 text-center md:text-start">
               <div className="flex flex-col">
                 <p className="md:text-[36px] text-[24px]">Welcome back,</p>
-                <p className="md:text-[36px] text-[24px] -mt-3">{user.company_name}!</p>
+                <p className="md:text-[36px] text-[24px] -mt-3">
+                  {user.company_name}!
+                </p>
               </div>
               <p className="md:text-[20px] text-[16px] text-[#3D3D3D]">
                 How can we assist you today?
@@ -159,6 +189,19 @@ export default function CMAccountLayout({
                   fontSize="inherit"
                 />
               </Link>
+
+              {/* Sign Out Button */}
+              <button
+                onClick={handleSignOut}
+                disabled={signingOut}
+                className="flex mx-auto md:mx-0 items-center gap-2 md:text-[16px] text-[14px] pt-2"
+              >
+                {signingOut ? "SIGNING OUT..." : "SIGN OUT"}
+                <ArrowBackIosNewRoundedIcon
+                  className="transform rotate-180 text-[20px]"
+                  fontSize="inherit"
+                />
+              </button>
             </div>
             {children}
           </div>
