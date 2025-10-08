@@ -65,11 +65,17 @@ export function checkRateLimit(request: NextRequest): {
  */
 function cleanupExpiredEntries() {
   const now = Date.now();
-  for (const [key, entry] of rateLimitStore.entries()) {
+  const keysToDelete: string[] = [];
+
+  rateLimitStore.forEach((entry, key) => {
     if (now > entry.resetTime) {
-      rateLimitStore.delete(key);
+      keysToDelete.push(key);
     }
-  }
+  });
+
+  keysToDelete.forEach((key) => {
+    rateLimitStore.delete(key);
+  });
 }
 
 /**
