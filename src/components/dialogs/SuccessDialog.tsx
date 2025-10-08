@@ -14,15 +14,22 @@ interface Props {
 export default function SuccessDialog({ open, onClose, paymentResult }: Props) {
   const router = useRouter();
 
+  // Check if this is a cash payment
+  const isCashPayment = paymentResult?.id?.startsWith("CASH-");
+
   return (
     <Dialog open={open} onClose={() => {}} disableEscapeKeyDown>
       <div className="flex flex-col items-center space-y-4 md:space-y-6 px-6 md:px-24 py-8 md:py-12 text-center">
         <div className="relative size-16 md:size-20">
           <Image src="/images/check-circle.png" alt="Success" fill />
         </div>
-        <h3 className="text-lg md:text-xl font-bold">Payment Successful</h3>
+        <h3 className="text-lg md:text-xl font-bold">
+          {isCashPayment ? "Order Confirmed" : "Payment Successful"}
+        </h3>
         <p className="text-xs text-[#838383]">
-          Your payment has been processed successfully
+          {isCashPayment
+            ? "Your order has been processed successfully"
+            : "Your payment has been processed successfully"}
         </p>
 
         {paymentResult && (
