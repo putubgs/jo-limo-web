@@ -13,6 +13,7 @@ import { useReservationStore, ServiceClass } from "@/lib/reservation-store";
 import { calculateDistanceAndTime } from "@/lib/distance-calculator";
 import { calculatePrice } from "@/lib/pricing-calculator";
 import DataValidationError from "@/components/DataValidationError";
+import TermsAndConditionsDialog from "@/components/dialogs/TermsAndConditionsDialog";
 
 function ServiceClassContent() {
   const router = useRouter();
@@ -388,10 +389,7 @@ function ServiceClassContent() {
                 </div>
                 {distanceInfo && (
                   <div className="mt-3">
-                    <p
-                      className="text-sm"
-                      style={{ color: "#A4A4A4" }}
-                    >
+                    <p className="text-sm" style={{ color: "#A4A4A4" }}>
                       An estimated travel time of {distanceInfo.duration} to the
                       destination • {distanceInfo.distance}
                     </p>
@@ -437,7 +435,11 @@ function ServiceClassContent() {
                           src={service.image}
                           alt={`${service.name} Vehicle`}
                           fill
-                          className={service.image === "/images/mercedes_bens_img.png" ? "object-contain" : "object-cover"}
+                          className={
+                            service.image === "/images/mercedes_bens_img.png"
+                              ? "object-contain"
+                              : "object-cover"
+                          }
                         />
                       </div>
                       <div>
@@ -576,25 +578,11 @@ function ServiceClassContent() {
             </button>
           </div>
 
-          {/* Terms & Conditions Popup */}
-          {showTermsPopup && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-                <div className="text-center">
-                  <h3 className="text-xl font-semibold text-black mb-4">
-                    Terms & Conditions
-                  </h3>
-                  <p className="text-gray-600 mb-6">Content is coming soon</p>
-                  <button
-                    onClick={() => setShowTermsPopup(false)}
-                    className="bg-black text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Terms & Conditions Dialog */}
+          <TermsAndConditionsDialog
+            isOpen={showTermsPopup}
+            onClose={() => setShowTermsPopup(false)}
+          />
         </div>
       </div>
       <Footer />
