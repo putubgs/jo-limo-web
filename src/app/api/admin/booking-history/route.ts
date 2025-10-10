@@ -179,10 +179,26 @@ export async function GET(request: NextRequest) {
     }
 
     // Apply search (by customer name: first_name + last_name, or reference_code)
+    // Split search into words and search each word across all fields
     if (search) {
-      query = query.or(
-        `first_name.ilike.%${search}%,last_name.ilike.%${search}%,reference_code.ilike.%${search}%`
-      );
+      const searchWords = search.trim().split(/\s+/); // Split by whitespace
+
+      if (searchWords.length === 1) {
+        // Single word search - use simple OR logic
+        query = query.or(
+          `first_name.ilike.%${searchWords[0]}%,last_name.ilike.%${searchWords[0]}%,reference_code.ilike.%${searchWords[0]}%`
+        );
+      } else {
+        // Multiple words - each word must match at least one field
+        // This allows "zaid a" to match "zaid abu samra"
+        searchWords.forEach((word) => {
+          if (word) {
+            query = query.or(
+              `first_name.ilike.%${word}%,last_name.ilike.%${word}%,reference_code.ilike.%${word}%`
+            );
+          }
+        });
+      }
     }
 
     // Apply pagination

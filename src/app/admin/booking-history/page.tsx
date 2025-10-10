@@ -337,9 +337,9 @@ export default function BookingHistory() {
             </div>
           </div>
 
-          <div className="flex space-x-4">
+          <div className="flex space-x-4 w-full max-w-[300px]">
             {/* Search */}
-            <div className="relative">
+            <div className="relative w-full">
               <input
                 type="text"
                 placeholder="Search by customer name or reference code... (Press Enter to search)"

@@ -102,14 +102,25 @@ export default function CorporateAccounts() {
   }, []);
 
   const filteredAccounts = accounts.filter((account) => {
-    const matchesSearch =
-      account.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      account.company_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      account.corporate_reference
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      account.company_id.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
+    if (!searchTerm.trim()) return true;
+
+    // Split search term into words for flexible multi-word search
+    const searchWords = searchTerm.trim().toLowerCase().split(/\s+/);
+
+    // All search words must match at least one field
+    return searchWords.every((word) => {
+      const companyName = account.company_name.toLowerCase();
+      const companyEmail = account.company_email.toLowerCase();
+      const corporateRef = account.corporate_reference.toLowerCase();
+      const companyId = account.company_id.toLowerCase();
+
+      return (
+        companyName.includes(word) ||
+        companyEmail.includes(word) ||
+        corporateRef.includes(word) ||
+        companyId.includes(word)
+      );
+    });
   });
 
   const handleSelectAccount = (companyId: string) => {

@@ -139,7 +139,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen w-full bg-gray-50">
       {/* Sidebar */}
       <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg">
         <div className="flex h-full flex-col">
@@ -216,9 +216,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Main content */}
       <div className="pl-64">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-          {children}
-        </div>
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-8">{children}</div>
       </div>
     </div>
   );

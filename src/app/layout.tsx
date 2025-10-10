@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import ConditionalLayout from "@/app/ConditionalLayout";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -19,8 +20,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`flex items-center justify-center ${plusJakartaSans.variable}`}>
-      <body className="max-w-[1725px] w-full">{children}</body>
+    <html
+      lang="en"
+      className={`flex items-center justify-center ${plusJakartaSans.variable}`}
+    >
+      <body className="w-full">
+        <ConditionalLayout>{children}</ConditionalLayout>
+      </body>
     </html>
   );
 }
