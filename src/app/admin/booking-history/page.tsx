@@ -342,7 +342,7 @@ export default function BookingHistory() {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search by customer name... (Press Enter to search)"
+                placeholder="Search by customer name or reference code... (Press Enter to search)"
                 value={searchTerm}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 onKeyPress={handleSearchKeyPress}
@@ -462,6 +462,9 @@ export default function BookingHistory() {
                     Customer
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Reference Code
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Selected Class
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -530,6 +533,15 @@ export default function BookingHistory() {
                           <div className="text-sm text-gray-500 font-medium">
                             {booking.company_name}
                           </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {booking.reference_code ? (
+                          <div className="text-sm text-gray-900 font-medium">
+                            {booking.reference_code}
+                          </div>
+                        ) : (
+                          <div className="text-sm text-gray-400">-</div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

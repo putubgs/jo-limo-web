@@ -178,10 +178,10 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Apply search (only by customer name: first_name + last_name)
+    // Apply search (by customer name: first_name + last_name, or reference_code)
     if (search) {
       query = query.or(
-        `first_name.ilike.%${search}%,last_name.ilike.%${search}%`
+        `first_name.ilike.%${search}%,last_name.ilike.%${search}%,reference_code.ilike.%${search}%`
       );
     }
 
