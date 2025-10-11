@@ -38,13 +38,19 @@ function PickUpInfoContent() {
     return location.toLowerCase().includes("queen alia international airport");
   };
 
+  // Helper: check ONLY Aqaba International Airport
+  const isAqabaAirport = (location: string): boolean => {
+    return location.toLowerCase().includes("aqaba international airport");
+  };
+
   // Check if either pickup or dropoff is an airport
   const isPickupAirport = isAirportLocation(urlPickup || "");
   const isDropoffAirport = isAirportLocation(urlDropoff || "");
   const hasAirportLocation = isPickupAirport || isDropoffAirport;
 
-  // Show pickup sign only when pickup location is Queen Alia International Airport
-  const showPickupSign = isQueenAliaAirport(urlPickup || "");
+  // Show pickup sign when pickup location is QAIA or Aqaba International Airport
+  const showPickupSign =
+    isQueenAliaAirport(urlPickup || "") || isAqabaAirport(urlPickup || "");
 
   const [distanceInfo, setDistanceInfo] = useState<{
     distance: string;
