@@ -660,10 +660,10 @@ function PaymentAndCheckoutContent() {
               Credit card
             </button>
             <button
-              className="bg-white border border-black font-bold px-4 py-3 rounded-lg w-full"
+              className="bg-white text-center border border-black font-bold px-4 py-3 rounded-lg w-full"
               onClick={handleCash}
             >
-              Cash
+              Pay Later (Cash/Card) on Drop-off
             </button>
           </div>
 
