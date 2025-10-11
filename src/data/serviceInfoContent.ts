@@ -29,7 +29,7 @@ export const serviceInfoContent: Record<string, ServiceInfoContent> = {
         routes: ["QAIA - Amman City", "Amman City - QAIA"],
       },
       {
-        category: "King Hussein International Airport (AQJ)",
+        category: "Aqaba International Airport (AQJ)",
         routes: ["AQJ - Aqaba City", "AQJ - Tala Bay"],
       },
       {

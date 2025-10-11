@@ -12,9 +12,8 @@ const PREFERRED_AIRPORTS = [
     place_id: "ChIJX8WhXHJcGRUR1zfK1VUboqg", // Queen Alia International Airport
   },
   {
-    description:
-      "King Hussein International Airport, Airport Street, Aqaba, Jordan",
-    place_id: "ChIJ1234567890abcdefgh", // King Hussein International Airport (Aqaba)
+    description: "Aqaba International Airport, Airport Street, Aqaba, Jordan",
+    place_id: "ChIJ1234567890abcdefgh", // Aqaba International Airport (formerly King Hussein)
   },
 ];
 
@@ -43,7 +42,7 @@ function isAirportSearch(input: string): boolean {
   const hasSpecificAirportTerms =
     lowerInput.includes("airport") ||
     (lowerInput.includes("queen") && lowerInput.includes("alia")) ||
-    lowerInput.includes("alia")
+    lowerInput.includes("alia");
 
   console.log(`🔍 Airport search check for "${input}":`, {
     hasKeyword,

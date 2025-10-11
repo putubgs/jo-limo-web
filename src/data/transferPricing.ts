@@ -114,7 +114,7 @@ const airportCategories: Category[] = [
     ],
   },
   {
-    name: "King Hussein International Airport (AQJ)",
+    name: "Aqaba International Airport (AQJ)",
     routes: [
       {
         route: "AQJ - Aqaba City",

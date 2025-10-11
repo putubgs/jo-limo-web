@@ -78,7 +78,7 @@ const PRICING: Record<
 
 const SEGMENTS = [
   { title: "Queen Alia International Airport (QAIA)", key: "qaia" },
-  { title: "King Hussein International Airport (AQJ)", key: "aqj" },
+  { title: "Aqaba International Airport (AQJ)", key: "aqj" },
   { title: "Border Crossing", key: "bc" },
 ];
 
@@ -119,7 +119,9 @@ export default function AirportModal({
         </button>
 
         {/* Title */}
-        <p className="md:text-[20px] text-[16px] pb-[75px] text-center">AIRPORT TRANSFER</p>
+        <p className="md:text-[20px] text-[16px] pb-[75px] text-center">
+          AIRPORT TRANSFER
+        </p>
 
         {/* Tabs container */}
         <div className="relative mb-6">

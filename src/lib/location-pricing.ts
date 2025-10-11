@@ -94,14 +94,14 @@ export const LOCATION_PRICING: RoutePricing[] = [
     suv: 65,
   },
   {
-    route: "King Hussein International Airport to Aqaba",
+    route: "Aqaba International Airport to Aqaba",
     executive: 15,
     luxury: 40,
     mpv: 45,
     suv: 35,
   },
   {
-    route: "King Hussein International Airport to Tala Bay",
+    route: "Aqaba International Airport to Tala Bay",
     executive: 30,
     luxury: 75,
     mpv: 85,
@@ -129,7 +129,7 @@ export const LOCATION_PRICING: RoutePricing[] = [
 // Airport to city mapping for pricing equivalency
 const AIRPORT_CITY_MAPPING: Record<string, string> = {
   "Queen Alia International Airport": "Amman",
-  "King Hussein International Airport": "Aqaba",
+  "Aqaba International Airport": "Aqaba",
 };
 
 // Helper function to create route string from pickup and dropoff locations

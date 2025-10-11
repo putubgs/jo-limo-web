@@ -162,7 +162,7 @@ export default function ReservationForm({
     const lowerDesc = description.toLowerCase();
     return (
       lowerDesc.includes("queen alia international airport") ||
-      lowerDesc.includes("king hussein international airport")
+      lowerDesc.includes("aqaba international airport")
     );
   };
 
@@ -202,7 +202,14 @@ export default function ReservationForm({
         setPickupLoading(true);
         const response = await autocomplete(value);
         console.log(`📍 Pickup autocomplete response:`, response);
-        setPickupSuggestions(response.results);
+        const normalized = response.results.map((r) => ({
+          ...r,
+          description: r.description.replace(
+            /king hussein international airport/gi,
+            "Aqaba International Airport"
+          ),
+        }));
+        setPickupSuggestions(normalized);
         setPickupError(response.error);
         setPickupLoading(false);
         setShowPickupSuggestions(true);
@@ -219,7 +226,14 @@ export default function ReservationForm({
         setDropoffLoading(true);
         const response = await autocomplete(value);
         console.log(`📍 Dropoff autocomplete response:`, response);
-        setDropoffSuggestions(response.results);
+        const normalized = response.results.map((r) => ({
+          ...r,
+          description: r.description.replace(
+            /king hussein international airport/gi,
+            "Aqaba International Airport"
+          ),
+        }));
+        setDropoffSuggestions(normalized);
         setDropoffError(response.error);
         setDropoffLoading(false);
         setShowDropoffSuggestions(true);
@@ -236,7 +250,14 @@ export default function ReservationForm({
         setFromLoading(true);
         const response = await autocomplete(value);
         console.log(`📍 From autocomplete response:`, response);
-        setFromSuggestions(response.results);
+        const normalized = response.results.map((r) => ({
+          ...r,
+          description: r.description.replace(
+            /king hussein international airport/gi,
+            "Aqaba International Airport"
+          ),
+        }));
+        setFromSuggestions(normalized);
         setFromError(response.error);
         setFromLoading(false);
         setShowFromSuggestions(true);
