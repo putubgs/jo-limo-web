@@ -41,19 +41,20 @@ export default function CorporateMobilityRegister() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Format phone number with spaces
+  // Format phone number with spaces (groups of 3-4 digits)
   const formatPhoneNumber = (value: string) => {
     const cleaned = value.replace(/\D/g, "");
-    const match = cleaned.match(/^(\d{0,4})(\d{0,6})$/);
-    if (match) {
-      return [match[1], match[2]].filter(Boolean).join(" ");
-    }
-    return cleaned;
+    // Format: 1234 567 8901234 (4-3-remaining)
+    if (cleaned.length <= 4) return cleaned;
+    if (cleaned.length <= 7)
+      return `${cleaned.slice(0, 4)} ${cleaned.slice(4)}`;
+    return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 7)} ${cleaned.slice(7)}`;
   };
 
   const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value.replace(/\D/g, "");
-    if (input.length <= 10) {
+    // Allow up to 15 digits (E.164 international phone number standard)
+    if (input.length <= 15) {
       setPhoneNumber(input);
     }
   };
@@ -189,7 +190,7 @@ export default function CorporateMobilityRegister() {
                 {/* Phone Number Input */}
                 <input
                   type="tel"
-                  placeholder="---- ------"
+                  placeholder="1234 567 8901234"
                   value={formatPhoneNumber(phoneNumber)}
                   onChange={handlePhoneNumberChange}
                   onKeyPress={(e) => {

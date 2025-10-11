@@ -175,38 +175,15 @@ function PaymentAndCheckoutContent() {
     }
   }, [bookingData.pickup, bookingData.dropoff]);
 
-  // Check localStorage for hasRequiredData to persist across page refreshes
-  const [localHasRequiredData, setLocalHasRequiredData] = useState<
-    boolean | null
-  >(null);
-  const [isCheckingData, setIsCheckingData] = useState(true);
-
-  useEffect(() => {
-    // Check localStorage on component mount
-    const storedHasRequiredData = localStorage.getItem("hasRequiredData");
-    if (storedHasRequiredData !== null) {
-      setLocalHasRequiredData(storedHasRequiredData === "true");
-    } else {
-      // If not in localStorage, calculate and store it
-      const calculated = Boolean(hasRequiredData);
-      setLocalHasRequiredData(calculated);
-      localStorage.setItem("hasRequiredData", calculated.toString());
-    }
-    setIsCheckingData(false);
-  }, [hasRequiredData]);
-
-  // Show loading while checking data
-  if (isCheckingData) {
-    return <div>Loading...</div>;
-  }
-
-  // Show error if required data is missing
-  if (localHasRequiredData === false) {
+  // If booking data is missing (e.g., after refresh), block the page and guide back
+  if (!hasRequiredData) {
     return (
       <DataValidationError
-        title="Page Error!"
-        message="Please try again"
-        backToHome={true}
+        title="Booking Session Ended"
+        message="Your booking details are no longer available. Please go back to Corporate Mobility Reserve to start again. If you've already submitted, your booking has been saved."
+        showBackButton={true}
+        backToHome={false}
+        grayBackButton={true}
       />
     );
   }
@@ -396,7 +373,8 @@ function PaymentAndCheckoutContent() {
               company account.
             </p>
             <p>
-              For any changes or cancellations, please contact our team at +962-79-169-8125.
+              For any changes or cancellations, please contact our team at
+              +962-79-169-8125.
             </p>
             <p className="text-[#7C7C7C] underline pt-10">Download Invoice</p>
           </div>

@@ -10,6 +10,7 @@ import InfoIcon from "@mui/icons-material/Info";
 import { useReservationStore, ServiceClass } from "@/lib/reservation-store";
 import { calculateDistanceAndTime } from "@/lib/distance-calculator";
 import { calculatePrice } from "@/lib/pricing-calculator";
+import { isRouteSupported } from "@/lib/location-pricing";
 import DataValidationError from "@/components/DataValidationError";
 import TermsAndConditionsDialog from "@/components/dialogs/TermsAndConditionsDialog";
 
@@ -40,7 +41,12 @@ function ServiceClassContent() {
     [key: string]: { price: number; currency: string };
   }>({});
   const [locationNotServed, setLocationNotServed] = useState(false);
-  const [isCheckingLocation, setIsCheckingLocation] = useState(false);
+  // Initialize to true for one-way when text locations exist (prevents UI flash)
+  const [isCheckingLocation, setIsCheckingLocation] = useState(
+    bookingData.type === "one-way" &&
+      !!bookingData.pickup &&
+      !!bookingData.dropoff
+  );
 
   // Debug logging
   console.log("=== CORPORATE SERVICE CLASS VALIDATION DEBUG ===");
@@ -49,6 +55,35 @@ function ServiceClassContent() {
   console.log("hasNoData:", hasNoData);
   console.log("locationNotServed:", locationNotServed);
   console.log("isCheckingLocation:", isCheckingLocation);
+
+  // Fast pre-check: determine support synchronously to avoid flashing UI with 0 prices
+  useEffect(() => {
+    if (
+      bookingData.type === "one-way" &&
+      bookingData.pickup &&
+      bookingData.dropoff
+    ) {
+      if (!bookingData.pickupLocation || !bookingData.dropoffLocation) {
+        setLocationNotServed(true);
+        setIsCheckingLocation(false);
+        return;
+      }
+      const supported = isRouteSupported(
+        bookingData.pickupLocation,
+        bookingData.dropoffLocation
+      );
+      if (!supported) {
+        setLocationNotServed(true);
+        setIsCheckingLocation(false);
+      }
+    }
+  }, [
+    bookingData.pickupLocation,
+    bookingData.dropoffLocation,
+    bookingData.pickup,
+    bookingData.dropoff,
+    bookingData.type,
+  ]);
 
   // Calculate pricing and check if location is served
   useEffect(() => {
@@ -102,6 +137,7 @@ function ServiceClassContent() {
         })
         .catch((error) => {
           console.error("Error calculating pricing:", error);
+          setLocationNotServed(true);
           setIsCheckingLocation(false);
         });
     }

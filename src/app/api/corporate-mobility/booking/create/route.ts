@@ -72,8 +72,8 @@ export async function POST(request: NextRequest) {
     const jordanTime = new Date(now.getTime() + 3 * 60 * 60 * 1000);
     const timestamp = jordanTime.toISOString();
 
-    // Generate reference code for corporate bookings
-    const referenceCode = `CORP-${Date.now()}`;
+    // Use the corporate account's reference as the booking reference code
+    const referenceCode = payload.corporate_reference;
 
     // Insert the booking into the database with corporate billing
     const bookingData = {
