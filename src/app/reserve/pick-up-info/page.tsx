@@ -45,7 +45,7 @@ function PickUpInfoContent() {
     const lowerLocation = location.toLowerCase();
     return (
       lowerLocation.includes("queen alia international airport") ||
-      lowerLocation.includes("king hussein international airport")
+      lowerLocation.includes("aqaba international airport")
     );
   };
 
