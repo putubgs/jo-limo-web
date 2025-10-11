@@ -641,8 +641,8 @@ export default function ReservationForm({
                       <option value="1 hour">1 hour</option>
                       <option value="2 hours">2 hours</option>
                       <option value="3 hours">3 hours</option>
-                      <option value="Half Day">Half Day</option>
-                      <option value="Full Day">Full Day</option>
+                      <option value="Half Day (3-6 hours)">Half Day</option>
+                      <option value="Full Day (6-12 hours)">Full Day</option>
                     </select>
                   </div>
                   <svg

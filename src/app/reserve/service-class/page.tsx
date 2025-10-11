@@ -16,6 +16,52 @@ import { isRouteSupported } from "@/lib/location-pricing";
 import DataValidationError from "@/components/DataValidationError";
 import TermsAndConditionsDialog from "@/components/dialogs/TermsAndConditionsDialog";
 
+// Helper function to get current Jordan time + 1 hour
+// Helper function to get current Jordan time + 1 hour
+const getMinimumBookingTime = () => {
+  // Get current time in Jordan timezone using Intl API
+  const jordanTime = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Asia/Amman" })
+  );
+
+  // Add 2 hours buffer instead of 1 hour
+  jordanTime.setHours(jordanTime.getHours() + 2);
+
+  return jordanTime;
+};
+
+// Helper function to validate booking date and time
+const validateBookingDateTime = (dateStr: string, timeStr: string): boolean => {
+  if (!dateStr || !timeStr) {
+    return false;
+  }
+
+  try {
+    // Parse the booking date and time
+    const bookingDateTime = new Date(`${dateStr} ${timeStr}`);
+
+    // Check if the date is valid
+    if (isNaN(bookingDateTime.getTime())) {
+      console.error("Invalid date format:", dateStr, timeStr);
+      return false;
+    }
+
+    // Get minimum allowed booking time (Jordan time + 1 hour)
+    const minimumTime = getMinimumBookingTime();
+
+    console.log("🕐 Date validation (Jordan timezone):", {
+      bookingDateTime: bookingDateTime.toString(),
+      minimumTime: minimumTime.toString(),
+      isValid: bookingDateTime >= minimumTime,
+    });
+
+    return bookingDateTime >= minimumTime;
+  } catch (error) {
+    console.error("Error validating date/time:", error);
+    return false;
+  }
+};
+
 function ServiceClassContent() {
   const router = useRouter();
   const {
@@ -55,6 +101,10 @@ function ServiceClassContent() {
   const hasLocationData = bookingData.pickup || bookingData.pickupLocation;
   const hasNoData = !bookingData.pickup && !bookingData.pickupLocation;
 
+  // Date/time validation state
+  const [isValidDateTime, setIsValidDateTime] = useState(true);
+  const [isCheckingDateTime, setIsCheckingDateTime] = useState(false);
+
   // Check if all prices are 0 (location not served)
   const [, setPricingData] = useState<{
     [key: string]: { price: number; currency: string };
@@ -67,11 +117,36 @@ function ServiceClassContent() {
       !!bookingData.dropoff
   );
 
+  // Validate date and time
+  useEffect(() => {
+    if (bookingData.date && bookingData.time) {
+      setIsCheckingDateTime(true);
+
+      // Add small delay to show loading state
+      const timer = setTimeout(() => {
+        const isValid = validateBookingDateTime(
+          bookingData.date,
+          bookingData.time
+        );
+        setIsValidDateTime(isValid);
+        setIsCheckingDateTime(false);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    } else if (bookingData.date || bookingData.time) {
+      // If only one is provided, it's invalid
+      setIsValidDateTime(false);
+      setIsCheckingDateTime(false);
+    }
+  }, [bookingData.date, bookingData.time]);
+
   // Debug logging
   console.log("=== SERVICE CLASS VALIDATION DEBUG ===");
   console.log("bookingData:", bookingData);
   console.log("hasLocationData:", hasLocationData);
   console.log("hasNoData:", hasNoData);
+  console.log("isValidDateTime:", isValidDateTime);
+  console.log("isCheckingDateTime:", isCheckingDateTime);
   console.log("locationNotServed:", locationNotServed);
   console.log("isCheckingLocation:", isCheckingLocation);
 
@@ -79,14 +154,19 @@ function ServiceClassContent() {
   if (hasNoData) {
     console.log("❌ ERROR: hasNoData is true - showing Page Error!");
   }
+  if (!isValidDateTime && !isCheckingDateTime) {
+    console.log(
+      "❌ ERROR: isValidDateTime is false - showing Date/Time Error!"
+    );
+  }
   if (locationNotServed) {
     console.log(
       "❌ ERROR: locationNotServed is true - showing Location Not Served!"
     );
   }
-  if (isCheckingLocation) {
+  if (isCheckingLocation || isCheckingDateTime) {
     console.log(
-      "⏳ LOADING: isCheckingLocation is true - showing loading state"
+      "⏳ LOADING: checking location or date/time - showing loading state"
     );
   }
 
@@ -223,6 +303,31 @@ function ServiceClassContent() {
     );
   }
 
+  // Show error if date/time is invalid (must be checked before location validation)
+  if (!isValidDateTime && !isCheckingDateTime) {
+    const minimumTime = getMinimumBookingTime();
+
+    const formattedMinTime = `${
+      minimumTime.getMonth() + 1
+    }/${minimumTime.getDate()}/${minimumTime.getFullYear()}, ${minimumTime
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${minimumTime
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}`;
+
+    return (
+      <DataValidationError
+        title="Invalid Date/Time"
+        message={`Please select a date and time that is at least 1 hour from now (Jordan time). Current minimum time: ${formattedMinTime}`}
+        showBackButton={true}
+        backToHome={false}
+        grayBackButton={true}
+      />
+    );
+  }
+
   // Show error if location not served
   if (locationNotServed) {
     return (
@@ -236,13 +341,17 @@ function ServiceClassContent() {
     );
   }
 
-  // Show loading while checking location
-  if (isCheckingLocation) {
+  // Show loading while checking location or date/time
+  if (isCheckingLocation || isCheckingDateTime) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Checking location availability...</p>
+          <p className="text-gray-600">
+            {isCheckingDateTime
+              ? "Validating booking time..."
+              : "Checking location availability..."}
+          </p>
         </div>
       </div>
     );
