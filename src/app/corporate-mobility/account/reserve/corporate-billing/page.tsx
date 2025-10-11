@@ -8,6 +8,7 @@ import Image from "next/image";
 import PersonIcon from "@mui/icons-material/Person";
 import LuggageIcon from "@mui/icons-material/Luggage";
 import DataValidationError from "@/components/DataValidationError";
+import Link from "next/link";
 
 function PaymentAndCheckoutContent() {
   const { reservationData } = useReservationStore();
@@ -376,7 +377,12 @@ function PaymentAndCheckoutContent() {
               For any changes or cancellations, please contact our team at
               +962-79-169-8125.
             </p>
-            <p className="text-[#7C7C7C] underline pt-10">Download Invoice</p>
+            <Link
+              href="/corporate-mobility/account/reserve"
+              className="text-[#7C7C7C] underline pt-10 inline-block"
+            >
+              Back to Corporate Mobility Page
+            </Link>
           </div>
         )}
       </div>
