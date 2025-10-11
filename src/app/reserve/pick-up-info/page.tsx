@@ -49,13 +49,18 @@ function PickUpInfoContent() {
     );
   };
 
+  // Helper: check ONLY Queen Alia International Airport
+  const isQueenAliaAirport = (location: string): boolean => {
+    return location.toLowerCase().includes("queen alia international airport");
+  };
+
   // Check if either pickup or dropoff is an airport
   const isPickupAirport = isAirportLocation(urlPickup || "");
   const isDropoffAirport = isAirportLocation(urlDropoff || "");
   const hasAirportLocation = isPickupAirport || isDropoffAirport;
 
-  // Show pickup sign only when pickup location is an airport
-  const showPickupSign = isPickupAirport;
+  // Show pickup sign only when pickup location is Queen Alia International Airport
+  const showPickupSign = isQueenAliaAirport(urlPickup || "");
 
   const [distanceInfo, setDistanceInfo] = useState<{
     distance: string;
