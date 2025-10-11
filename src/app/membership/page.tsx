@@ -77,11 +77,6 @@ const faqItems = [
       "Joining is simple! Just apply through our website or app, and we’ll review your application. Once approved, you can start enjoying the benefits immediately.",
   },
   {
-    question: "Are there any fees for Jo Limo membership?",
-    answer:
-      "Yes, our membership has a small monthly fee depending on the tier you choose. You can view the pricing and benefits on our membership page. No payment fees, 3-month minimum at 250 JOD, charged upfront.",
-  },
-  {
     question: "Can I cancel my membership anytime?",
     answer:
       "Absolutely! You can cancel your membership at any time, and you’ll receive a confirmation email once the cancellation is processed.",
