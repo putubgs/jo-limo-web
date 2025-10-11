@@ -16,19 +16,19 @@ export default function Header() {
   const [reservationOpen, setReservationOpen] = useState(pathname === "/");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Close dropdowns when page scrolls
+  // Close menus on scroll, but KEEP the Reserve Now popup open
   useEffect(() => {
-    if (!reservationOpen && !servicesOpen && !mobileMenuOpen) return;
+    if (!servicesOpen && !mobileMenuOpen) return;
 
     const handleScroll = () => {
-      setReservationOpen(false);
+      // Do not close reservation popup on scroll
       setServicesOpen(false);
       setMobileMenuOpen(false);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [reservationOpen, servicesOpen, mobileMenuOpen]);
+  }, [servicesOpen, mobileMenuOpen]);
 
   // Close reservation dropdown on click outside
   useEffect(() => {
@@ -232,7 +232,6 @@ export default function Header() {
                         variant="popup"
                         continueUrl="/reserve/service-class"
                         onClose={() => setReservationOpen(false)}
-                        calendarPositionOffset={{ x: 40, y: 0 }}
                       />
                     </div>
                   </div>

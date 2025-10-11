@@ -29,8 +29,6 @@ interface ReservationFormProps {
   // Callbacks
   onClose?: () => void;
   onContinue?: () => void;
-  // Custom positioning for popups
-  calendarPositionOffset?: { x: number; y: number };
 }
 
 export default function ReservationForm({
@@ -39,7 +37,6 @@ export default function ReservationForm({
   continueUrl,
   onClose,
   onContinue,
-  calendarPositionOffset = { x: 0, y: 0 },
 }: ReservationFormProps) {
   const router = useRouter();
   const { setReservationData } = useReservationStore();
@@ -71,11 +68,7 @@ export default function ReservationForm({
   const [pickupError, setPickupError] = useState<string | null>(null);
   const [dropoffError, setDropoffError] = useState<string | null>(null);
   const [fromError, setFromError] = useState<string | null>(null);
-  const [autocompletePosition, setAutocompletePosition] = useState({
-    top: 0,
-    left: 0,
-    width: 0,
-  });
+  // No external positioning needed; dropdowns are placed relative to inputs
 
   const [selectedDate, setSelectedDate] = useState(() => {
     const jordanNow = getJordanDate();
@@ -104,10 +97,7 @@ export default function ReservationForm({
     // Set to first day of current month to avoid date issues
     return new Date(jordanNow.getFullYear(), jordanNow.getMonth(), 1);
   });
-  const [calendarPosition, setCalendarPosition] = useState({
-    top: 0,
-    left: 0,
-  });
+  // Calendar uses absolute positioning under the input; no external state needed
 
   // Close autocomplete dropdowns on click outside
   useEffect(() => {
@@ -167,30 +157,14 @@ export default function ReservationForm({
   };
 
   // Calculate autocomplete dropdown position
-  const calculateAutocompletePosition = (element: HTMLElement) => {
-    const rect = element.getBoundingClientRect();
-    return {
-      top: rect.bottom + window.scrollY + 4,
-      left: rect.left + window.scrollX,
-      width: rect.width,
-    };
-  };
+  // No external calculation needed for dropdown positioning; kept for previous API parity
 
   // Autocomplete handlers
   const handleLocationInput = async (
     value: string,
-    type: "pickup" | "dropoff" | "from",
-    event?: React.ChangeEvent<HTMLInputElement>
+    type: "pickup" | "dropoff" | "from"
   ) => {
     console.log(`🔤 User typing in ${type} field:`, value);
-
-    // Calculate position for dropdown
-    if (event?.target) {
-      const position = calculateAutocompletePosition(
-        event.target as HTMLElement
-      );
-      setAutocompletePosition(position);
-    }
 
     if (type === "pickup") {
       setPickupLocation(value);
@@ -283,7 +257,7 @@ export default function ReservationForm({
     }
   };
 
-  const handleDateFieldClick = (event: React.MouseEvent) => {
+  const handleDateFieldClick = () => {
     // Toggle calendar - close if already open
     if (showCalendar) {
       setShowCalendar(false);
@@ -331,31 +305,6 @@ export default function ReservationForm({
     });
     setCalendarDate(targetDate);
 
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-
-    if (variant === "popup") {
-      // For popup variant, calculate position relative to reservation dropdown
-      const reservationDropdown = document.querySelector(
-        ".reservation-dropdown"
-      ) as HTMLElement;
-      const reservationRect = reservationDropdown?.getBoundingClientRect();
-
-      // Center calendar horizontally within the reservation popup (440px width - 360px calendar = 80px / 2 = 40px offset)
-      const leftPosition = reservationRect
-        ? reservationRect.left + 40 + calendarPositionOffset.x
-        : rect.left + calendarPositionOffset.x;
-
-      setCalendarPosition({
-        top: rect.bottom + window.scrollY + 4 + calendarPositionOffset.y,
-        left: leftPosition + window.scrollX,
-      });
-    } else {
-      // For page variant, position relative to the date field
-      setCalendarPosition({
-        top: rect.bottom + window.scrollY + 4 + calendarPositionOffset.y,
-        left: rect.left + window.scrollX + calendarPositionOffset.x,
-      });
-    }
     setShowCalendar(true);
   };
 
@@ -414,22 +363,8 @@ export default function ReservationForm({
   ) =>
     showSuggestions && (
       <div
-        className={`autocomplete-container ${
-          variant === "popup" ? "fixed" : "absolute"
-        } bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto z-[120]`}
-        style={
-          variant === "popup"
-            ? {
-                top: `${autocompletePosition.top}px`,
-                left: `${autocompletePosition.left}px`,
-                width: `${autocompletePosition.width}px`,
-              }
-            : {
-                top: "100%",
-                left: "0",
-                width: "100%",
-              }
-        }
+        className={`autocomplete-container absolute bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto z-[120]`}
+        style={{ top: "100%", left: "0", width: "100%" }}
       >
         {loading && (
           <div className="flex items-center px-3 py-2 text-sm text-gray-500">
@@ -504,7 +439,7 @@ export default function ReservationForm({
           <input
             type="text"
             value={value}
-            onChange={(e) => handleLocationInput(e.target.value, type, e)}
+            onChange={(e) => handleLocationInput(e.target.value, type)}
             placeholder={placeholder}
             className="autocomplete-container w-full bg-transparent border-0 text-gray-700 text-sm focus:outline-none cursor-pointer p-0 placeholder-gray-500"
           />
@@ -571,7 +506,7 @@ export default function ReservationForm({
   const containerClasses = containerClassName
     ? `${baseContainerClasses} ${containerClassName}`
     : variant === "popup"
-    ? `${baseContainerClasses} w-[440px] shadow-lg overflow-hidden`
+    ? `${baseContainerClasses} w-[440px] shadow-lg overflow-visible`
     : `${baseContainerClasses} border`;
 
   return (
@@ -684,7 +619,7 @@ export default function ReservationForm({
             <div className="relative flex-[3]">
               <div
                 className="calendar-container relative flex flex-col bg-white rounded px-3 py-3 cursor-pointer hover:bg-gray-50 border border-transparent hover:border-[#4A4A4A] transition-all"
-                onClick={(e) => handleDateFieldClick(e)}
+                onClick={() => handleDateFieldClick()}
               >
                 <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
                   DATE:
@@ -713,22 +648,10 @@ export default function ReservationForm({
               {/* Calendar Dropdown */}
               {showCalendar && (
                 <div
-                  className={`calendar-container ${
-                    variant === "popup" ? "fixed" : "absolute"
-                  } bg-white border-2 border-black rounded-lg shadow-xl z-[90] p-6 w-80 ${
+                  className={`calendar-container absolute bg-white border-2 border-black rounded-lg shadow-xl z-[90] p-6 w-80 ${
                     variant === "page" ? "mt-1" : "ml-[-10px]"
                   }`}
-                  style={
-                    variant === "popup"
-                      ? {
-                          top: `${calendarPosition.top}px`,
-                          left: `${calendarPosition.left}px`,
-                        }
-                      : {
-                          top: "100%",
-                          left: "0",
-                        }
-                  }
+                  style={{ top: "100%", left: "0" }}
                 >
                   <div className="flex items-center justify-between mb-4">
                     <button
