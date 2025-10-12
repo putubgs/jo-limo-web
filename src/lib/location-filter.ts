@@ -47,7 +47,7 @@ export const LOCATION_MAPPINGS = {
 } as const;
 
 export const AIRPORT_MAPPINGS = {
-  QAIA: "Queen Alia International Airport, Desert Highway, Amman, Jordan",
+  QAIA: "Queen Alia International Airport, Airport Road, Jordan",
   AQJ: "Aqaba International Airport, Airport Street, Aqaba, Jordan",
 } as const;
 

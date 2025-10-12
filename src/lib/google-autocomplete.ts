@@ -7,8 +7,7 @@ const client = new Client();
 // Predefined airports that should be the only options when airport-related terms are typed
 const PREFERRED_AIRPORTS = [
   {
-    description:
-      "Queen Alia International Airport, Desert Highway, Amman, Jordan",
+    description: "Queen Alia International Airport, Airport Road, Jordan",
     place_id: "ChIJX8WhXHJcGRUR1zfK1VUboqg", // Queen Alia International Airport
   },
   {
@@ -156,8 +155,20 @@ export const autocomplete = async (input: string) => {
       first_prediction: response.data.predictions?.[0]?.description,
     });
 
+    // Normalize certain airport names from Google to our canonical naming
+    const normalizeDescription = (desc: string) => {
+      const lower = desc.toLowerCase();
+      if (lower.includes("queen alia international airport")) {
+        return "Queen Alia International Airport, Airport Road, Jordan";
+      }
+      if (lower.includes("king hussein international airport")) {
+        return "Aqaba International Airport, Airport Street, Aqaba, Jordan";
+      }
+      return desc;
+    };
+
     const results = response.data.predictions.map((prediction) => ({
-      description: prediction.description,
+      description: normalizeDescription(prediction.description),
       place_id: prediction.place_id,
     }));
 

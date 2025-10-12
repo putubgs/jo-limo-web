@@ -14,7 +14,7 @@ interface TestResult {
 
 export default function DistanceTest() {
   const [origin, setOrigin] = useState(
-    "Queen Alia International Airport, Jordan"
+    "Queen Alia International Airport, Airport Road, Jordan"
   );
   const [destination, setDestination] = useState("Amman, Jordan");
   const [loading, setLoading] = useState(false);
@@ -166,7 +166,9 @@ export default function DistanceTest() {
             • Ensure Distance Matrix API is enabled in Google Cloud Console
           </li>
           <li>• Verify GOOGLE_API_KEY is set in your .env.local file</li>
-                            <li>• Try different location formats (e.g., &quot;Amman, Jordan&quot;)</li>
+          <li>
+            • Try different location formats (e.g., &quot;Amman, Jordan&quot;)
+          </li>
         </ul>
       </div>
     </div>
