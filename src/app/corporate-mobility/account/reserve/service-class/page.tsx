@@ -14,6 +14,52 @@ import { isRouteSupported } from "@/lib/location-pricing";
 import DataValidationError from "@/components/DataValidationError";
 import TermsAndConditionsDialog from "@/components/dialogs/TermsAndConditionsDialog";
 
+// Helper function to get current Jordan time + 1 hour
+// Helper function to get current Jordan time + 1 hour
+const getMinimumBookingTime = () => {
+  // Get current time in Jordan timezone using Intl API
+  const jordanTime = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Asia/Amman" })
+  );
+
+  // Add 2 hours buffer instead of 1 hour
+  jordanTime.setHours(jordanTime.getHours() + 2);
+
+  return jordanTime;
+};
+
+// Helper function to validate booking date and time
+const validateBookingDateTime = (dateStr: string, timeStr: string): boolean => {
+  if (!dateStr || !timeStr) {
+    return false;
+  }
+
+  try {
+    // Parse the booking date and time
+    const bookingDateTime = new Date(`${dateStr} ${timeStr}`);
+
+    // Check if the date is valid
+    if (isNaN(bookingDateTime.getTime())) {
+      console.error("Invalid date format:", dateStr, timeStr);
+      return false;
+    }
+
+    // Get minimum allowed booking time (Jordan time + 1 hour)
+    const minimumTime = getMinimumBookingTime();
+
+    console.log("🕐 Date validation (Jordan timezone):", {
+      bookingDateTime: bookingDateTime.toString(),
+      minimumTime: minimumTime.toString(),
+      isValid: bookingDateTime >= minimumTime,
+    });
+
+    return bookingDateTime >= minimumTime;
+  } catch (error) {
+    console.error("Error validating date/time:", error);
+    return false;
+  }
+};
+
 function ServiceClassContent() {
   const router = useRouter();
   const { reservationData, setSelectedServiceClass, getSelectedServiceClass } =
@@ -36,6 +82,10 @@ function ServiceClassContent() {
   const hasLocationData = bookingData.pickup || bookingData.pickupLocation;
   const hasNoData = !bookingData.pickup && !bookingData.pickupLocation;
 
+  // Date/time validation state
+  const [isValidDateTime, setIsValidDateTime] = useState(true);
+  const [isCheckingDateTime, setIsCheckingDateTime] = useState(false);
+
   // Check if all prices are 0 (location not served)
   const [, setPricingData] = useState<{
     [key: string]: { price: number; currency: string };
@@ -55,6 +105,29 @@ function ServiceClassContent() {
   console.log("hasNoData:", hasNoData);
   console.log("locationNotServed:", locationNotServed);
   console.log("isCheckingLocation:", isCheckingLocation);
+
+  // Validate date and time
+  useEffect(() => {
+    if (bookingData.date && bookingData.time) {
+      setIsCheckingDateTime(true);
+
+      // Add small delay to show loading state
+      const timer = setTimeout(() => {
+        const isValid = validateBookingDateTime(
+          bookingData.date,
+          bookingData.time
+        );
+        setIsValidDateTime(isValid);
+        setIsCheckingDateTime(false);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    } else if (bookingData.date || bookingData.time) {
+      // If only one is provided, it's invalid
+      setIsValidDateTime(false);
+      setIsCheckingDateTime(false);
+    }
+  }, [bookingData.date, bookingData.time]);
 
   // Fast pre-check: determine support synchronously to avoid flashing UI with 0 prices
   useEffect(() => {
@@ -185,6 +258,31 @@ function ServiceClassContent() {
         title="Page Error!"
         message="Please try again"
         backToHome={true}
+      />
+    );
+  }
+
+  // Show error if date/time is invalid (must be checked before location validation)
+  if (!isValidDateTime && !isCheckingDateTime) {
+    const minimumTime = getMinimumBookingTime();
+
+    const formattedMinTime = `${
+      minimumTime.getMonth() + 1
+    }/${minimumTime.getDate()}/${minimumTime.getFullYear()}, ${minimumTime
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${minimumTime
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}`;
+
+    return (
+      <DataValidationError
+        title="Invalid Date/Time"
+        message={`Please select a date and time that is at least 1 hour from now (Jordan time). Current minimum time: ${formattedMinTime}`}
+        showBackButton={true}
+        backToHome={false}
+        grayBackButton={true}
       />
     );
   }
