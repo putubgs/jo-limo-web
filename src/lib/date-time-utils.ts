@@ -136,3 +136,96 @@ export const isDateDisabled = (date: Date) => {
   );
   return compareDate < today;
 };
+
+// Convert formatted date and time strings to an ISO string representing Jordan time (UTC+3)
+export function toJordanISO(dateStr: string, timeStr: string): string {
+  // dateStr example: "Sat, Oct 11, 2025"
+  // timeStr example: "4:00 PM"
+  try {
+    // Extract date parts
+    const dateMatch = dateStr.match(
+      /([A-Za-z]+),\s+([A-Za-z]+)\s+(\d+),\s+(\d+)/
+    );
+    if (!dateMatch) throw new Error("Invalid date string");
+    const monthStr = dateMatch[2];
+    const day = parseInt(dateMatch[3], 10);
+    const year = parseInt(dateMatch[4], 10);
+
+    const monthMap: { [k: string]: number } = {
+      Jan: 0,
+      Feb: 1,
+      Mar: 2,
+      Apr: 3,
+      May: 4,
+      Jun: 5,
+      Jul: 6,
+      Aug: 7,
+      Sep: 8,
+      Oct: 9,
+      Nov: 10,
+      Dec: 11,
+    };
+    const month = monthMap[monthStr];
+
+    // Extract time parts
+    const timeMatch = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!timeMatch) throw new Error("Invalid time string");
+    let hours = parseInt(timeMatch[1], 10);
+    const minutes = parseInt(timeMatch[2], 10);
+    const mer = timeMatch[3].toUpperCase();
+    if (mer === "PM" && hours !== 12) hours += 12;
+    if (mer === "AM" && hours === 12) hours = 0;
+
+    // Build UTC timestamp that corresponds to Jordan local time (UTC+3)
+    const jordanUtcTimestamp =
+      Date.UTC(year, month, day, hours, minutes) - 3 * 60 * 60 * 1000;
+    return new Date(jordanUtcTimestamp).toISOString();
+  } catch {
+    return new Date().toISOString();
+  }
+}
+
+// Return an ISO-like string with explicit +03:00 offset (Jordan local time)
+export function toJordanOffsetISO(dateStr: string, timeStr: string): string {
+  try {
+    const dateMatch = dateStr.match(
+      /([A-Za-z]+),\s+([A-Za-z]+)\s+(\d+),\s+(\d+)/
+    );
+    if (!dateMatch) throw new Error("Invalid date string");
+    const monthStr = dateMatch[2];
+    const day = parseInt(dateMatch[3], 10);
+    const year = parseInt(dateMatch[4], 10);
+
+    const monthMap: { [k: string]: number } = {
+      Jan: 0,
+      Feb: 1,
+      Mar: 2,
+      Apr: 3,
+      May: 4,
+      Jun: 5,
+      Jul: 6,
+      Aug: 7,
+      Sep: 8,
+      Oct: 9,
+      Nov: 10,
+      Dec: 11,
+    };
+    const month = monthMap[monthStr];
+
+    const timeMatch = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!timeMatch) throw new Error("Invalid time string");
+    let hours = parseInt(timeMatch[1], 10);
+    const minutes = parseInt(timeMatch[2], 10);
+    const mer = timeMatch[3].toUpperCase();
+    if (mer === "PM" && hours !== 12) hours += 12;
+    if (mer === "AM" && hours === 12) hours = 0;
+
+    const mm = (month + 1).toString().padStart(2, "0");
+    const dd = day.toString().padStart(2, "0");
+    const HH = hours.toString().padStart(2, "0");
+    const MM = minutes.toString().padStart(2, "0");
+    return `${year}-${mm}-${dd}T${HH}:${MM}:00+03:00`;
+  } catch {
+    return new Date().toISOString();
+  }
+}

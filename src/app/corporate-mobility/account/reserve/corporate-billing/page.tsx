@@ -9,6 +9,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import LuggageIcon from "@mui/icons-material/Luggage";
 import DataValidationError from "@/components/DataValidationError";
 import Link from "next/link";
+import { toJordanOffsetISO } from "@/lib/date-time-utils";
 
 function PaymentAndCheckoutContent() {
   const { reservationData } = useReservationStore();
@@ -97,9 +98,10 @@ function PaymentAndCheckoutContent() {
             : reservationData.pickup,
         duration:
           reservationData.type === "by-hour" ? reservationData.duration : null,
-        date_and_time: new Date(
-          `${reservationData.date} ${reservationData.time}`
-        ).toISOString(),
+        date_and_time: toJordanOffsetISO(
+          reservationData.date,
+          reservationData.time
+        ),
         selected_class: reservationData.selectedClass,
         price: parseFloat(reservationData.selectedClassPrice || "0") || 0,
       };

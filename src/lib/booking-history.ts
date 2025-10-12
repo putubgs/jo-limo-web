@@ -1,4 +1,5 @@
 import { CreateBookingRequest } from "@/types/booking";
+import { toJordanOffsetISO } from "./date-time-utils";
 import { ReservationData, BillingData } from "./reservation-store";
 
 export interface BookingHistoryData {
@@ -45,81 +46,10 @@ export async function createBookingHistory(
           : reservationData.dropoff || "N/A",
       duration:
         reservationData.type === "by-hour" ? reservationData.duration : null,
-      date_and_time: (() => {
-        try {
-          // Handle human-readable date format like "Sun, Sep 28, 2025T5:30 AM"
-          const dateStr = `${reservationData.date}T${reservationData.time}`;
-          console.log("🔍 Raw date string:", dateStr);
-
-          // Try parsing the date directly first
-          let date = new Date(dateStr);
-
-          // If that fails, try to clean up the format
-          if (isNaN(date.getTime())) {
-            console.log("🔧 First attempt failed, trying to clean format...");
-
-            // Remove day name and clean up the format
-            // "Sun, Sep 28, 2025T5:30 AM" -> "Sep 28, 2025T5:30 AM"
-            const cleanedDateStr = dateStr.replace(/^[A-Za-z]+, /, "");
-            console.log("🔧 Cleaned date string:", cleanedDateStr);
-
-            date = new Date(cleanedDateStr);
-
-            // If still fails, try another approach
-            if (isNaN(date.getTime())) {
-              console.log(
-                "🔧 Second attempt failed, trying alternative parsing..."
-              );
-
-              // Extract components manually
-              const match = dateStr.match(
-                /(\w+), (\w+) (\d+), (\d+)T(\d+):(\d+) (AM|PM)/
-              );
-              if (match) {
-                const [, , month, day, year, hour, minute, ampm] = match;
-                const monthMap: { [key: string]: number } = {
-                  Jan: 0,
-                  Feb: 1,
-                  Mar: 2,
-                  Apr: 3,
-                  May: 4,
-                  Jun: 5,
-                  Jul: 6,
-                  Aug: 7,
-                  Sep: 8,
-                  Oct: 9,
-                  Nov: 10,
-                  Dec: 11,
-                };
-
-                let hour24 = parseInt(hour);
-                if (ampm === "PM" && hour24 !== 12) hour24 += 12;
-                if (ampm === "AM" && hour24 === 12) hour24 = 0;
-
-                date = new Date(
-                  parseInt(year),
-                  monthMap[month],
-                  parseInt(day),
-                  hour24,
-                  parseInt(minute)
-                );
-                console.log("🔧 Manual parsing result:", date);
-              }
-            }
-          }
-
-          if (isNaN(date.getTime())) {
-            console.error("❌ All date parsing attempts failed:", dateStr);
-            return new Date().toISOString(); // fallback to current time
-          }
-
-          console.log("✅ Successfully parsed date:", date.toISOString());
-          return date.toISOString();
-        } catch (error) {
-          console.error("Date parsing error:", error);
-          return new Date().toISOString(); // fallback to current time
-        }
-      })(),
+      date_and_time: toJordanOffsetISO(
+        reservationData.date as string,
+        reservationData.time as string
+      ),
       selected_class: reservationData.selectedClass || "executive",
       payment_method: paymentMethod,
       payment_status: paymentStatus,
