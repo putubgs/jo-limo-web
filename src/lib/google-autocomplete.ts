@@ -87,7 +87,8 @@ export async function autocomplete(
   if (!apiKey) {
     return {
       results: [],
-      error: "Missing GOOGLE_API_KEY",
+      // error: "Missing GOOGLE_API_KEY",
+      error: "Online Booking Temporary Closed",
       debug: "API key not configured",
     };
   }
