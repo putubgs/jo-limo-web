@@ -51,6 +51,20 @@ function isAirportSearch(input: string): boolean {
   );
 }
 
+function normalizeDescription(description: string): string {
+  const lower = description.toLowerCase();
+  if (lower.includes("queen alia international airport")) {
+    return "Queen Alia International Airport, Airport Road, Jordan";
+  }
+  if (
+    lower.includes("king hussein international airport") ||
+    lower.includes("aqaba international airport")
+  ) {
+    return "Aqaba International Airport, Airport Street, Aqaba, Jordan";
+  }
+  return description;
+}
+
 function filterAirportResults(input: string): PlaceResult[] {
   const lower = input.toLowerCase();
   return PREFERRED_AIRPORTS.filter((airport) => {
@@ -75,7 +89,10 @@ export async function autocomplete(
   }
 
   if (isAirportSearch(input)) {
-    const airportResults = filterAirportResults(input);
+    const airportResults = filterAirportResults(input).map((result) => ({
+      ...result,
+      description: normalizeDescription(result.description),
+    }));
     return {
       results: airportResults,
       error: null,
@@ -129,7 +146,7 @@ export async function autocomplete(
       data.suggestions
         ?.filter((s) => !!s.placePrediction)
         .map((s) => ({
-          description: s.placePrediction!.text.text,
+          description: normalizeDescription(s.placePrediction!.text.text),
           place_id: s.placePrediction!.placeId,
         })) ?? [];
 

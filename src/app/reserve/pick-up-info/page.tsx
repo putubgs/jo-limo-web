@@ -6,18 +6,14 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { useReservationStore, BillingData } from "@/lib/reservation-store";
 import { calculateDistanceAndTime } from "@/lib/distance-calculator";
-import { COUNTRY_CODES, PHONE_COUNTRY_CODES } from "@/data/countries";
+import { PHONE_COUNTRY_CODES } from "@/data/countries";
 import DataValidationError from "@/components/DataValidationError";
 // Flight validation imports removed - keeping API file for future use
 
 function PickUpInfoContent() {
   const router = useRouter();
-  const {
-    reservationData,
-    setReservationData,
-    setBillingData,
-    getBillingData,
-  } = useReservationStore();
+  const { reservationData, setReservationData, getBillingData } =
+    useReservationStore();
 
   // Use data from Zustand store instead of URL params
   const initialBooking = reservationData;
@@ -83,15 +79,6 @@ function PickUpInfoContent() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Billing country dropdown states
-  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
-  const [selectedBillingCountry, setSelectedBillingCountry] = useState({
-    code: "JO",
-    name: "Jordan",
-  });
-  const [countrySearchTerm, setCountrySearchTerm] = useState("");
-  const countryDropdownRef = useRef<HTMLDivElement>(null);
-
   // Flight number state (no validation)
   const [flightNumber, setFlightNumber] = useState("");
 
@@ -136,13 +123,6 @@ function PickUpInfoContent() {
     (country) =>
       country.name.toLowerCase().includes(phoneSearchTerm.toLowerCase()) ||
       country.code.includes(phoneSearchTerm)
-  );
-
-  // Filter billing countries based on search term
-  const filteredBillingCountries = COUNTRY_CODES.filter(
-    (country) =>
-      country.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) ||
-      country.code.toLowerCase().includes(countrySearchTerm.toLowerCase())
   );
 
   // Use the same booking data from store
@@ -206,13 +186,6 @@ function PickUpInfoContent() {
         setIsPhoneDropdownOpen(false);
         setPhoneSearchTerm("");
       }
-      if (
-        countryDropdownRef.current &&
-        !countryDropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsCountryDropdownOpen(false);
-        setCountrySearchTerm("");
-      }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -251,17 +224,6 @@ function PickUpInfoContent() {
     setSelectedCountry(country);
     setIsPhoneDropdownOpen(false);
     setPhoneSearchTerm("");
-  };
-
-  const handleBillingCountrySelect = (country: {
-    code: string;
-    name: string;
-  }) => {
-    setSelectedBillingCountry(country);
-    setIsCountryDropdownOpen(false);
-    setCountrySearchTerm("");
-    // Update billing form
-    setBillingForm((prev) => ({ ...prev, billingCountry: country.code }));
   };
 
   // Step indicator component
@@ -372,9 +334,9 @@ function PickUpInfoContent() {
 
         {/* Main content */}
         <div className="max-w-[584px] mx-auto px-6 py-8">
-          {/* Passenger & Billing Information Section */}
+          {/* Passenger Information Section */}
           <h2 className="text-2xl font-semibold text-black mb-6">
-            Passenger & Billing Information
+            Passenger Information
           </h2>
           <div className="bg-[#F5F5F5] rounded-lg shadow-sm p-6 md:p-10 mb-8">
             {/* Personal Information */}
@@ -545,161 +507,6 @@ function PickUpInfoContent() {
                 </div>
               </div>
             </div>
-
-            {/* Billing Address */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-black mb-4">
-                Billing Address <span className="text-red-500">*</span>
-              </h3>
-
-              {/* Street Address - Full Width */}
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm mb-2">
-                  Street Address <span className="text-red-500">*</span> :
-                </label>
-                <input
-                  type="text"
-                  name="billingStreet1"
-                  value={billingForm.billingStreet1}
-                  onChange={handleBillingChange}
-                  placeholder="123 Main Street"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              {/* City, State, Country, Postal Code - 2 Column Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-gray-700 text-sm mb-2">
-                    City <span className="text-red-500">*</span> :
-                  </label>
-                  <input
-                    type="text"
-                    name="billingCity"
-                    value={billingForm.billingCity}
-                    onChange={handleBillingChange}
-                    placeholder="Amman"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-gray-700 text-sm mb-2">
-                    State/Province <span className="text-red-500">*</span> :
-                  </label>
-                  <input
-                    type="text"
-                    name="billingState"
-                    value={billingForm.billingState}
-                    onChange={handleBillingChange}
-                    placeholder="Amman Governorate"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-gray-700 text-sm mb-2">
-                    Country <span className="text-red-500">*</span> :
-                  </label>
-                  <div className="relative" ref={countryDropdownRef}>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setIsCountryDropdownOpen(!isCountryDropdownOpen);
-                      }}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-left flex items-center justify-between hover:bg-gray-50"
-                    >
-                      <span className="text-black">
-                        {selectedBillingCountry.code} -{" "}
-                        {selectedBillingCountry.name}
-                      </span>
-                      <svg
-                        className={`w-4 h-4 ml-2 transition-transform ${
-                          isCountryDropdownOpen ? "rotate-180" : ""
-                        }`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-
-                    {/* Dropdown Menu */}
-                    {isCountryDropdownOpen && (
-                      <div
-                        className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-lg shadow-xl z-[9999] mt-1"
-                        style={{ zIndex: 9999 }}
-                      >
-                        {/* Search Input */}
-                        <div className="p-3 border-b border-gray-200">
-                          <input
-                            type="text"
-                            placeholder="Search country"
-                            value={countrySearchTerm}
-                            onChange={(e) =>
-                              setCountrySearchTerm(e.target.value)
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                            autoFocus
-                          />
-                        </div>
-
-                        {/* Country List */}
-                        <div className="max-h-60 overflow-y-auto">
-                          {filteredBillingCountries.length > 0 ? (
-                            filteredBillingCountries.map((country, index) => (
-                              <div
-                                key={`${country.code}-${country.name}-${index}`}
-                                onMouseDown={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  handleBillingCountrySelect(country);
-                                }}
-                                className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center justify-between border-b border-gray-100 last:border-b-0 cursor-pointer"
-                              >
-                                <span className="text-black">
-                                  {country.code} - {country.name}
-                                </span>
-                              </div>
-                            ))
-                          ) : (
-                            <div className="px-4 py-3 text-gray-500 text-center">
-                              No countries found
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-gray-700 text-sm mb-2">
-                    Postal Code <span className="text-red-500">*</span> :
-                  </label>
-                  <input
-                    type="text"
-                    name="billingPostcode"
-                    value={billingForm.billingPostcode}
-                    onChange={handleBillingChange}
-                    placeholder="11118"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Additional Information Section */}
@@ -819,38 +626,6 @@ function PickUpInfoContent() {
                   return;
                 }
 
-                // Validate billing address fields
-                if (!billingForm.billingStreet1.trim()) {
-                  alert(
-                    "⚠️ Street Address is required. Please fill in this field."
-                  );
-                  return;
-                }
-
-                if (!billingForm.billingCity.trim()) {
-                  alert("⚠️ City is required. Please fill in this field.");
-                  return;
-                }
-
-                if (!billingForm.billingState.trim()) {
-                  alert(
-                    "⚠️ State/Province is required. Please fill in this field."
-                  );
-                  return;
-                }
-
-                if (!billingForm.billingCountry) {
-                  alert("⚠️ Country is required. Please select a country.");
-                  return;
-                }
-
-                if (!billingForm.billingPostcode.trim()) {
-                  alert(
-                    "⚠️ Postal Code is required. Please fill in this field."
-                  );
-                  return;
-                }
-
                 // Validate flight number if required (airport locations)
                 if (hasAirportLocation && !flightNumber.trim()) {
                   alert(
@@ -860,9 +635,6 @@ function PickUpInfoContent() {
                 }
 
                 // All validations passed, proceed
-                // Save billing data to store
-                setBillingData(billingForm);
-
                 // Update store with any changes made in this step
                 setReservationData({
                   pickup: urlPickup,
@@ -876,6 +648,17 @@ function PickUpInfoContent() {
                   flightNumber: flightNumber,
                   notesForChauffeur: notesForChauffeur,
                   referenceCode: referenceCode,
+                  // Store billing data for use in payment page
+                  billingData: {
+                    customerEmail: billingForm.customerEmail,
+                    customerGivenName: billingForm.customerGivenName,
+                    customerSurname: billingForm.customerSurname,
+                    billingStreet1: "",
+                    billingCity: "",
+                    billingState: "",
+                    billingCountry: "JO",
+                    billingPostcode: "",
+                  },
                 });
                 // Navigate to payment-and-checkout (next step in the flow)
                 router.push("/reserve/payment-and-checkout");
