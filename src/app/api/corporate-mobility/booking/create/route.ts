@@ -113,6 +113,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Send invoice email after successful booking
+    if (data && body.email) {
+      try {
+        const invoiceResponse = await fetch(
+          `${request.nextUrl.origin}/api/send-invoice`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              customerName: `${body.first_name} ${body.last_name}`,
+              customerEmail: body.email,
+              bookingId: data.id,
+              pickupLocation: body.pick_up_location,
+              dropoffLocation: body.drop_off_location || "Round trip",
+              serviceClass: body.selected_class,
+              dateTime: body.date_and_time,
+              price: body.price,
+              paymentMethod: "corporate",
+            }),
+          }
+        );
+
+        if (invoiceResponse.ok) {
+          const invoiceResult = await invoiceResponse.json();
+          console.log("Invoice sent successfully:", invoiceResult);
+        } else {
+          console.error(
+            "Failed to send invoice:",
+            await invoiceResponse.text()
+          );
+        }
+      } catch (invoiceError) {
+        console.error("Error sending invoice:", invoiceError);
+        // Don't fail the booking if invoice sending fails
+      }
+    }
+
     return NextResponse.json(
       {
         success: true,

@@ -82,6 +82,51 @@ export async function createBookingHistory(
     const result = await response.json();
     console.log("Booking history created successfully:", result);
 
+    // Send invoice email after successful booking
+    if (result.data && billingData?.customerEmail) {
+      try {
+        console.log("📧 Attempting to send invoice email...");
+        console.log("Invoice data:", {
+          customerName: `${billingData.customerGivenName} ${billingData.customerSurname}`,
+          customerEmail: billingData.customerEmail,
+          paymentMethod,
+        });
+
+        const invoiceResponse = await fetch("/api/send-invoice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            customerName: `${billingData.customerGivenName} ${billingData.customerSurname}`,
+            customerEmail: billingData.customerEmail,
+            pickupLocation: reservationData.pickup,
+            dropoffLocation: reservationData.dropoff || "Round trip",
+            serviceClass: reservationData.selectedClass,
+            dateTime: `${reservationData.date}, ${reservationData.time}`,
+            price: reservationData.selectedClassPrice,
+            paymentMethod,
+          }),
+        });
+
+        console.log("📧 Invoice API response status:", invoiceResponse.status);
+
+        if (invoiceResponse.ok) {
+          const invoiceResult = await invoiceResponse.json();
+          console.log("✅ Invoice sent successfully:", invoiceResult);
+        } else {
+          const errorText = await invoiceResponse.text();
+          console.error("❌ Failed to send invoice:", errorText);
+        }
+      } catch (invoiceError) {
+        console.error("❌ Error sending invoice:", invoiceError);
+        // Don't fail the booking if invoice sending fails
+      }
+    } else {
+      console.log("⚠️ Skipping invoice email - missing data:", {
+        hasResultData: !!result.data,
+        hasCustomerEmail: !!billingData?.customerEmail,
+      });
+    }
+
     return result;
   } catch (error) {
     console.error("Error creating booking history:", error);
