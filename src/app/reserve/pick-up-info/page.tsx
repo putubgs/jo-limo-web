@@ -12,7 +12,7 @@ import DataValidationError from "@/components/DataValidationError";
 
 function PickUpInfoContent() {
   const router = useRouter();
-  const { reservationData, setReservationData, getBillingData } =
+  const { reservationData, setReservationData, getBillingData, _hasHydrated } =
     useReservationStore();
 
   // Use data from Zustand store instead of URL params
@@ -89,22 +89,27 @@ function PickUpInfoContent() {
 
   // Removed flight validation refs
 
-  // Billing form state
-  const [billingForm, setBillingForm] = useState<BillingData>(() => {
-    const existingBilling = getBillingData();
-    return (
-      existingBilling || {
-        customerEmail: "",
-        customerGivenName: "",
-        customerSurname: "",
-        billingStreet1: "",
-        billingCity: "",
-        billingState: "",
-        billingCountry: "JO", // Default to Jordan
-        billingPostcode: "",
-      }
-    );
+  // Billing form state - initialize with defaults, will be populated after hydration
+  const [billingForm, setBillingForm] = useState<BillingData>({
+    customerEmail: "",
+    customerGivenName: "",
+    customerSurname: "",
+    billingStreet1: "",
+    billingCity: "",
+    billingState: "",
+    billingCountry: "JO", // Default to Jordan
+    billingPostcode: "",
   });
+
+  // Hydrate billing form from store after component mounts
+  useEffect(() => {
+    if (_hasHydrated) {
+      const existingBilling = getBillingData();
+      if (existingBilling) {
+        setBillingForm(existingBilling);
+      }
+    }
+  }, [_hasHydrated, getBillingData]);
 
   const handleBillingChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -642,6 +647,8 @@ function PickUpInfoContent() {
                   date: initialBooking.date,
                   time: initialBooking.time,
                   type: initialBooking.type,
+                  bookingFlowType:
+                    initialBooking.bookingFlowType ?? initialBooking.type,
                   duration: initialBooking.duration,
                   mobileNumber: `${selectedCountry.code} ${phoneNumber}`,
                   pickupSign: pickupSign,

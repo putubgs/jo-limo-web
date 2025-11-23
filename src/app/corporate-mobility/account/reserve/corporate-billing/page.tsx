@@ -104,6 +104,7 @@ function PaymentAndCheckoutContent() {
         ),
         selected_class: reservationData.selectedClass,
         price: parseFloat(reservationData.selectedClassPrice || "0") || 0,
+        distance: reservationData.distance || "",
       };
 
       console.log("Creating corporate booking with payload:", bookingPayload);
@@ -153,6 +154,7 @@ function PaymentAndCheckoutContent() {
     reservationData.time,
     reservationData.selectedClass,
     reservationData.selectedClassPrice,
+    reservationData.distance,
   ]);
 
   // Create booking automatically when component mounts and has required data

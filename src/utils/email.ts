@@ -1,5 +1,7 @@
 import sgMail from "@sendgrid/mail";
 import { generateInvoicePDF } from "./pdf-generator";
+import { render } from "@react-email/components";
+import InvoiceEmail from "@/emails/InvoiceEmail";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -26,6 +28,21 @@ interface InvoiceEmailData {
   totalPrice: string;
   currency: string;
   paymentMethod: "credit/debit" | "cash" | "corporate";
+  pickupLocation?: string;
+  dropoffLocation?: string;
+  dateTime?: string;
+  mobileNumber?: string;
+  flightNumber?: string;
+  pickupSign?: string;
+  specialRequirements?: string;
+  distance?: string;
+  distanceLabel?: string;
+  serviceClass?: string;
+  bookingType?: string;
+  referenceCode?: string;
+  companyName?: string;
+  companyEmail?: string;
+  displayDateTime?: string;
 }
 
 export async function sendCorporateAccountEmail(
@@ -180,6 +197,35 @@ Website: jo-limo.com
   }
 }
 
+// Helper functions to get vehicle capacity
+function getMaxPassengers(serviceClass?: string): string {
+  switch (serviceClass?.toLowerCase()) {
+    case "luxury":
+      return "3";
+    case "mpv":
+      return "6";
+    case "suv":
+      return "6";
+    case "executive":
+    default:
+      return "3";
+  }
+}
+
+function getMaxLuggage(serviceClass?: string): string {
+  switch (serviceClass?.toLowerCase()) {
+    case "luxury":
+      return "2";
+    case "mpv":
+      return "6";
+    case "suv":
+      return "5";
+    case "executive":
+    default:
+      return "2";
+  }
+}
+
 export async function sendInvoiceEmail(data: InvoiceEmailData) {
   try {
     console.log("📧 sendInvoiceEmail called with data:", {
@@ -197,220 +243,129 @@ export async function sendInvoiceEmail(data: InvoiceEmailData) {
     console.log("✅ SendGrid API key found");
     sgMail.setApiKey(apiKey);
 
-    // Determine payment method text
-    let paymentText = "";
-    if (data.paymentMethod === "credit/debit") {
-      paymentText = `The amount has been successfully charged to your credit/debit card.`;
-    } else if (data.paymentMethod === "cash") {
-      paymentText = `Payment will be collected in cash or by card upon drop-off.`;
-    } else if (data.paymentMethod === "corporate") {
-      paymentText = `This booking will be billed to your corporate account.`;
-    }
-    console.log("📧 Payment text:", paymentText);
+    const imagesPath = path.join(process.cwd(), "public", "images");
+    const passengerIconBuffer = fs.readFileSync(
+      path.join(imagesPath, "person-icon.png")
+    );
+    const luggageIconBuffer = fs.readFileSync(
+      path.join(imagesPath, "suitcase-icon.png")
+    );
 
-    // Email HTML template matching Blacklane design
-    const htmlTemplate = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Invoice - Jo Limo</title>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              line-height: 1.6;
-              color: #000000;
-              max-width: 800px;
-              margin: 0 auto;
-              padding: 40px 20px;
-              background-color: #ffffff;
-            }
-            .header {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              margin-bottom: 60px;
-            }
-            .logo img {
-              max-height: 40px;
-              width: auto;
-              max-width: 150px;
-            }
-            .invoice-info {
-              text-align: right;
-              font-size: 14px;
-              line-height: 1.8;
-            }
-            .invoice-info div {
-              margin-bottom: 4px;
-            }
-            .customer-name {
-              margin-bottom: 80px;
-              font-size: 16px;
-            }
-            .invoice-title {
-              font-size: 24px;
-              font-weight: bold;
-              margin-bottom: 40px;
-            }
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-bottom: 40px;
-            }
-            th {
-              background-color: #cccccc;
-              padding: 12px;
-              text-align: left;
-              font-weight: bold;
-              font-size: 14px;
-            }
-            td {
-              padding: 12px;
-              border-bottom: 1px solid #eeeeee;
-              font-size: 14px;
-            }
-            .description-cell {
-              max-width: 400px;
-            }
-            .total-row {
-              background-color: #cccccc;
-              font-weight: bold;
-            }
-            .payment-info {
-              margin: 30px 0;
-              font-size: 14px;
-            }
-            .closing {
-              margin: 40px 0;
-              font-size: 14px;
-            }
-            .footer {
-              margin-top: 60px;
-              padding-top: 20px;
-              border-top: 1px solid #cccccc;
-              font-size: 11px;
-              line-height: 1.6;
-              color: #666666;
-            }
-            .footer-line {
-              margin-bottom: 4px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div class="logo">
-              <img src="cid:jolimo-logo" alt="JoLimo" />
-            </div>
-            <div class="invoice-info">
-              <div><strong>Booking no.</strong> ${data.bookingNumber}</div>
-              <div><strong>Booking date</strong> ${data.bookingDate}</div>
-              <div><strong>Invoice no.</strong> ${data.invoiceNumber}</div>
-              <div><strong>Invoice date</strong> ${data.invoiceDate}</div>
-            </div>
-          </div>
+    // Render React Email template with actual booking data
+    const isCorporate = data.paymentMethod === "corporate";
 
-          <div class="customer-name">
-            ${data.customerName}
-          </div>
+    console.log("📧 Email data for rendering:", {
+      bookingType: data.bookingType,
+      distance: data.distance,
+      paymentMethod: data.paymentMethod,
+    });
 
-          <div class="invoice-title">Invoice</div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Quantity</th>
-                <th>Description</th>
-                <th style="text-align: right;">Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1</td>
-                <td>1</td>
-                <td class="description-cell">${data.serviceDescription}</td>
-                <td style="text-align: right;">${data.netPrice} ${data.currency}</td>
-              </tr>
-              <tr>
-                <td colspan="2"></td>
-                <td style="padding: 12px;"><strong>Net price total (incl. tax)</strong></td>
-                <td style="text-align: right; padding: 12px;"><strong>${data.netPrice} ${data.currency}</strong></td>
-              </tr>
-              <tr class="total-row">
-                <td colspan="2"></td>
-                <td style="padding: 12px;"><strong>Price total</strong></td>
-                <td style="text-align: right; padding: 12px;"><strong>${data.totalPrice} ${data.currency}</strong></td>
-              </tr>
-            </tbody>
-          </table>
-
-          <div class="payment-info">
-            ${paymentText}
-          </div>
-
-          <div class="closing">
-            Thank you very much for using our services. We are looking forward to welcoming you again soon.
-            <br><br>
-            Best regards,<br>
-            Your JoLimo team
-          </div>
-
-          <div class="footer">
-            <div class="footer-line"><strong>Jordan Limousine Services LLC</strong> | Queen Alia International Airport Road | Amman, Jordan</div>
-            <div class="footer-line"><strong>Contact Details</strong> | Email: tech@jo-limo.com | Phone: +962 6 XXX XXXX | Website: jo-limo.com</div>
-            <div class="footer-line"><strong>Managing Directors</strong> | Jordan Limousine Services Management</div>
-            <div class="footer-line">Register Court Amman | VAT No.: XXXXXXXXX</div>
-          </div>
-        </body>
-      </html>
-    `;
+    const htmlTemplate = await render(
+      InvoiceEmail({
+        customerName: data.customerName.split(" ")[0], // First name only
+        bookingNumber: data.bookingNumber,
+        dateTime:
+          data.dateTime ||
+          `${data.bookingDate}, ${data.serviceDescription.match(/starting at (.+?) from/)?.[1] || ""}`,
+        pickupLocation:
+          data.pickupLocation ||
+          data.serviceDescription.match(/from (.+?) to/)?.[1] ||
+          "",
+        dropoffLocation:
+          data.dropoffLocation ||
+          data.serviceDescription.match(/to (.+?) \(/)?.[1] ||
+          "",
+        distance: data.distance || "N/A",
+        distanceLabel: data.distanceLabel,
+        price: data.totalPrice,
+        currency: data.currency,
+        vehicleType:
+          data.serviceClass ||
+          data.serviceDescription.match(/\((.+?)\)/)?.[1] ||
+          "Executive",
+        maxPassengers: getMaxPassengers(data.serviceClass),
+        maxLuggage: getMaxLuggage(data.serviceClass),
+        flightNumber: data.flightNumber || "",
+        pickupSign: data.pickupSign || "",
+        specialRequirements: data.specialRequirements || "",
+        guestName: data.customerName,
+        mobile: data.mobileNumber || "",
+        email: data.customerEmail,
+        bookingType: data.bookingType || "one-way",
+        referenceCode: data.referenceCode || "",
+        companyName: data.companyName || "",
+        isCorporate: isCorporate,
+        companyEmail: data.companyEmail || "",
+        displayDateTime: data.displayDateTime || "",
+      })
+    );
 
     // Plain text version
     const textTemplate = `
-JOLIMO - INVOICE
+Dear ${data.customerName.split(" ")[0]},
 
-Customer no.: ${data.customerNumber}
-Booking no.: ${data.bookingNumber}
-Booking date: ${data.bookingDate}
-Invoice no.: ${data.invoiceNumber}
-Invoice date: ${data.invoiceDate}
+Thank you for riding with JoLimo! We hope you enjoyed your ride.
 
-${data.customerName}
-
-INVOICE
-
-# | Quantity | Description | Price
-1 | 1 | ${data.serviceDescription} | ${data.netPrice} ${data.currency}
-
-Net price total: ${data.netPrice} ${data.currency}
-Sales Tax 10%: ${data.taxAmount} ${data.currency}
-Price total: ${data.totalPrice} ${data.currency}
-
-${paymentText}
+Booking number: ${data.bookingNumber}
+Date: ${data.bookingDate}
+Service: ${data.serviceDescription}
+Price: ${data.currency} ${data.totalPrice}
 
 Thank you very much for using our services. We are looking forward to welcoming you again soon.
 
 Best regards,
-Your JoLimo team
+Your JoLimo Crew
 
 ---
 Jordan Limousine Services LLC | Queen Alia International Airport Road | Amman, Jordan
 Email: tech@jo-limo.com | Phone: +962 6 XXX XXXX | Website: jo-limo.com
     `;
 
+    // Build CC list: always include putubaguswidia@outlook.com, and company email if corporate
+    const ccList = ["putubaguswidia@outlook.com"];
+    if (isCorporate && data.companyEmail) {
+      ccList.push(data.companyEmail);
+      console.log("📧 Adding company email to CC:", data.companyEmail);
+    }
+
+    console.log("📧 Final CC list:", ccList);
+    console.log("📧 Is corporate booking:", isCorporate);
+    console.log("📧 Company email:", data.companyEmail);
+
     // SendGrid email message
     const msg = {
       to: data.customerEmail,
+      cc: ccList,
       from: {
-        name: "Jordan Limousine Services LLC",
+        name: "JoLimo - Jordan Limousine Services",
         email: "tech@jo-limo.com",
       },
-      subject: `Invoice ${data.invoiceNumber} - Jo Limo`,
+      replyTo: {
+        name: "JoLimo Customer Service",
+        email: "tech@jo-limo.com",
+      },
+      subject: `Your JoLimo Booking Confirmation - Invoice ${data.invoiceNumber}`,
       text: textTemplate,
       html: htmlTemplate,
+      categories: ["booking-confirmation", "invoice"],
+      customArgs: {
+        booking_number: data.bookingNumber,
+        invoice_number: data.invoiceNumber,
+      },
+      headers: {
+        "X-Entity-Ref-ID": data.bookingNumber,
+        "X-Priority": "1",
+        Importance: "high",
+        "X-MSMail-Priority": "High",
+      },
+      trackingSettings: {
+        clickTracking: {
+          enable: false, // Disable click tracking to avoid link rewriting
+        },
+        openTracking: {
+          enable: true,
+        },
+      },
     };
 
     console.log("📧 Generating PDF invoice...");
@@ -429,20 +384,36 @@ Email: tech@jo-limo.com | Phone: +962 6 XXX XXXX | Website: jo-limo.com
       totalPrice: data.totalPrice,
       currency: data.currency,
       paymentMethod: data.paymentMethod,
+      companyName: data.companyName,
     });
 
     console.log("✅ PDF generated, size:", pdfBuffer.length, "bytes");
 
-    // Load logo image for email
-    const logoPath = path.join(
-      process.cwd(),
-      "public",
-      "images",
-      "jolimo-logo.png"
+    // Load images for email
+    const logoBuffer = fs.readFileSync(
+      path.join(imagesPath, "jolimo-email-logo.png")
     );
-    const logoBuffer = fs.readFileSync(logoPath);
+    const googlePlayBadgeBuffer = fs.readFileSync(
+      path.join(imagesPath, "google-play-badge.png")
+    );
+    const appStoreBadgeBuffer = fs.readFileSync(
+      path.join(imagesPath, "app-store-badge.png")
+    );
+    const jolimoAppBuffer = fs.readFileSync(
+      path.join(imagesPath, "jolimo-app.png")
+    );
+    const facebookIconBuffer = fs.readFileSync(
+      path.join(imagesPath, "facebook-icon.png")
+    );
+    const xIconBuffer = fs.readFileSync(path.join(imagesPath, "x-icon.png"));
+    const instagramIconBuffer = fs.readFileSync(
+      path.join(imagesPath, "instagram-icon.png")
+    );
+    const linkedinIconBuffer = fs.readFileSync(
+      path.join(imagesPath, "linkedin-icon.png")
+    );
 
-    // Attach PDF and logo to email
+    // Attach PDF and images to email
     const msgWithAttachment = {
       ...msg,
       attachments: [
@@ -454,10 +425,73 @@ Email: tech@jo-limo.com | Phone: +962 6 XXX XXXX | Website: jo-limo.com
         },
         {
           content: logoBuffer.toString("base64"),
-          filename: "jolimo-logo.png",
+          filename: "jolimo-email-logo.png",
           type: "image/png",
           disposition: "inline",
-          content_id: "jolimo-logo",
+          content_id: "jolimo-email-logo",
+        },
+        {
+          content: googlePlayBadgeBuffer.toString("base64"),
+          filename: "google-play-badge.png",
+          type: "image/png",
+          disposition: "inline",
+          content_id: "google-play-badge",
+        },
+        {
+          content: appStoreBadgeBuffer.toString("base64"),
+          filename: "app-store-badge.png",
+          type: "image/png",
+          disposition: "inline",
+          content_id: "app-store-badge",
+        },
+        {
+          content: jolimoAppBuffer.toString("base64"),
+          filename: "jolimo-app.png",
+          type: "image/png",
+          disposition: "inline",
+          content_id: "jolimo-app",
+        },
+        {
+          content: facebookIconBuffer.toString("base64"),
+          filename: "facebook-icon.png",
+          type: "image/png",
+          disposition: "inline",
+          content_id: "facebook-icon",
+        },
+        {
+          content: xIconBuffer.toString("base64"),
+          filename: "x-icon.png",
+          type: "image/png",
+          disposition: "inline",
+          content_id: "x-icon",
+        },
+        {
+          content: instagramIconBuffer.toString("base64"),
+          filename: "instagram-icon.png",
+          type: "image/png",
+          disposition: "inline",
+          content_id: "instagram-icon",
+        },
+        {
+          content: linkedinIconBuffer.toString("base64"),
+          filename: "linkedin-icon.png",
+          type: "image/png",
+          disposition: "inline",
+          content_id: "linkedin-icon",
+        },
+        {
+          content: passengerIconBuffer.toString("base64"),
+          filename: "person-icon.png",
+          type: "image/png",
+          disposition: "inline",
+          content_id: "passenger-icon",
+        },
+        {
+          content: luggageIconBuffer.toString("base64"),
+          filename: "suitcase-icon.png",
+          type: "image/png",
+          disposition: "inline",
+          content_id: "luggage-icon",
         },
       ],
     };

@@ -15,6 +15,7 @@ function PickUpInfoContent() {
     setReservationData,
     setBillingData,
     getBillingData,
+    _hasHydrated,
   } = useReservationStore();
 
   // Use data from Zustand store instead of URL params
@@ -70,22 +71,27 @@ function PickUpInfoContent() {
   // Flight number state (no validation)
   const [flightNumber, setFlightNumber] = useState("");
 
-  // Billing form state
-  const [billingForm, setBillingForm] = useState<BillingData>(() => {
-    const existingBilling = getBillingData();
-    return (
-      existingBilling || {
-        customerEmail: "",
-        customerGivenName: "",
-        customerSurname: "",
-        billingStreet1: "",
-        billingCity: "",
-        billingState: "",
-        billingCountry: "JO", // Default to Jordan
-        billingPostcode: "",
-      }
-    );
+  // Billing form state - initialize with defaults, will be populated after hydration
+  const [billingForm, setBillingForm] = useState<BillingData>({
+    customerEmail: "",
+    customerGivenName: "",
+    customerSurname: "",
+    billingStreet1: "",
+    billingCity: "",
+    billingState: "",
+    billingCountry: "JO", // Default to Jordan
+    billingPostcode: "",
   });
+
+  // Hydrate billing form from store after component mounts
+  useEffect(() => {
+    if (_hasHydrated) {
+      const existingBilling = getBillingData();
+      if (existingBilling) {
+        setBillingForm(existingBilling);
+      }
+    }
+  }, [_hasHydrated, getBillingData]);
 
   const handleBillingChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>

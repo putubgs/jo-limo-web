@@ -21,7 +21,7 @@ export default function CMAccountLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { resetForCorporateMobility } = useReservationStore();
+  const { resetForCorporateMobility, setHasHydrated } = useReservationStore();
   const basePath = "/corporate-mobility/account";
   const pathname = usePathname();
   const router = useRouter();
@@ -32,8 +32,11 @@ export default function CMAccountLayout({
 
   // Reset all booking state when user enters corporate mobility account
   useEffect(() => {
+    // Rehydrate the store from localStorage
+    useReservationStore.persist.rehydrate();
+    setHasHydrated(true);
     resetForCorporateMobility();
-  }, [resetForCorporateMobility]);
+  }, [resetForCorporateMobility, setHasHydrated]);
 
   // Verify authentication and get user data
   useEffect(() => {

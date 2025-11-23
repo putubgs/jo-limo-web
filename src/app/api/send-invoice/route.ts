@@ -18,6 +18,16 @@ export async function POST(request: NextRequest) {
       dateTime,
       price,
       paymentMethod,
+      mobileNumber,
+      flightNumber,
+      pickupSign,
+      specialRequirements,
+      distance,
+      distanceLabel,
+      bookingType,
+      referenceCode,
+      companyName,
+      companyEmail,
     } = body;
 
     // Validate required fields (bookingId no longer required - auto-generated)
@@ -66,8 +76,51 @@ export async function POST(request: NextRequest) {
     const netPrice = parseFloat(price);
     const totalPrice = netPrice;
 
+    const formatDisplayDateTime = (value?: string) => {
+      if (!value) return "";
+
+      try {
+        const isoLike = /\d{4}-\d{2}-\d{2}T/.test(value);
+        if (isoLike) {
+          const parsed = new Date(value);
+          if (!isNaN(parsed.getTime())) {
+            return parsed.toLocaleString("en-US", {
+              weekday: "short",
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+              timeZone: "Asia/Amman",
+              timeZoneName: "short",
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Failed to format dateTime value:", value, error);
+      }
+
+      return value;
+    };
+
+    const displayDateTime = formatDisplayDateTime(dateTime);
+
+    const normalizedLabel = distanceLabel?.toLowerCase() ?? "";
+    const isByHourBooking =
+      bookingType === "by-hour" ||
+      normalizedLabel === "duration" ||
+      (distance && distance.toLowerCase().includes("hour"));
+
+    const durationDescription =
+      distance && distance.trim() !== ""
+        ? distance
+        : "the selected hourly duration";
+
     // Format service description
-    const serviceDescription = `Transfer Ride starting at ${dateTime} from ${pickupLocation} to ${dropoffLocation} (${serviceClass})`;
+    const serviceDescription = isByHourBooking
+      ? `Hourly Ride starting at ${displayDateTime} from ${pickupLocation} for ${durationDescription} (${serviceClass})`
+      : `Transfer Ride starting at ${displayDateTime} from ${pickupLocation} to ${dropoffLocation} (${serviceClass})`;
 
     // Prepare invoice data
     const invoiceData = {
@@ -84,6 +137,22 @@ export async function POST(request: NextRequest) {
       totalPrice: totalPrice.toFixed(2),
       currency: "JOD",
       paymentMethod: paymentMethod as "credit/debit" | "cash" | "corporate",
+      pickupLocation,
+      dropoffLocation,
+      dateTime: displayDateTime,
+      originalDateTime: dateTime,
+      mobileNumber,
+      flightNumber,
+      pickupSign,
+      specialRequirements,
+      distance,
+      distanceLabel,
+      serviceClass,
+      bookingType,
+      referenceCode,
+      companyName,
+      companyEmail,
+      displayDateTime,
     };
 
     console.log("📧 Sending invoice email to:", customerEmail);

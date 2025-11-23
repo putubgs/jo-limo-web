@@ -67,25 +67,19 @@ function PaymentAndCheckoutContent() {
     getBillingData,
     setBillingData,
     setReservationData,
+    _hasHydrated,
   } = useReservationStore();
 
-  // Billing form state - pre-fill from pick-up info
-  const [billingForm, setBillingForm] = useState<BillingData>(() => {
-    const existingBilling = getBillingData();
-    if (existingBilling) {
-      return existingBilling;
-    }
-    // Pre-fill with data from pick-up info
-    return {
-      customerEmail: reservationData.billingData?.customerEmail || "",
-      customerGivenName: reservationData.billingData?.customerGivenName || "",
-      customerSurname: reservationData.billingData?.customerSurname || "",
-      billingStreet1: "",
-      billingCity: "",
-      billingState: "",
-      billingCountry: "JO", // Default to Jordan
-      billingPostcode: "",
-    };
+  // Billing form state - initialize with defaults, will be populated after hydration
+  const [billingForm, setBillingForm] = useState<BillingData>({
+    customerEmail: "",
+    customerGivenName: "",
+    customerSurname: "",
+    billingStreet1: "",
+    billingCity: "",
+    billingState: "",
+    billingCountry: "JO", // Default to Jordan
+    billingPostcode: "",
   });
 
   // Track which payment method is selected - default to credit card
@@ -94,16 +88,39 @@ function PaymentAndCheckoutContent() {
   >("credit");
 
   // Billing form filled flag (only for billing address, not personal info)
-  const [isBillingAddressFilled, setIsBillingAddressFilled] = useState(() => {
-    const existing = getBillingData();
-    return !!(
-      existing?.billingStreet1 &&
-      existing?.billingCity &&
-      existing?.billingState &&
-      existing?.billingCountry &&
-      existing?.billingPostcode
-    );
-  });
+  const [isBillingAddressFilled, setIsBillingAddressFilled] = useState(false);
+
+  // Hydrate billing form from store after component mounts
+  useEffect(() => {
+    if (_hasHydrated) {
+      const existingBilling = getBillingData();
+      if (existingBilling) {
+        setBillingForm(existingBilling);
+        setIsBillingAddressFilled(
+          !!(
+            existingBilling.billingStreet1 &&
+            existingBilling.billingCity &&
+            existingBilling.billingState &&
+            existingBilling.billingCountry &&
+            existingBilling.billingPostcode
+          )
+        );
+      } else if (reservationData.billingData) {
+        // Pre-fill with data from pick-up info if no billing data exists
+        setBillingForm({
+          customerEmail: reservationData.billingData.customerEmail || "",
+          customerGivenName:
+            reservationData.billingData.customerGivenName || "",
+          customerSurname: reservationData.billingData.customerSurname || "",
+          billingStreet1: "",
+          billingCity: "",
+          billingState: "",
+          billingCountry: "JO",
+          billingPostcode: "",
+        });
+      }
+    }
+  }, [_hasHydrated, getBillingData, reservationData.billingData]);
 
   // Billing country dropdown states
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
@@ -410,6 +427,13 @@ function PaymentAndCheckoutContent() {
             paymentMethod === "credit/debit" ? "completed" : "pending",
         });
 
+        console.log("📧 About to call createBookingHistory with data:", {
+          hasReservationData: !!reservationData,
+          hasBillingData: !!billingData,
+          customerEmail: billingData?.customerEmail,
+          paymentMethod,
+        });
+
         const result = await createBookingHistory({
           reservationData,
           billingData,
@@ -421,6 +445,10 @@ function PaymentAndCheckoutContent() {
 
         console.log("✅ Booking history created successfully with REAL DATA!");
         console.log("✅ Booking result:", result);
+        console.log(
+          "📧 Email should have been sent to:",
+          billingData?.customerEmail
+        );
       } catch (error) {
         console.error(
           "❌ CRITICAL ERROR: Failed to create booking history:",
@@ -660,6 +688,13 @@ function PaymentAndCheckoutContent() {
   /* ---------------------------------------------------------------- */
 
   const handleCash = () => {
+    console.log("🔵 CASH PAYMENT CLICKED");
+    console.log("🔵 Current reservation data:", reservationData);
+    console.log(
+      "🔵 Current billing data from store:",
+      reservationData.billingData
+    );
+
     // For cash payment, save minimal billing data (from pick-up info)
     const minimalBillingData = {
       customerEmail: reservationData.billingData?.customerEmail || "",
@@ -671,6 +706,8 @@ function PaymentAndCheckoutContent() {
       billingCountry: "JO",
       billingPostcode: "N/A",
     };
+
+    console.log("🔵 Minimal billing data created:", minimalBillingData);
     setBillingData(minimalBillingData);
 
     dispatch({ type: "PROCESSING" });
@@ -685,6 +722,7 @@ function PaymentAndCheckoutContent() {
         result: { code: "000.000.000", description: "Cash accepted" },
       } as HyperPayResult;
 
+      console.log("🔵 About to create booking with cash payment");
       // Create booking history for cash payment
       await createBooking("cash", cashPaymentResult);
 

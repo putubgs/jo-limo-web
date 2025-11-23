@@ -69,12 +69,11 @@ function ServiceClassContent() {
     setSelectedServiceClass,
     getSelectedServiceClass,
     setReservationData,
+    _hasHydrated,
   } = useReservationStore();
 
-  // Initialize selectedService from store
-  const [selectedService, setSelectedService] = useState<ServiceClass | "">(
-    getSelectedServiceClass() || ""
-  );
+  // Initialize selectedService - will be set from store after hydration
+  const [selectedService, setSelectedService] = useState<ServiceClass | "">("");
   const [showTermsPopup, setShowTermsPopup] = useState(false);
   const [distanceInfo, setDistanceInfo] = useState<{
     distance: string;
@@ -83,6 +82,16 @@ function ServiceClassContent() {
 
   // Use data from Zustand store instead of URL params
   const bookingData = reservationData;
+
+  // Hydrate selectedService from store after component mounts
+  useEffect(() => {
+    if (_hasHydrated) {
+      const storedClass = getSelectedServiceClass();
+      if (storedClass) {
+        setSelectedService(storedClass);
+      }
+    }
+  }, [_hasHydrated, getSelectedServiceClass]);
 
   // Debug the booking data
   useEffect(() => {
@@ -490,10 +499,26 @@ function ServiceClassContent() {
         "🔍 SERVICE CLASS - Preserving existing booking data:",
         bookingData
       );
+
+      // Save distance or duration based on booking type
+      const distanceOrDuration =
+        bookingData.type === "one-way"
+          ? distanceInfo?.distance // For one-way, save distance
+          : bookingData.duration; // For by-hour, save duration
+
+      console.log("📏 Saving distance/duration:", {
+        type: bookingData.type,
+        value: distanceOrDuration,
+        duration: bookingData.duration,
+        distance: distanceInfo?.distance,
+        fullBookingData: bookingData,
+      });
+
       setReservationData({
         ...bookingData, // Preserve all existing data
         selectedClass: selectedService,
         selectedClassPrice: priceString,
+        distance: distanceOrDuration, // Save distance or duration
       });
 
       console.log(
@@ -564,8 +589,8 @@ function ServiceClassContent() {
                     index === 0
                       ? "rounded-t-lg"
                       : index === serviceClasses.length - 1
-                      ? "rounded-b-lg"
-                      : ""
+                        ? "rounded-b-lg"
+                        : ""
                   } ${
                     selectedService === service.id
                       ? "border-black border-2"

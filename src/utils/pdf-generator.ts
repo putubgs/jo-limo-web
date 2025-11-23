@@ -15,6 +15,7 @@ export interface InvoicePDFData {
   totalPrice: string;
   currency: string;
   paymentMethod: "credit/debit" | "cash" | "corporate";
+  companyName?: string;
 }
 
 export async function generateInvoicePDF(
@@ -105,6 +106,13 @@ export async function generateInvoicePDF(
     doc.setFontSize(11);
     doc.setFont("helvetica", "normal");
     doc.text(data.customerName, leftMargin, 70);
+
+    // Company name for corporate bookings
+    if (data.companyName) {
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Company: ${data.companyName}`, leftMargin, 78);
+    }
 
     // Invoice title
     doc.setFontSize(18);

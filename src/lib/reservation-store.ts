@@ -19,6 +19,7 @@ export interface BillingData {
 
 export interface ReservationData {
   type: "one-way" | "by-hour";
+  bookingFlowType?: "one-way" | "by-hour";
   pickup: string;
   dropoff: string;
   date: string;
@@ -36,7 +37,9 @@ export interface ReservationData {
   pickupSign?: string;
   flightNumber?: string;
   notesForChauffeur?: string;
+  specialRequirements?: string;
   referenceCode?: string;
+  distance?: string;
 }
 
 interface ReservationStore {
@@ -53,10 +56,14 @@ interface ReservationStore {
   resetForCorporateMobility: () => void;
   // Clear only billing data
   clearBillingData: () => void;
+  // Hydration state
+  _hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
 }
 
 const defaultReservationData: ReservationData = {
   type: "one-way",
+  bookingFlowType: "one-way",
   pickup: "",
   dropoff: "",
   date: "",
@@ -73,12 +80,23 @@ export const useReservationStore = create<ReservationStore>()(
   persist(
     (set, get) => ({
       reservationData: defaultReservationData,
+      _hasHydrated: false,
+
+      setHasHydrated: (state) => {
+        set({
+          _hasHydrated: state,
+        });
+      },
 
       setReservationData: (data) => {
         console.log(`\n💾 STORE UPDATE:`, data);
 
         // Auto-filter locations when pickup/dropoff changes
         const enhancedData = { ...data };
+
+        if (data.bookingFlowType === undefined && data.type !== undefined) {
+          enhancedData.bookingFlowType = data.type;
+        }
 
         if (data.pickup !== undefined) {
           console.log(`🚗 Processing pickup location...`);
@@ -176,6 +194,7 @@ export const useReservationStore = create<ReservationStore>()(
     {
       name: "reservation-storage",
       partialize: (state) => ({ reservationData: state.reservationData }),
+      skipHydration: true,
     }
   )
 );

@@ -325,6 +325,7 @@ export default function ReservationForm({
     // Prepare booking data
     const bookingData = {
       type: activeBookingTab,
+      bookingFlowType: activeBookingTab,
       pickup: activeBookingTab === "one-way" ? pickupLocation : fromLocation,
       dropoff: activeBookingTab === "one-way" ? dropoffLocation : "",
       date: selectedDate,
@@ -506,8 +507,8 @@ export default function ReservationForm({
   const containerClasses = containerClassName
     ? `${baseContainerClasses} ${containerClassName}`
     : variant === "popup"
-    ? `${baseContainerClasses} w-[440px] shadow-lg overflow-visible`
-    : `${baseContainerClasses} border`;
+      ? `${baseContainerClasses} w-[440px] shadow-lg overflow-visible`
+      : `${baseContainerClasses} border`;
 
   return (
     <div className={containerClasses}>
@@ -789,10 +790,10 @@ export default function ReservationForm({
                               !isCurrentMonth
                                 ? "text-gray-300"
                                 : isSelected
-                                ? "bg-green-500 text-white font-semibold"
-                                : isToday
-                                ? "bg-blue-500 text-white font-semibold"
-                                : "text-gray-900"
+                                  ? "bg-green-500 text-white font-semibold"
+                                  : isToday
+                                    ? "bg-blue-500 text-white font-semibold"
+                                    : "text-gray-900"
                             }
                             ${
                               isDisabled

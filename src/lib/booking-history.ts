@@ -28,6 +28,15 @@ export async function createBookingHistory(
     }
 
     // Prepare the booking data for the API
+    const inferredBookingType =
+      reservationData.type === "by-hour" ||
+      (!!reservationData.duration &&
+        (!reservationData.dropoff || reservationData.dropoff === "")) ||
+      (reservationData.distance &&
+        reservationData.distance.toLowerCase().includes("hour"))
+        ? "by-hour"
+        : "one-way";
+
     const bookingRequest: CreateBookingRequest = {
       company_id: null, // General booking (no corporate account)
       first_name: billingData?.customerGivenName || "N/A",
@@ -38,14 +47,14 @@ export async function createBookingHistory(
       flight_number: reservationData.flightNumber || null,
       notes_for_the_chauffeur: reservationData.notesForChauffeur || null,
       reference_code: reservationData.referenceCode || null,
-      booking_type: reservationData.type,
+      booking_type: inferredBookingType,
       pick_up_location: reservationData.pickup || "N/A",
       drop_off_location:
-        reservationData.type === "by-hour"
+        inferredBookingType === "by-hour"
           ? "Round trip from starting location"
           : reservationData.dropoff || "N/A",
       duration:
-        reservationData.type === "by-hour" ? reservationData.duration : null,
+        inferredBookingType === "by-hour" ? reservationData.duration : null,
       date_and_time: toJordanOffsetISO(
         reservationData.date as string,
         reservationData.time as string
@@ -80,17 +89,44 @@ export async function createBookingHistory(
     }
 
     const result = await response.json();
-    console.log("Booking history created successfully:", result);
+    console.log("✅ Booking history created successfully:", result);
 
     // Send invoice email after successful booking
-    if (result.data && billingData?.customerEmail) {
+    console.log("🔍 CHECKING IF EMAIL SHOULD BE SENT:");
+    console.log("🔍 result exists?", !!result);
+    console.log("🔍 result has booking_id?", !!result.booking_id);
+    console.log("🔍 billingData exists?", !!billingData);
+    console.log("🔍 billingData.customerEmail?", billingData?.customerEmail);
+
+    // The result IS the booking data (not wrapped in .data)
+    if (result && result.booking_id && billingData?.customerEmail) {
       try {
+        console.log("✅ EMAIL WILL BE SENT!");
         console.log("📧 Attempting to send invoice email...");
-        console.log("Invoice data:", {
+        console.log("📧 Full reservation data:", reservationData);
+        console.log("📧 Billing data:", billingData);
+        console.log("📧 Invoice data:", {
           customerName: `${billingData.customerGivenName} ${billingData.customerSurname}`,
           customerEmail: billingData.customerEmail,
           paymentMethod,
         });
+
+        console.log("📧 Calling /api/send-invoice with data:", {
+          customerName: `${billingData.customerGivenName} ${billingData.customerSurname}`,
+          customerEmail: billingData.customerEmail,
+          pickupLocation: reservationData.pickup,
+          dropoffLocation: reservationData.dropoff || "Round trip",
+          serviceClass: reservationData.selectedClass,
+          dateTime: `${reservationData.date}, ${reservationData.time}`,
+          price: reservationData.selectedClassPrice,
+          paymentMethod,
+        });
+
+        // Format dropoff location based on booking type
+        let dropoffLocation = reservationData.dropoff || "";
+        if (inferredBookingType === "by-hour") {
+          dropoffLocation = `from ${reservationData.pickup} for ${reservationData.duration || reservationData.distance} trip`;
+        }
 
         const invoiceResponse = await fetch("/api/send-invoice", {
           method: "POST",
@@ -99,31 +135,57 @@ export async function createBookingHistory(
             customerName: `${billingData.customerGivenName} ${billingData.customerSurname}`,
             customerEmail: billingData.customerEmail,
             pickupLocation: reservationData.pickup,
-            dropoffLocation: reservationData.dropoff || "Round trip",
+            dropoffLocation: dropoffLocation,
             serviceClass: reservationData.selectedClass,
             dateTime: `${reservationData.date}, ${reservationData.time}`,
             price: reservationData.selectedClassPrice,
             paymentMethod,
+            mobileNumber: reservationData.mobileNumber || "",
+            flightNumber: reservationData.flightNumber || "",
+            pickupSign: reservationData.pickupSign || "",
+            specialRequirements:
+              reservationData.notesForChauffeur ||
+              reservationData.specialRequirements ||
+              "",
+            distance: reservationData.distance || "",
+            distanceLabel:
+              inferredBookingType === "by-hour" ? "Duration" : "Distance",
+            bookingType: inferredBookingType,
           }),
         });
 
         console.log("📧 Invoice API response status:", invoiceResponse.status);
+        console.log("📧 Invoice API response ok?:", invoiceResponse.ok);
 
         if (invoiceResponse.ok) {
           const invoiceResult = await invoiceResponse.json();
-          console.log("✅ Invoice sent successfully:", invoiceResult);
+          console.log("✅✅✅ EMAIL SENT SUCCESSFULLY! ✅✅✅");
+          console.log("✅ Invoice result:", invoiceResult);
         } else {
           const errorText = await invoiceResponse.text();
-          console.error("❌ Failed to send invoice:", errorText);
+          console.error("❌❌❌ EMAIL FAILED TO SEND! ❌❌❌");
+          console.error("❌ Status:", invoiceResponse.status);
+          console.error("❌ Error:", errorText);
         }
       } catch (invoiceError) {
-        console.error("❌ Error sending invoice:", invoiceError);
+        console.error("❌❌❌ EMAIL ERROR - EXCEPTION THROWN! ❌❌❌");
+        console.error("❌ Error:", invoiceError);
+        console.error(
+          "❌ Error message:",
+          invoiceError instanceof Error
+            ? invoiceError.message
+            : String(invoiceError)
+        );
         // Don't fail the booking if invoice sending fails
       }
     } else {
+      console.log("❌❌❌ EMAIL SKIPPED - MISSING DATA! ❌❌❌");
       console.log("⚠️ Skipping invoice email - missing data:", {
-        hasResultData: !!result.data,
+        hasResult: !!result,
+        hasBookingId: !!result?.booking_id,
         hasCustomerEmail: !!billingData?.customerEmail,
+        result: result,
+        billingData: billingData,
       });
     }
 

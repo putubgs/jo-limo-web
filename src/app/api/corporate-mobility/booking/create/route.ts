@@ -76,6 +76,14 @@ export async function POST(request: NextRequest) {
     const referenceCode = payload.corporate_reference;
 
     // Insert the booking into the database with corporate billing
+    const inferredBookingType =
+      body.booking_type === "by-hour" ||
+      (!!body.duration &&
+        (!body.drop_off_location || body.drop_off_location === "")) ||
+      (body.distance && body.distance.toLowerCase().includes("hour"))
+        ? "by-hour"
+        : "one-way";
+
     const bookingData = {
       company_id: payload.id, // Use the authenticated corporate user's company_id
       first_name: body.first_name,
@@ -86,7 +94,7 @@ export async function POST(request: NextRequest) {
       flight_number: body.flight_number || null,
       notes_for_the_chauffeur: body.notes_for_the_chauffeur || null,
       reference_code: referenceCode,
-      booking_type: body.booking_type,
+      booking_type: inferredBookingType,
       pick_up_location: body.pick_up_location,
       drop_off_location: body.drop_off_location,
       duration: body.duration || null,
@@ -116,6 +124,19 @@ export async function POST(request: NextRequest) {
     // Send invoice email after successful booking
     if (data && body.email) {
       try {
+        console.log("📧 Preparing to send corporate invoice email");
+        console.log("📧 Corporate account info:", {
+          companyName: payload.company_name,
+          companyEmail: payload.email,
+          referenceCode: referenceCode,
+        });
+
+        // Format dropoff location based on booking type
+        let dropoffLocation = body.drop_off_location || "";
+        if (inferredBookingType === "by-hour") {
+          dropoffLocation = `from ${body.pick_up_location} for ${body.duration || body.distance} trip`;
+        }
+
         const invoiceResponse = await fetch(
           `${request.nextUrl.origin}/api/send-invoice`,
           {
@@ -124,13 +145,23 @@ export async function POST(request: NextRequest) {
             body: JSON.stringify({
               customerName: `${body.first_name} ${body.last_name}`,
               customerEmail: body.email,
-              bookingId: data.id,
               pickupLocation: body.pick_up_location,
-              dropoffLocation: body.drop_off_location || "Round trip",
+              dropoffLocation: dropoffLocation,
               serviceClass: body.selected_class,
               dateTime: body.date_and_time,
               price: body.price,
               paymentMethod: "corporate",
+              mobileNumber: body.mobile_number,
+              flightNumber: body.flight_number,
+              pickupSign: body.pickup_sign,
+              specialRequirements: body.special_requirements,
+              distance: body.distance,
+              distanceLabel:
+                inferredBookingType === "by-hour" ? "Duration" : "Distance",
+              bookingType: inferredBookingType,
+              referenceCode: referenceCode,
+              companyName: payload.company_name || "",
+              companyEmail: payload.email || "",
             }),
           }
         );

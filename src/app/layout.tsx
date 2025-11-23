@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import ConditionalLayout from "@/app/ConditionalLayout";
+import StoreHydration from "@/components/StoreHydration";
 import Script from "next/script";
 import "./globals.css";
 
@@ -42,6 +43,7 @@ export default function RootLayout({
         </Script>
       </head>
       <body className="w-full">
+        <StoreHydration />
         <ConditionalLayout>{children}</ConditionalLayout>
       </body>
     </html>

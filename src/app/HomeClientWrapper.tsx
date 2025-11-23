@@ -10,11 +10,14 @@ interface HomeClientWrapperProps {
 export default function HomeClientWrapper({
   children,
 }: HomeClientWrapperProps) {
-  const { resetForCorporateMobility } = useReservationStore();
+  const { resetForCorporateMobility, setHasHydrated } = useReservationStore();
 
   useEffect(() => {
+    // Rehydrate the store from localStorage
+    useReservationStore.persist.rehydrate();
+    setHasHydrated(true);
     resetForCorporateMobility();
-  }, [resetForCorporateMobility]);
+  }, [resetForCorporateMobility, setHasHydrated]);
 
   return <>{children}</>;
 }

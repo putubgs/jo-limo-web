@@ -62,13 +62,16 @@ const validateBookingDateTime = (dateStr: string, timeStr: string): boolean => {
 
 function ServiceClassContent() {
   const router = useRouter();
-  const { reservationData, setSelectedServiceClass, getSelectedServiceClass } =
-    useReservationStore();
+  const {
+    reservationData,
+    setSelectedServiceClass,
+    getSelectedServiceClass,
+    setReservationData,
+    _hasHydrated,
+  } = useReservationStore();
 
-  // Initialize selectedService from store
-  const [selectedService, setSelectedService] = useState<ServiceClass | "">(
-    getSelectedServiceClass() || ""
-  );
+  // Initialize selectedService - will be set from store after hydration
+  const [selectedService, setSelectedService] = useState<ServiceClass | "">("");
   const [showTermsPopup, setShowTermsPopup] = useState(false);
   const [distanceInfo, setDistanceInfo] = useState<{
     distance: string;
@@ -77,6 +80,16 @@ function ServiceClassContent() {
 
   // Use data from Zustand store instead of URL params
   const bookingData = reservationData;
+
+  // Hydrate selectedService from store after component mounts
+  useEffect(() => {
+    if (_hasHydrated) {
+      const storedClass = getSelectedServiceClass();
+      if (storedClass) {
+        setSelectedService(storedClass);
+      }
+    }
+  }, [_hasHydrated, getSelectedServiceClass]);
 
   // Simple validation - just check if we have the basic required data
   const hasLocationData = bookingData.pickup || bookingData.pickupLocation;
@@ -439,8 +452,28 @@ function ServiceClassContent() {
       console.log("💰 Calculated price (number):", priceNumber);
       console.log("💰 Calculated price (string):", priceString);
 
+      // Save distance or duration based on booking type
+      const distanceOrDuration =
+        bookingData.type === "one-way"
+          ? distanceInfo?.distance // For one-way, save distance
+          : bookingData.duration; // For by-hour, save duration
+
+      console.log("📏 Corporate - Saving distance/duration:", {
+        type: bookingData.type,
+        value: distanceOrDuration,
+        distanceInfo,
+      });
+
       // Pass the string to the store method
       setSelectedServiceClass(selectedService, priceString);
+
+      // Save distance to the store
+      setReservationData({
+        ...bookingData,
+        selectedClass: selectedService,
+        selectedClassPrice: priceString,
+        distance: distanceOrDuration,
+      });
 
       // Navigate to pick-up info
       router.push("/corporate-mobility/account/reserve/pick-up-info");
@@ -506,8 +539,8 @@ function ServiceClassContent() {
                     index === 0
                       ? "rounded-t-lg"
                       : index === serviceClasses.length - 1
-                      ? "rounded-b-lg"
-                      : ""
+                        ? "rounded-b-lg"
+                        : ""
                   } ${
                     selectedService === service.id
                       ? "border-black border-2"
