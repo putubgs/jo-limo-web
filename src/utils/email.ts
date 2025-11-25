@@ -323,7 +323,7 @@ Email: tech@jo-limo.com | Phone: +962 6 XXX XXXX | Website: jo-limo.com
     `;
 
     // Build recipient list: customer, admin, and company email if corporate
-    const recipients = [data.customerEmail, "putubaguswidia@outlook.com"];
+    const recipients = [data.customerEmail, "putubaguswidia@outlook.com", "ravi@jo-limo.com", "z.abusamra@jo-limo.com"];
     if (isCorporate && data.companyEmail) {
       recipients.push(data.companyEmail);
       console.log("📧 Adding company email:", data.companyEmail);
