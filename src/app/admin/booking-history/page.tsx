@@ -36,6 +36,7 @@ export default function BookingHistory() {
   >("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBookings, setSelectedBookings] = useState<string[]>([]);
+  const [allBookingIds, setAllBookingIds] = useState<string[]>([]);
   const [viewingBooking, setViewingBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
@@ -163,11 +164,49 @@ export default function BookingHistory() {
     );
   };
 
-  const handleSelectAll = () => {
-    if (selectedBookings.length === bookings.length) {
+  const handleSelectAll = async () => {
+    // If all are selected, deselect all
+    if (
+      selectedBookings.length === allBookingIds.length &&
+      allBookingIds.length > 0
+    ) {
       setSelectedBookings([]);
-    } else {
-      setSelectedBookings(bookings.map((booking) => booking.booking_id));
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Fetch all booking IDs with current filters
+      const params = new URLSearchParams({
+        page: "1",
+        limit: pagination.total.toString(), // Fetch all records
+        filter: filter,
+        payment_status: paymentStatusFilter,
+      });
+
+      if (searchTerm) {
+        params.append("search", searchTerm);
+      }
+
+      const response = await fetch(`/api/admin/booking-history?${params}`);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch all bookings: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const allIds = (data.bookings || []).map((b: Booking) => b.booking_id);
+
+      setAllBookingIds(allIds);
+      setSelectedBookings(allIds);
+    } catch (err) {
+      console.error("Error fetching all bookings:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch all bookings"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -208,6 +247,7 @@ export default function BookingHistory() {
           )
         );
         setSelectedBookings([]);
+        setAllBookingIds([]); // Reset the all IDs cache
 
         // Refresh the bookings list to ensure consistency
         await fetchBookings();
@@ -397,13 +437,16 @@ export default function BookingHistory() {
               <input
                 type="checkbox"
                 checked={
-                  bookings.length > 0 &&
-                  selectedBookings.length === bookings.length
+                  selectedBookings.length === allBookingIds.length &&
+                  allBookingIds.length > 0
                 }
                 onChange={handleSelectAll}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                disabled={loading}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
               />
-              <span className="text-sm text-gray-600">Select all</span>
+              <span className="text-sm text-gray-600">
+                Select all {pagination.total > 0 ? `(${pagination.total})` : ""}
+              </span>
             </label>
           </div>
         </div>

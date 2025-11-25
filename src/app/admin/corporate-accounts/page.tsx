@@ -23,6 +23,8 @@ export default function CorporateAccounts() {
   const [accounts, setAccounts] = useState<CorporateAccount[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
+  const [allAccountIds, setAllAccountIds] = useState<string[]>([]);
+  const [totalRecords, setTotalRecords] = useState(0);
   const [formMode, setFormMode] = useState<FormMode>(null);
   const [currentAccount, setCurrentAccount] = useState<CorporateAccount | null>(
     null
@@ -89,6 +91,7 @@ export default function CorporateAccounts() {
       }
 
       setAccounts(data.accounts || []);
+      setTotalRecords(data.count || data.accounts?.length || 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch accounts");
       console.error("Error fetching accounts:", err);
@@ -131,11 +134,40 @@ export default function CorporateAccounts() {
     );
   };
 
-  const handleSelectAll = () => {
-    if (selectedAccounts.length === filteredAccounts.length) {
+  const handleSelectAll = async () => {
+    // If all are selected, deselect all
+    if (
+      selectedAccounts.length === allAccountIds.length &&
+      allAccountIds.length > 0
+    ) {
       setSelectedAccounts([]);
-    } else {
-      setSelectedAccounts(filteredAccounts.map((acc) => acc.company_id));
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Fetch all account IDs
+      const response = await fetch("/api/admin/corporate-accounts");
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch all accounts");
+      }
+
+      const data = await response.json();
+      const allIds = (data.accounts || []).map(
+        (acc: CorporateAccount) => acc.company_id
+      );
+
+      setAllAccountIds(allIds);
+      setSelectedAccounts(allIds);
+    } catch (err) {
+      console.error("Error fetching all accounts:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch all accounts"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -169,6 +201,7 @@ export default function CorporateAccounts() {
         // Refresh the accounts list
         await fetchAccounts();
         setSelectedAccounts([]);
+        setAllAccountIds([]); // Reset the all IDs cache
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to delete accounts"
@@ -591,13 +624,16 @@ export default function CorporateAccounts() {
               <input
                 type="checkbox"
                 checked={
-                  filteredAccounts.length > 0 &&
-                  selectedAccounts.length === filteredAccounts.length
+                  selectedAccounts.length === allAccountIds.length &&
+                  allAccountIds.length > 0
                 }
                 onChange={handleSelectAll}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                disabled={loading}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
               />
-              <span className="text-sm text-gray-600">Select all</span>
+              <span className="text-sm text-gray-600">
+                Select all {totalRecords > 0 ? `(${totalRecords})` : ""}
+              </span>
             </label>
           </div>
         </div>
@@ -753,15 +789,15 @@ export default function CorporateAccounts() {
                       {formMode === "create"
                         ? "Create New Corporate Account"
                         : formMode === "edit"
-                        ? "Edit Corporate Account"
-                        : "Corporate Account Details"}
+                          ? "Edit Corporate Account"
+                          : "Corporate Account Details"}
                     </h3>
                     <p className="text-blue-100 text-sm mt-1">
                       {formMode === "create"
                         ? "Add a new corporate partner to your network"
                         : formMode === "edit"
-                        ? "Update corporate account information"
-                        : "View corporate account details"}
+                          ? "Update corporate account information"
+                          : "View corporate account details"}
                     </p>
                   </div>
                 </div>
@@ -869,8 +905,8 @@ export default function CorporateAccounts() {
                           {formMode === "create"
                             ? "*"
                             : formMode === "edit"
-                            ? "(leave empty to keep current)"
-                            : ""}
+                              ? "(leave empty to keep current)"
+                              : ""}
                         </label>
                         <div className="relative">
                           <input
@@ -878,8 +914,8 @@ export default function CorporateAccounts() {
                               formMode === "view"
                                 ? "password"
                                 : showPassword
-                                ? "text"
-                                : "password"
+                                  ? "text"
+                                  : "password"
                             }
                             name="password"
                             value={formData.password || ""}
@@ -896,8 +932,8 @@ export default function CorporateAccounts() {
                               formMode === "create"
                                 ? "Create a secure password"
                                 : formMode === "edit"
-                                ? "Enter new password (leave empty to keep current)"
-                                : "Password hidden"
+                                  ? "Enter new password (leave empty to keep current)"
+                                  : "Password hidden"
                             }
                             required={formMode === "create"}
                           />

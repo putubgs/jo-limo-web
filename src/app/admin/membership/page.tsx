@@ -16,6 +16,8 @@ export default function MembershipApplications() {
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMemberships, setSelectedMemberships] = useState<string[]>([]);
+  const [allMembershipIds, setAllMembershipIds] = useState<string[]>([]);
+  const [totalRecords, setTotalRecords] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -32,6 +34,7 @@ export default function MembershipApplications() {
 
       if (data.success) {
         setMemberships(data.memberships);
+        setTotalRecords(data.memberships?.length || 0);
       } else {
         setError(data.error || "Failed to fetch memberships");
       }
@@ -103,13 +106,41 @@ export default function MembershipApplications() {
     );
   };
 
-  const handleSelectAll = () => {
-    if (selectedMemberships.length === filteredMemberships.length) {
+  const handleSelectAll = async () => {
+    // If all are selected, deselect all
+    if (
+      selectedMemberships.length === allMembershipIds.length &&
+      allMembershipIds.length > 0
+    ) {
       setSelectedMemberships([]);
-    } else {
-      setSelectedMemberships(
-        filteredMemberships.map((membership) => membership.id)
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Fetch all membership IDs
+      const response = await fetch("/api/membership/list");
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch all memberships");
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        const allIds = (data.memberships || []).map((m: Membership) => m.id);
+        setAllMembershipIds(allIds);
+        setSelectedMemberships(allIds);
+      } else {
+        throw new Error(data.error || "Failed to fetch all memberships");
+      }
+    } catch (err) {
+      console.error("Error fetching all memberships:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch all memberships"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -149,6 +180,7 @@ export default function MembershipApplications() {
             )
           );
           setSelectedMemberships([]);
+          setAllMembershipIds([]); // Reset the all IDs cache
           alert(
             `Successfully deleted ${selectedMemberships.length} membership(s)`
           );
@@ -237,13 +269,16 @@ export default function MembershipApplications() {
               <input
                 type="checkbox"
                 checked={
-                  filteredMemberships.length > 0 &&
-                  selectedMemberships.length === filteredMemberships.length
+                  selectedMemberships.length === allMembershipIds.length &&
+                  allMembershipIds.length > 0
                 }
                 onChange={handleSelectAll}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                disabled={loading}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
               />
-              <span className="text-sm text-gray-600">Select all</span>
+              <span className="text-sm text-gray-600">
+                Select all {totalRecords > 0 ? `(${totalRecords})` : ""}
+              </span>
             </label>
           </div>
         </div>
