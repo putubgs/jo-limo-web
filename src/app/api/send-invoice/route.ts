@@ -122,6 +122,19 @@ export async function POST(request: NextRequest) {
       ? `Hourly Ride starting at ${displayDateTime} from ${pickupLocation} for ${durationDescription} (${serviceClass})`
       : `Transfer Ride starting at ${displayDateTime} from ${pickupLocation} to ${dropoffLocation} (${serviceClass})`;
 
+    // Normalize payment method (corporate-billing -> corporate)
+    let normalizedPaymentMethod: "credit/debit" | "cash" | "corporate" = "cash";
+    if (
+      paymentMethod === "corporate" ||
+      paymentMethod === "corporate-billing"
+    ) {
+      normalizedPaymentMethod = "corporate";
+    } else if (paymentMethod === "credit/debit") {
+      normalizedPaymentMethod = "credit/debit";
+    } else if (paymentMethod === "cash") {
+      normalizedPaymentMethod = "cash";
+    }
+
     // Prepare invoice data
     const invoiceData = {
       customerName,
@@ -136,7 +149,7 @@ export async function POST(request: NextRequest) {
       taxAmount: "0.00", // Not used anymore
       totalPrice: totalPrice.toFixed(2),
       currency: "JOD",
-      paymentMethod: paymentMethod as "credit/debit" | "cash" | "corporate",
+      paymentMethod: normalizedPaymentMethod,
       pickupLocation,
       dropoffLocation,
       dateTime: displayDateTime,

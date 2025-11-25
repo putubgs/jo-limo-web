@@ -245,10 +245,10 @@ export async function sendInvoiceEmail(data: InvoiceEmailData) {
 
     const imagesPath = path.join(process.cwd(), "public", "images");
     const passengerIconBuffer = fs.readFileSync(
-      path.join(imagesPath, "person-icon.png")
+      path.join(imagesPath, "person_invoice_icon.png")
     );
     const luggageIconBuffer = fs.readFileSync(
-      path.join(imagesPath, "suitcase-icon.png")
+      path.join(imagesPath, "luggage_invoice_icon.png")
     );
 
     // Render React Email template with actual booking data
@@ -297,6 +297,7 @@ export async function sendInvoiceEmail(data: InvoiceEmailData) {
         isCorporate: isCorporate,
         companyEmail: data.companyEmail || "",
         displayDateTime: data.displayDateTime || "",
+        paymentMethod: data.paymentMethod,
       })
     );
 
@@ -481,14 +482,14 @@ Email: tech@jo-limo.com | Phone: +962 6 XXX XXXX | Website: jo-limo.com
         },
         {
           content: passengerIconBuffer.toString("base64"),
-          filename: "person-icon.png",
+          filename: "person_invoice_icon.png",
           type: "image/png",
           disposition: "inline",
           content_id: "passenger-icon",
         },
         {
           content: luggageIconBuffer.toString("base64"),
-          filename: "suitcase-icon.png",
+          filename: "luggage_invoice_icon.png",
           type: "image/png",
           disposition: "inline",
           content_id: "luggage-icon",

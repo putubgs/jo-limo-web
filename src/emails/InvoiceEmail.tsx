@@ -38,6 +38,7 @@ interface InvoiceEmailProps {
   isCorporate?: boolean;
   companyEmail?: string;
   displayDateTime?: string;
+  paymentMethod?: "credit/debit" | "cash" | "corporate";
 }
 
 export const InvoiceEmail = ({
@@ -65,6 +66,7 @@ export const InvoiceEmail = ({
   companyName = "",
   isCorporate = false,
   companyEmail = "",
+  paymentMethod = "cash",
 }: InvoiceEmailProps) => {
   // Determine if this is a by-hour booking
   const normalizedDistance = distance?.toLowerCase() ?? "";
@@ -74,6 +76,20 @@ export const InvoiceEmail = ({
     normalizedDistance.includes("hrs");
   const effectiveLabel = distanceLabel || (isByHour ? "Duration" : "Distance");
   const distanceValue = distance || "N/A";
+
+  // Determine payment text based on payment method
+  let paymentText = "";
+  if (paymentMethod === "credit/debit") {
+    paymentText =
+      "Your payment has been successfully processed through our secure payment gateway. The amount has been charged to your credit/debit card. Please find your invoice attached to this email.";
+  } else if (paymentMethod === "cash") {
+    paymentText =
+      "Payment will be collected in cash or by card upon drop-off. No advance payment is required. Please find your invoice attached to this email.";
+  } else if (paymentMethod === "corporate") {
+    paymentText =
+      "This booking will be billed to your corporate account. No payment action is required from you. Please find your invoice attached to this email.";
+  }
+
   return (
     <Html>
       <Head />
@@ -109,11 +125,7 @@ export const InvoiceEmail = ({
               your business and look forward to serving you again.
             </Text>
 
-            <Text style={paragraph}>
-              Your ride will be charged to the payment method selected during
-              booking, so no further action is required. Please find your
-              invoice attached to this email.
-            </Text>
+            <Text style={paragraph}>{paymentText}</Text>
 
             {/* Booking Details Table */}
             <Section style={detailsBox}>
@@ -151,48 +163,97 @@ export const InvoiceEmail = ({
                     <td style={detailLabel}>Vehicle type:</td>
                     <td style={detailValue}>
                       {vehicleType} &nbsp;&nbsp;
-                      <Img
-                        src="cid:passenger-icon"
+                      <table
                         width="16"
-                        height="16"
-                        alt="Passengers"
+                        cellPadding="0"
+                        cellSpacing="0"
                         style={{
                           display: "inline-block",
-                          verticalAlign: "middle",
                           marginRight: "4px",
+                          verticalAlign: "middle",
+                          width: "16px",
                         }}
-                      />
+                      >
+                        <tbody>
+                          <tr>
+                            <td
+                              width="16"
+                              style={{ width: "16px", height: "16px" }}
+                            >
+                              <Img
+                                src="cid:passenger-icon"
+                                width="16"
+                                height="16"
+                                alt="Passengers"
+                                style={{
+                                  display: "block",
+                                  width: "16px",
+                                  height: "16px",
+                                }}
+                              />
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                       max. {maxPassengers} &nbsp;&nbsp;
-                      <Img
-                        src="cid:luggage-icon"
+                      <table
                         width="16"
-                        height="16"
-                        alt="Luggage"
+                        cellPadding="0"
+                        cellSpacing="0"
                         style={{
                           display: "inline-block",
-                          verticalAlign: "middle",
                           marginRight: "4px",
+                          verticalAlign: "middle",
+                          width: "16px",
                         }}
-                      />
+                      >
+                        <tbody>
+                          <tr>
+                            <td
+                              width="16"
+                              height="16"
+                              style={{ width: "16px", height: "16px" }}
+                            >
+                              <Img
+                                src="cid:luggage-icon"
+                                width="16"
+                                height="16"
+                                alt="Luggage"
+                                style={{
+                                  display: "block",
+                                  width: "16px",
+                                  height: "16px",
+                                }}
+                              />
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                       max. {maxLuggage}
                     </td>
                   </tr>
-                  <tr>
-                    <td style={detailLabel}>Flight number:</td>
-                    <td style={detailValue}>{flightNumber || "-"}</td>
-                  </tr>
-                  <tr>
-                    <td style={detailLabel}>Pickup sign:</td>
-                    <td style={detailValue}>{pickupSign || "-"}</td>
-                  </tr>
+                  {flightNumber ? (
+                    <tr>
+                      <td style={detailLabel}>Flight number:</td>
+                      <td style={detailValue}>{flightNumber}</td>
+                    </tr>
+                  ) : null}
+                  {pickupSign ? (
+                    <tr>
+                      <td style={detailLabel}>Pickup sign:</td>
+                      <td style={detailValue}>{pickupSign}</td>
+                    </tr>
+                  ) : null}
                   <tr>
                     <td style={detailLabel}>Special requirements:</td>
                     <td style={detailValue}>{specialRequirements || "-"}</td>
                   </tr>
-                  <tr>
-                    <td style={detailLabel}>Reference code:</td>
-                    <td style={detailValue}>{referenceCode || "-"}</td>
-                  </tr>
+                  {referenceCode ? (
+                    <tr>
+                      <td style={detailLabel}>Reference code:</td>
+                      <td style={detailValue}>{referenceCode}</td>
+                    </tr>
+                  ) : null}
                 </tbody>
               </table>
 
@@ -270,34 +331,104 @@ export const InvoiceEmail = ({
                   <table cellPadding="0" cellSpacing="0">
                     <tr>
                       <td style={{ paddingRight: "8px", paddingBottom: "8px" }}>
-                        <Img
-                          src="cid:google-play-badge"
+                        <table
                           width="135"
-                          height="40"
-                          alt="Get it on Google Play"
-                          style={{ display: "block" }}
-                        />
+                          cellPadding="0"
+                          cellSpacing="0"
+                          style={{ width: "135px" }}
+                        >
+                          <tbody>
+                            <tr>
+                              <td
+                                width="135"
+                                style={{ width: "135px", height: "40px" }}
+                              >
+                                <Img
+                                  src="cid:google-play-badge"
+                                  width="135"
+                                  height="40"
+                                  alt="Get it on Google Play"
+                                  style={{
+                                    display: "block",
+                                    width: "135px",
+                                    height: "40px",
+                                  }}
+                                />
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </td>
                       <td style={{ paddingBottom: "8px" }}>
-                        <Img
-                          src="cid:app-store-badge"
+                        <table
                           width="120"
-                          height="40"
-                          alt="Download on the App Store"
-                          style={{ display: "block" }}
-                        />
+                          cellPadding="0"
+                          cellSpacing="0"
+                          style={{ width: "120px" }}
+                        >
+                          <tbody>
+                            <tr>
+                              <td
+                                width="120"
+                                style={{ width: "120px", height: "40px" }}
+                              >
+                                <Img
+                                  src="cid:app-store-badge"
+                                  width="120"
+                                  height="40"
+                                  alt="Download on the App Store"
+                                  style={{
+                                    display: "block",
+                                    width: "120px",
+                                    height: "40px",
+                                  }}
+                                />
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </td>
                     </tr>
                   </table>
                 </td>
                 <td style={appImageColumn}>
-                  <Img
-                    src="cid:jolimo-app"
-                    width="140"
-                    height="auto"
-                    alt="JoLimo App"
-                    style={{ display: "block", maxWidth: "140px" }}
-                  />
+                  <table
+                    width="180"
+                    cellPadding="0"
+                    cellSpacing="0"
+                    style={{
+                      width: "180px",
+                      marginLeft: "auto",
+                      marginRight: "0",
+                    }}
+                  >
+                    <tbody>
+                      <tr>
+                        <td
+                          width="180"
+                          style={{
+                            width: "180px",
+                            height: "auto",
+                            paddingLeft: "20px",
+                            paddingRight: "20px",
+                          }}
+                        >
+                          <Img
+                            src="cid:jolimo-app"
+                            width="140"
+                            height="auto"
+                            alt="JoLimo App"
+                            style={{
+                              display: "block",
+                              width: "140px",
+                              height: "auto",
+                              maxWidth: "140px",
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </td>
               </tr>
             </table>
@@ -339,7 +470,11 @@ export const InvoiceEmail = ({
                     width="28"
                     height="28"
                     alt="Facebook"
-                    style={{ display: "block" }}
+                    style={{
+                      display: "block",
+                      width: "28px",
+                      height: "28px",
+                    }}
                   />
                 </td>
                 <td style={{ padding: "0 10px" }}>
@@ -348,7 +483,11 @@ export const InvoiceEmail = ({
                     width="28"
                     height="28"
                     alt="X"
-                    style={{ display: "block" }}
+                    style={{
+                      display: "block",
+                      width: "28px",
+                      height: "28px",
+                    }}
                   />
                 </td>
                 <td style={{ padding: "0 10px" }}>
@@ -357,7 +496,11 @@ export const InvoiceEmail = ({
                     width="28"
                     height="28"
                     alt="Instagram"
-                    style={{ display: "block" }}
+                    style={{
+                      display: "block",
+                      width: "28px",
+                      height: "28px",
+                    }}
                   />
                 </td>
                 <td style={{ padding: "0 10px" }}>
@@ -366,7 +509,11 @@ export const InvoiceEmail = ({
                     width="28"
                     height="28"
                     alt="LinkedIn"
-                    style={{ display: "block" }}
+                    style={{
+                      display: "block",
+                      width: "28px",
+                      height: "28px",
+                    }}
                   />
                 </td>
               </tr>

@@ -131,10 +131,9 @@ export async function POST(request: NextRequest) {
           referenceCode: referenceCode,
         });
 
-        // Format dropoff location based on booking type
         let dropoffLocation = body.drop_off_location || "";
         if (inferredBookingType === "by-hour") {
-          dropoffLocation = `from ${body.pick_up_location} for ${body.duration || body.distance} trip`;
+          dropoffLocation = "(Round Trip)";
         }
 
         const invoiceResponse = await fetch(

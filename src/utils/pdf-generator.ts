@@ -248,7 +248,7 @@ export async function generateInvoicePDF(
     doc.text("Managing Directors", leftMargin, footerY + 12);
     doc.setFont("helvetica", "normal");
     doc.text(
-      " | Jordan Limousine Services Management",
+      " | Mr Zaid Abu Samra",
       leftMargin + 23,
       footerY + 12
     );

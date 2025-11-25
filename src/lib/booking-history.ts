@@ -111,22 +111,21 @@ export async function createBookingHistory(
           paymentMethod,
         });
 
+        let dropoffLocation = reservationData.dropoff || "";
+        if (inferredBookingType === "by-hour") {
+          dropoffLocation = "(Round Trip)";
+        }
+
         console.log("📧 Calling /api/send-invoice with data:", {
           customerName: `${billingData.customerGivenName} ${billingData.customerSurname}`,
           customerEmail: billingData.customerEmail,
           pickupLocation: reservationData.pickup,
-          dropoffLocation: reservationData.dropoff || "Round trip",
+          dropoffLocation,
           serviceClass: reservationData.selectedClass,
           dateTime: `${reservationData.date}, ${reservationData.time}`,
           price: reservationData.selectedClassPrice,
           paymentMethod,
         });
-
-        // Format dropoff location based on booking type
-        let dropoffLocation = reservationData.dropoff || "";
-        if (inferredBookingType === "by-hour") {
-          dropoffLocation = `from ${reservationData.pickup} for ${reservationData.duration || reservationData.distance} trip`;
-        }
 
         const invoiceResponse = await fetch("/api/send-invoice", {
           method: "POST",
