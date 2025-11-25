@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
               mobileNumber: body.mobile_number,
               flightNumber: body.flight_number,
               pickupSign: body.pickup_sign,
-              specialRequirements: body.special_requirements,
+              specialRequirements: body.notes_for_the_chauffeur,
               distance: body.distance,
               distanceLabel:
                 inferredBookingType === "by-hour" ? "Duration" : "Distance",

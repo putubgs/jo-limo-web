@@ -293,12 +293,6 @@ export const InvoiceEmail = ({
                           </td>
                         </tr>
                       ) : null}
-                      <tr>
-                        <td style={detailLabel}>Billing:</td>
-                        <td style={detailValue}>
-                          Corporate billing through {companyName}
-                        </td>
-                      </tr>
                     </>
                   ) : null}
                 </tbody>

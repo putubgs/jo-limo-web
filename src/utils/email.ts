@@ -322,21 +322,19 @@ Jordan Limousine Services LLC | Queen Alia International Airport Road | Amman, J
 Email: tech@jo-limo.com | Phone: +962 6 XXX XXXX | Website: jo-limo.com
     `;
 
-    // Build CC list: always include putubaguswidia@outlook.com, and company email if corporate
-    const ccList = ["putubaguswidia@outlook.com"];
+    // Build recipient list: customer, admin, and company email if corporate
+    const recipients = [data.customerEmail, "putubaguswidia@outlook.com"];
     if (isCorporate && data.companyEmail) {
-      ccList.push(data.companyEmail);
-      console.log("📧 Adding company email to CC:", data.companyEmail);
+      recipients.push(data.companyEmail);
+      console.log("📧 Adding company email:", data.companyEmail);
     }
 
-    console.log("📧 Final CC list:", ccList);
+    console.log("📧 Final recipient list:", recipients);
     console.log("📧 Is corporate booking:", isCorporate);
     console.log("📧 Company email:", data.companyEmail);
 
-    // SendGrid email message
+    // SendGrid email message (base template)
     const msg = {
-      to: data.customerEmail,
-      cc: ccList,
       from: {
         name: "JoLimo - Jordan Limousine Services",
         email: "tech@jo-limo.com",
@@ -497,27 +495,57 @@ Email: tech@jo-limo.com | Phone: +962 6 XXX XXXX | Website: jo-limo.com
       ],
     };
 
-    console.log(
-      "📧 Attempting to send email via SendGrid to:",
-      data.customerEmail
-    );
     console.log("📧 From:", msg.from.email);
     console.log("📧 Subject:", msg.subject);
     console.log("📧 PDF attached:", `Invoice-${data.invoiceNumber}.pdf`);
 
-    // Send email
-    const response = await sgMail.send(msgWithAttachment);
+    // Send separate emails to each recipient
+    const emailResults = [];
+    for (const recipient of recipients) {
+      console.log("📧 Sending email to:", recipient);
 
-    console.log("✅ Invoice email sent successfully via SendGrid:", {
-      messageId: response[0].headers["x-message-id"],
-      to: data.customerEmail,
-      invoiceNumber: data.invoiceNumber,
-      statusCode: response[0].statusCode,
-    });
+      const recipientMsg = {
+        ...msgWithAttachment,
+        to: recipient,
+      };
+
+      try {
+        const response = await sgMail.send(recipientMsg);
+        console.log(`✅ Email sent successfully to ${recipient}:`, {
+          messageId: response[0].headers["x-message-id"],
+          statusCode: response[0].statusCode,
+        });
+        emailResults.push({
+          recipient,
+          success: true,
+          messageId: response[0].headers["x-message-id"],
+        });
+      } catch (emailError) {
+        console.error(`❌ Failed to send email to ${recipient}:`, emailError);
+        emailResults.push({
+          recipient,
+          success: false,
+          error:
+            emailError instanceof Error ? emailError.message : "Unknown error",
+        });
+      }
+    }
+
+    // Check if at least the customer email was sent successfully
+    const customerEmailResult = emailResults.find(
+      (result) => result.recipient === data.customerEmail
+    );
+
+    if (!customerEmailResult?.success) {
+      throw new Error("Failed to send email to customer");
+    }
+
+    console.log("✅ All invoice emails processed:", emailResults);
 
     return {
       success: true,
-      messageId: response[0].headers["x-message-id"],
+      messageId: customerEmailResult.messageId,
+      emailResults,
     };
   } catch (error) {
     console.error("❌ Error sending invoice email:", error);

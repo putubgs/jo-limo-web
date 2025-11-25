@@ -71,6 +71,11 @@ function PickUpInfoContent() {
   // Flight number state (no validation)
   const [flightNumber, setFlightNumber] = useState("");
 
+  // Pickup sign, notes, and reference code states
+  const [pickupSign, setPickupSign] = useState("");
+  const [notesForChauffeur, setNotesForChauffeur] = useState("");
+  const [referenceCode, setReferenceCode] = useState("");
+
   // Billing form state - initialize with defaults, will be populated after hydration
   const [billingForm, setBillingForm] = useState<BillingData>({
     customerEmail: "",
@@ -500,6 +505,8 @@ function PickUpInfoContent() {
                 Notes for chauffeur :
               </label>
               <textarea
+                value={notesForChauffeur}
+                onChange={(e) => setNotesForChauffeur(e.target.value)}
                 placeholder="Add special requests, e.g. booking itinerary, number of bags, child seats, Include landmarks, gate numbers, or entrances to help the chauffeur find you."
                 rows={6}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
@@ -524,6 +531,8 @@ function PickUpInfoContent() {
                     </label>
                     <input
                       type="text"
+                      value={pickupSign}
+                      onChange={(e) => setPickupSign(e.target.value)}
                       placeholder="Your Name"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
@@ -558,6 +567,8 @@ function PickUpInfoContent() {
               </label>
               <input
                 type="text"
+                value={referenceCode}
+                onChange={(e) => setReferenceCode(e.target.value)}
                 placeholder="For corporate reservations, the entered details will appear on the official invoice."
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
@@ -609,6 +620,14 @@ function PickUpInfoContent() {
                   return;
                 }
 
+                // Validate pickup sign if required
+                if (showPickupSign && !pickupSign.trim()) {
+                  alert(
+                    "⚠️ Pickup Sign is required. Please fill in this field."
+                  );
+                  return;
+                }
+
                 // All validations passed, proceed
                 // Save billing data to store
                 setBillingData(billingForm);
@@ -623,6 +642,9 @@ function PickUpInfoContent() {
                   duration: initialBooking.duration,
                   mobileNumber: `${selectedCountry.code} ${phoneNumber}`,
                   flightNumber: flightNumber,
+                  pickupSign: pickupSign,
+                  notesForChauffeur: notesForChauffeur,
+                  referenceCode: referenceCode,
                 });
                 // Navigate to payment-and-checkout (next step in the flow)
                 router.push(
