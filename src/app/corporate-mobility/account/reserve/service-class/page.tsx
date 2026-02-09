@@ -15,7 +15,6 @@ import DataValidationError from "@/components/DataValidationError";
 import TermsAndConditionsDialog from "@/components/dialogs/TermsAndConditionsDialog";
 
 // Helper function to get current Jordan time + 1 hour
-// Helper function to get current Jordan time + 1 hour
 const getMinimumBookingTime = () => {
   // Get current time in Jordan timezone using Intl API
   const jordanTime = new Date(
