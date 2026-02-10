@@ -38,7 +38,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createClient(cookies());
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
 
     // Check if company email already exists
     const { data: existingAccount } = await supabase

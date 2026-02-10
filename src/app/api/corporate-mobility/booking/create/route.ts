@@ -6,7 +6,7 @@ import { verifyToken } from "@/utils/jwt";
 export async function POST(request: NextRequest) {
   try {
     // Verify corporate authentication
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get("corporate-auth-token")?.value;
 
     if (!token) {

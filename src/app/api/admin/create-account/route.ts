@@ -42,7 +42,8 @@ export async function POST(request: NextRequest) {
     // Hash the password
     const hashedPassword = await bcrypt.hash(data.password, 12);
 
-    const supabase = createClient(cookies());
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
 
     // Check if corporate account already exists
     const { data: existingAccount, error: checkError } = await supabase

@@ -13,7 +13,8 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const supabase = createClient(cookies());
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
 
     // Check if member exists
     const { data: existingMember, error: checkError } = await supabase

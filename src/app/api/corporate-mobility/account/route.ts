@@ -5,7 +5,7 @@ import { verifyToken } from "@/utils/jwt";
 
 export async function GET() {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get("corporate-auth-token")?.value;
 
     if (!token) {
@@ -24,7 +24,7 @@ export async function GET() {
       );
     }
 
-    const supabase = createClient(cookies());
+    const supabase = createClient(cookieStore);
 
     // Get the corporate account data
     const { data: account, error } = await supabase

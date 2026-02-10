@@ -40,7 +40,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createClient(cookies());
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
 
     // Check admin only
     const { data: admin, error: adminError } = await supabase

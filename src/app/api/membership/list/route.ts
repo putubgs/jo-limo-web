@@ -4,7 +4,8 @@ import { createClient } from "@/utils/supabase/server";
 
 export async function GET() {
   try {
-    const supabase = createClient(cookies());
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
 
     // Get all memberships
     const { data: memberships, error } = await supabase

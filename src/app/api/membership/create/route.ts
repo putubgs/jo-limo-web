@@ -13,7 +13,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createClient(cookies());
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
 
     // Check if email already exists
     const { data: existingMember, error: checkError } = await supabase

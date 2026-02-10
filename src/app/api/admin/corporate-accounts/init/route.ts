@@ -4,7 +4,8 @@ import { createClient } from "@/utils/supabase/server";
 
 export async function POST() {
   try {
-    const supabase = createClient(cookies());
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
 
     // Create the corporate_accounts table
     const { error } = await supabase.rpc("create_corporate_accounts_table");

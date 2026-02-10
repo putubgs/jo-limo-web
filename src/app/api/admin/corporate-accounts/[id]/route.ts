@@ -17,15 +17,18 @@ interface CorporateAccountData {
 // GET - Fetch single corporate account
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
   try {
-    const supabase = createClient(cookies());
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
 
     const { data: account, error } = await supabase
       .from("corporateaccount")
       .select("*")
-      .eq("company_id", params.id)
+      .eq("company_id", id)
       .single();
 
     if (error) {
@@ -56,17 +59,19 @@ export async function GET(
 // PUT - Update corporate account
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const data: CorporateAccountData = await request.json();
-    const supabase = createClient(cookies());
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
 
     // Check if account exists
     const { data: existingAccount, error: checkError } = await supabase
       .from("corporateaccount")
       .select("company_id")
-      .eq("company_id", params.id)
+      .eq("company_id", id)
       .single();
 
     if (checkError || !existingAccount) {
@@ -90,7 +95,7 @@ export async function PUT(
         .from("corporateaccount")
         .select("company_id")
         .or(orConditions.join(","))
-        .neq("company_id", params.id)
+        .neq("company_id", id)
         .single();
 
       if (duplicateAccount && !duplicateError) {
@@ -125,7 +130,7 @@ export async function PUT(
     const { data: updatedAccount, error: updateError } = await supabase
       .from("corporateaccount")
       .update(updateData)
-      .eq("company_id", params.id)
+      .eq("company_id", id)
       .select("*")
       .single();
 
@@ -159,16 +164,18 @@ export async function PUT(
 // DELETE - Delete corporate account
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient(cookies());
+    const { id } = await params;
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
 
     // Check if account exists
     const { data: existingAccount, error: checkError } = await supabase
       .from("corporateaccount")
       .select("company_id")
-      .eq("company_id", params.id)
+      .eq("company_id", id)
       .single();
 
     if (checkError || !existingAccount) {
@@ -182,7 +189,7 @@ export async function DELETE(
     const { error: deleteError } = await supabase
       .from("corporateaccount")
       .delete()
-      .eq("company_id", params.id);
+      .eq("company_id", id);
 
     if (deleteError) {
       console.error("Error deleting corporate account:", deleteError);

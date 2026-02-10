@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
 
     // Store Jordan Time (UTC+3) directly in database
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
     const month = searchParams.get("month") || "";
     const year = searchParams.get("year") || "";
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
 
     let query = supabase.from("bookinghistory").select("*", { count: "exact" });

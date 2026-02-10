@@ -13,7 +13,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createClient(cookies());
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
 
     // Delete multiple accounts
     const { error: deleteError } = await supabase

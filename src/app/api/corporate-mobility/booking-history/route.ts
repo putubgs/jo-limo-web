@@ -6,7 +6,7 @@ import { verifyToken } from "@/utils/jwt";
 export async function GET(request: NextRequest) {
   try {
     // Verify corporate authentication
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get("corporate-auth-token")?.value;
 
     if (!token) {
@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // const supabase = createClient(cookieStore);
     const supabase = createClient(cookieStore);
 
     // Get query parameters for pagination

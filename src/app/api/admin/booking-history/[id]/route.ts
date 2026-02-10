@@ -6,10 +6,10 @@ import { cookies } from "next/headers";
 // GET - Get a specific booking by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -18,7 +18,7 @@ export async function GET(
       );
     }
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
 
     const { data, error } = await supabase
@@ -54,10 +54,10 @@ export async function GET(
 // PUT - Update a specific booking
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body: UpdateBookingRequest = await request.json();
 
     if (!id) {
@@ -82,7 +82,7 @@ export async function PUT(
       );
     }
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
 
     // Check if booking exists
@@ -143,10 +143,10 @@ export async function PUT(
 // DELETE - Delete a specific booking
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -155,7 +155,7 @@ export async function DELETE(
       );
     }
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
 
     // Check if booking exists

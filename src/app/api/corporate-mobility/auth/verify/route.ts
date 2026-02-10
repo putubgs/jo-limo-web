@@ -4,7 +4,7 @@ import { verifyToken } from "@/utils/jwt";
 
 export async function GET() {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get("corporate-auth-token")?.value;
 
     if (!token) {

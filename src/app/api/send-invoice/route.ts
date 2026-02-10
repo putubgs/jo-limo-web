@@ -50,7 +50,8 @@ export async function POST(request: NextRequest) {
     const invoiceNumber = `AT${randomDigits}`;
 
     // Get total booking count to generate booking number
-    const supabase = createClient(cookies());
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
     const { count, error: countError } = await supabase
       .from("bookinghistory")
       .select("*", { count: "exact", head: true });
