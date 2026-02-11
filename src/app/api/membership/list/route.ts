@@ -1,28 +1,24 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { createClient } from "@/utils/supabase/server";
+import { prisma } from "@/lib/prisma";
+import { verifyToken } from "@/utils/jwt";
 
 export async function GET() {
   try {
     const cookieStore = await cookies();
-    const supabase = createClient(cookieStore);
+    const token = cookieStore.get("auth-token")?.value;
 
-    // Get all memberships
-    const { data: memberships, error } = await supabase
-      .from("membership")
-      .select("*");
-
-    if (error) {
-      console.error("Supabase error fetching memberships:", error);
-      return NextResponse.json(
-        {
-          error: "Failed to fetch memberships",
-          details: error.message,
-          code: error.code,
-        },
-        { status: 500 }
-      );
+    if(!token){
+      return new Response("Unauthorized", { status: 401 });
     }
+
+    const payload = await verifyToken(token);
+
+    if (!payload) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    const memberships = await prisma.membership.findMany();
 
     console.log("Successfully fetched memberships:", memberships?.length || 0);
     // Transform the data to match the expected interface

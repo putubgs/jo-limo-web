@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { createClient } from "@/utils/supabase/server";
+import { verifyToken } from "@/utils/jwt";
+import { prisma } from "@/lib/prisma";
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -15,32 +16,23 @@ export async function DELETE(request: NextRequest) {
     }
 
     const cookieStore = await cookies();
-    const supabase = createClient(cookieStore);
+    const token = cookieStore.get("auth-token")?.value;
 
-    // Check if member exists
-    const { data: existingMember, error: checkError } = await supabase
-      .from("membership")
-      .select("*")
-      .eq("membership_id", id)
-      .single();
-
-    if (checkError || !existingMember) {
-      return NextResponse.json({ error: "Member not found" }, { status: 404 });
+    if(!token){
+      return new Response("Unauthorized", { status: 401 });
     }
 
-    // Delete the membership
-    const { error: deleteError } = await supabase
-      .from("membership")
-      .delete()
-      .eq("membership_id", id);
+    const payload = await verifyToken(token);
 
-    if (deleteError) {
-      console.error("Error deleting membership:", deleteError);
-      return NextResponse.json(
-        { error: "Failed to delete membership" },
-        { status: 500 }
-      );
+    if(!payload){
+      return new Response("Unauthorized", { status: 401 })
     }
+
+    const existingMember = await prisma.membership.delete({
+      where: {
+        membership_id: id,
+      }
+    })
 
     return NextResponse.json({
       success: true,

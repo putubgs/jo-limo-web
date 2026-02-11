@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-// import { cookies } from "next/headers";
-
-
-// import { createClient } from "@/utils/supabase/server";
 import { prisma } from "@/lib/prisma";
-
 import { generateToken } from "@/utils/jwt";
 import { checkRateLimit } from "@/utils/rate-limiter";
 
