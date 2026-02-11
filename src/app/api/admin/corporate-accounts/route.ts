@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const cookieStore = await cookies()
     const supabase = createClient(cookieStore);
+    
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search");
     const limit = searchParams.get("limit");

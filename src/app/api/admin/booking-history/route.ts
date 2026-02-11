@@ -126,11 +126,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
-    const filter = searchParams.get("filter") || "all"; // all, general, corporate
+    const filter = searchParams.get("filter") || "all";
     const search = searchParams.get("search") || "";
-    const paymentStatus = searchParams.get("payment_status") || "all"; // all, pending, completed, cancelled
-    const month = searchParams.get("month") || "";
-    const year = searchParams.get("year") || "";
+    const paymentStatus = searchParams.get("payment_status") || "all";
 
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
@@ -149,39 +147,9 @@ export async function GET(request: NextRequest) {
       query = query.eq("payment_status", paymentStatus);
     }
 
-    // Apply month and year filters
-    if (month || year) {
-      if (month && year) {
-        // Filter by specific month and year
-        const startDate = `${year}-${month}-01`;
-        const endDate = new Date(parseInt(year), parseInt(month), 0)
-          .toISOString()
-          .split("T")[0];
-        query = query
-          .gte("created_at", startDate)
-          .lte("created_at", `${endDate}T23:59:59.999Z`);
-      } else if (year) {
-        // Filter by year only
-        const startDate = `${year}-01-01`;
-        const endDate = `${year}-12-31T23:59:59.999Z`;
-        query = query.gte("created_at", startDate).lte("created_at", endDate);
-      } else if (month) {
-        // Filter by month only (current year)
-        const currentYear = new Date().getFullYear();
-        const startDate = `${currentYear}-${month}-01`;
-        const endDate = new Date(currentYear, parseInt(month), 0)
-          .toISOString()
-          .split("T")[0];
-        query = query
-          .gte("created_at", startDate)
-          .lte("created_at", `${endDate}T23:59:59.999Z`);
-      }
-    }
-
     // Apply search (by customer name: first_name + last_name, or reference_code)
-    // Split search into words and search each word across all fields
     if (search) {
-      const searchWords = search.trim().split(/\s+/); // Split by whitespace
+      const searchWords = search.trim().split(/\s+/);
 
       if (searchWords.length === 1) {
         // Single word search - use simple OR logic

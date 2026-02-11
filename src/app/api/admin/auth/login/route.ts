@@ -39,18 +39,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // SUPABASE VERSION
-
-    // const cookieStore = await cookies();
-    // const supabase = createClient(cookieStore);
-
-    // // Check admin only
-    // const { data: admin, error: adminError } = await supabase
-    //   .from("admin")
-    //   .select("*")
-    //   .eq("email", email)
-    //   .single();
-
     const admin = await prisma.admin.findUnique({
       where: { email },
     })
@@ -102,45 +90,6 @@ export async function POST(request: NextRequest) {
     })
 
     return response;
-
-    // if (admin && !adminError) {
-    //   const isValidPassword = await bcrypt.compare(password, admin.password);
-
-    //   if (isValidPassword) {
-    //     const token = await generateToken({
-    //       id: admin.admin_id,
-    //       email: admin.email,
-    //       role: "admin",
-    //     });
-
-    //     const response = NextResponse.json(
-    //       {
-    //         success: true,
-    //         user: {
-    //           id: admin.admin_id,
-    //           email: admin.email,
-    //           role: "admin",
-    //         },
-    //       },
-    //       {
-    //         headers: {
-    //           "X-RateLimit-Limit": "5",
-    //           "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
-    //         },
-    //       }
-    //     );
-
-    //     response.cookies.set("auth-token", token, {
-    //       httpOnly: true,
-    //       secure: process.env.NODE_ENV === "production",
-    //       sameSite: "strict",
-    //       maxAge: 60 * 60,
-    //       path: "/",
-    //     });
-
-    //     return response;
-    //   }
-    // }
 
   } catch (error) {
     console.error("Login error:", error);
