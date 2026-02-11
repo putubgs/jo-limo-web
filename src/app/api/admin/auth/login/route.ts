@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { cookies } from "next/headers";
-import { createClient } from "@/utils/supabase/server";
+// import { cookies } from "next/headers";
+
+
+// import { createClient } from "@/utils/supabase/server";
+import { prisma } from "@/lib/prisma";
+
 import { generateToken } from "@/utils/jwt";
 import { checkRateLimit } from "@/utils/rate-limiter";
 
@@ -40,65 +44,109 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const cookieStore = await cookies();
-    const supabase = createClient(cookieStore);
+    // SUPABASE VERSION
 
-    // Check admin only
-    const { data: admin, error: adminError } = await supabase
-      .from("admin")
-      .select("*")
-      .eq("email", email)
-      .single();
+    // const cookieStore = await cookies();
+    // const supabase = createClient(cookieStore);
 
-    if (admin && !adminError) {
-      const isValidPassword = await bcrypt.compare(password, admin.password);
+    // // Check admin only
+    // const { data: admin, error: adminError } = await supabase
+    //   .from("admin")
+    //   .select("*")
+    //   .eq("email", email)
+    //   .single();
 
-      if (isValidPassword) {
-        const token = await generateToken({
-          id: admin.admin_id,
-          email: admin.email,
-          role: "admin",
-        });
+    const admin = await prisma.admin.findUnique({
+      where: { email },
+    })
 
-        const response = NextResponse.json(
-          {
-            success: true,
-            user: {
-              id: admin.admin_id,
-              email: admin.email,
-              role: "admin",
-            },
+
+    if(!admin) {
+      return NextResponse.json(
+        { error: "Invalid email or password" },
+        {
+          status: 401,
+          headers: {
+            "X-RateLimit-Limit": "5",
+            "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
           },
-          {
-            headers: {
-              "X-RateLimit-Limit": "5",
-              "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
-            },
-          }
-        );
-
-        response.cookies.set("auth-token", token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "strict",
-          maxAge: 60 * 60,
-          path: "/",
-        });
-
-        return response;
-      }
+        }
+      );
     }
 
-    return NextResponse.json(
-      { error: "Invalid email or password" },
-      {
-        status: 401,
-        headers: {
-          "X-RateLimit-Limit": "5",
-          "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
-        },
+    const isValidPassword = await bcrypt.compare(password, admin.password);
+
+    if(!isValidPassword) {
+      return NextResponse.json(
+        { error: "Invalid email or password" },
+        { status: 401 }
+      );
+    }
+
+    const token = await generateToken({
+      id: admin.admin_id,
+      email: admin.email,
+      role: "admin",
+    })
+
+    const response = NextResponse.json({
+      success: true,
+      user: {
+        id: admin.admin_id,
+        email: admin.email,
+        role: "admin",
       }
-    );
+    })
+
+    response.cookies.set("auth-token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 60 * 60,
+      path: "/",
+    })
+
+    return response;
+
+    // if (admin && !adminError) {
+    //   const isValidPassword = await bcrypt.compare(password, admin.password);
+
+    //   if (isValidPassword) {
+    //     const token = await generateToken({
+    //       id: admin.admin_id,
+    //       email: admin.email,
+    //       role: "admin",
+    //     });
+
+    //     const response = NextResponse.json(
+    //       {
+    //         success: true,
+    //         user: {
+    //           id: admin.admin_id,
+    //           email: admin.email,
+    //           role: "admin",
+    //         },
+    //       },
+    //       {
+    //         headers: {
+    //           "X-RateLimit-Limit": "5",
+    //           "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
+    //         },
+    //       }
+    //     );
+
+    //     response.cookies.set("auth-token", token, {
+    //       httpOnly: true,
+    //       secure: process.env.NODE_ENV === "production",
+    //       sameSite: "strict",
+    //       maxAge: 60 * 60,
+    //       path: "/",
+    //     });
+
+    //     return response;
+    //   }
+    // }
+
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json(
