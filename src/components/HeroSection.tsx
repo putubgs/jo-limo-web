@@ -7,9 +7,7 @@ export default function HeroSection() {
       <div className="container mx-auto px-6 flex flex-col lg:flex-row items-center justify-between gap-12">
         {/* Left Content */}
         <div className="lg:w-1/2 text-white">
-          <h1
-            className="text-4xl lg:text-6xl font-serif font-bold mb-6 !leading-tight"
-          >
+          <h1 className="text-4xl lg:text-6xl font-serif font-bold mb-6 !leading-tight">
             Stress-Free Airport Transfers &{" "}
             <span className="text-[#c5a059]">Premium Chauffeur Services.</span>
           </h1>
@@ -52,7 +50,9 @@ export default function HeroSection() {
         </div>
 
         {/* Booking Form */}
-        <ReservationForm />
+        <div id="bookingForm">
+          <ReservationForm />
+        </div>
       </div>
     </div>
   );
