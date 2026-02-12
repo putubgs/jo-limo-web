@@ -14,7 +14,9 @@ const config: Config = {
       },
       fontFamily: {
         'plus-jakarta-sans': ['var(--font-plus-jakarta-sans)', 'sans-serif'],
+        'serif': ['"Playfair Display"', 'serif'],
       },
+      
     },
   },
   plugins: [],
