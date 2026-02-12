@@ -43,7 +43,7 @@ export default function HeroSection() {
               Check Rates & Book
             </a>
             <a
-              href="https://wa.me/962796227227"
+              href="https://wa.me/962791698125"
               className="border border-white px-6 py-3 rounded font-bold hover:bg-white hover:text-black transition"
             >
               Chat with Concierge
