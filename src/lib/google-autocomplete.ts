@@ -124,12 +124,7 @@ export async function autocomplete(
         },
         body: JSON.stringify({
           input,
-          locationBias: {
-            circle: {
-              center: { latitude: 31.9539, longitude: 35.9106 },
-              radius: 50000,
-            },
-          },
+          includedRegionCodes: ["jo"],
         }),
       }
     );

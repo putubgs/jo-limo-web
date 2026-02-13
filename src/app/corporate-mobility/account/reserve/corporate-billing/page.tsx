@@ -20,7 +20,7 @@ function PaymentAndCheckoutContent() {
       ...reservationData,
       service: reservationData.selectedClass || "",
     }),
-    [reservationData]
+    [reservationData],
   );
 
   const [distanceInfo, setDistanceInfo] = useState<{
@@ -32,6 +32,27 @@ function PaymentAndCheckoutContent() {
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [isCreatingBooking, setIsCreatingBooking] = useState(false);
   const hasSubmittedRef = useRef(false);
+
+  const hasTrackedRef = useRef(false);
+
+  useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      bookingCreated &&
+      !hasTrackedRef.current
+    ) {
+      hasTrackedRef.current = true;
+
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "booking_success",
+        transaction_id: `CORP-${Date.now()}`,
+        value: parseFloat(reservationData.selectedClassPrice || "0"),
+        currency: "JOD",
+        payment_type: "corporate_billing",
+      });
+    }
+  }, [bookingCreated, reservationData.selectedClassPrice]);
 
   useEffect(() => {
     console.log("Booking data:", bookingData);
@@ -100,7 +121,7 @@ function PaymentAndCheckoutContent() {
           reservationData.type === "by-hour" ? reservationData.duration : null,
         date_and_time: toJordanOffsetISO(
           reservationData.date,
-          reservationData.time
+          reservationData.time,
         ),
         selected_class: reservationData.selectedClass,
         price: parseFloat(reservationData.selectedClassPrice || "0") || 0,
@@ -125,7 +146,7 @@ function PaymentAndCheckoutContent() {
       } else {
         console.error("Failed to create booking:", data);
         setBookingError(
-          data.error || data.details || "Failed to create booking"
+          data.error || data.details || "Failed to create booking",
         );
       }
     } catch (error) {

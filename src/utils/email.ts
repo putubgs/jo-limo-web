@@ -46,7 +46,7 @@ interface InvoiceEmailData {
 }
 
 export async function sendCorporateAccountEmail(
-  data: CorporateAccountEmailData
+  data: CorporateAccountEmailData,
 ) {
   try {
     // Configure SendGrid
@@ -192,7 +192,7 @@ Website: jo-limo.com
     throw new Error(
       `Failed to send email: ${
         error instanceof Error ? error.message : "Unknown error"
-      }`
+      }`,
     );
   }
 }
@@ -245,10 +245,10 @@ export async function sendInvoiceEmail(data: InvoiceEmailData) {
 
     const imagesPath = path.join(process.cwd(), "public", "images");
     const passengerIconBuffer = fs.readFileSync(
-      path.join(imagesPath, "person_invoice_icon.png")
+      path.join(imagesPath, "person_invoice_icon.png"),
     );
     const luggageIconBuffer = fs.readFileSync(
-      path.join(imagesPath, "luggage_invoice_icon.png")
+      path.join(imagesPath, "luggage_invoice_icon.png"),
     );
 
     // Render React Email template with actual booking data
@@ -298,7 +298,7 @@ export async function sendInvoiceEmail(data: InvoiceEmailData) {
         companyEmail: data.companyEmail || "",
         displayDateTime: data.displayDateTime || "",
         paymentMethod: data.paymentMethod,
-      })
+      }),
     );
 
     // Plain text version
@@ -323,10 +323,11 @@ Email: tech@jo-limo.com | Phone: +962 6 XXX XXXX | Website: jo-limo.com
     `;
 
     // Build recipient list: customer, admin, and company email if corporate
-
     // const recipients = [data.customerEmail, "putubaguswidia@outlook.com", "ravi@jo-limo.com", "z.abusamra@jo-limo.com"];
-    const recipients = [data.customerEmail, "putubaguswidia@outlook.com"];
-
+    const recipients = [
+      data.customerEmail,
+      "putubaguswidia@outlook.com"
+    ];
     if (isCorporate && data.companyEmail) {
       recipients.push(data.companyEmail);
       console.log("📧 Adding company email:", data.companyEmail);
@@ -393,26 +394,26 @@ Email: tech@jo-limo.com | Phone: +962 6 XXX XXXX | Website: jo-limo.com
 
     // Load images for email
     const logoBuffer = fs.readFileSync(
-      path.join(imagesPath, "jolimo-email-logo.png")
+      path.join(imagesPath, "jolimo-email-logo.png"),
     );
     const googlePlayBadgeBuffer = fs.readFileSync(
-      path.join(imagesPath, "google-play-badge.png")
+      path.join(imagesPath, "google-play-badge.png"),
     );
     const appStoreBadgeBuffer = fs.readFileSync(
-      path.join(imagesPath, "app-store-badge.png")
+      path.join(imagesPath, "app-store-badge.png"),
     );
     const jolimoAppBuffer = fs.readFileSync(
-      path.join(imagesPath, "jolimo-app.png")
+      path.join(imagesPath, "jolimo-app.png"),
     );
     const facebookIconBuffer = fs.readFileSync(
-      path.join(imagesPath, "facebook-icon.png")
+      path.join(imagesPath, "facebook-icon.png"),
     );
     const xIconBuffer = fs.readFileSync(path.join(imagesPath, "x-icon.png"));
     const instagramIconBuffer = fs.readFileSync(
-      path.join(imagesPath, "instagram-icon.png")
+      path.join(imagesPath, "instagram-icon.png"),
     );
     const linkedinIconBuffer = fs.readFileSync(
-      path.join(imagesPath, "linkedin-icon.png")
+      path.join(imagesPath, "linkedin-icon.png"),
     );
 
     // Attach PDF and images to email
@@ -536,7 +537,7 @@ Email: tech@jo-limo.com | Phone: +962 6 XXX XXXX | Website: jo-limo.com
 
     // Check if at least the customer email was sent successfully
     const customerEmailResult = emailResults.find(
-      (result) => result.recipient === data.customerEmail
+      (result) => result.recipient === data.customerEmail,
     );
 
     if (!customerEmailResult?.success) {
@@ -559,7 +560,7 @@ Email: tech@jo-limo.com | Phone: +962 6 XXX XXXX | Website: jo-limo.com
     throw new Error(
       `Failed to send invoice email: ${
         error instanceof Error ? error.message : "Unknown error"
-      }`
+      }`,
     );
   }
 }

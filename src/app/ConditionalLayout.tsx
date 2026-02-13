@@ -11,9 +11,14 @@ export default function ConditionalLayout({
 }: ConditionalLayoutProps) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith("/admin");
+  const isLandingPage = pathname.startsWith("/landing-page")
 
   if (isAdminRoute) {
     // For admin routes, return children without max-width constraint
+    return <>{children}</>;
+  }
+
+  if (isLandingPage) {
     return <>{children}</>;
   }
 

@@ -4,6 +4,7 @@ import { Dialog } from "@mui/material";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { HyperPayResult } from "@/types/hyperpay";
+import { useEffect, useRef } from "react";
 
 interface Props {
   open: boolean;
@@ -13,9 +14,26 @@ interface Props {
 
 export default function SuccessDialog({ open, onClose, paymentResult }: Props) {
   const router = useRouter();
+  const hasTracked = useRef(false);
 
   // Check if this is a cash payment
   const isCashPayment = paymentResult?.id?.startsWith("CASH-");
+
+  useEffect(() => {
+    if (open && paymentResult && !hasTracked.current) {
+      hasTracked.current = true;
+
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "booking_success",
+        transaction_id: paymentResult.id,
+        value: Number(paymentResult.amount),
+        currency: paymentResult.currency,
+        payment_type: isCashPayment ? "cash" : "credit/debit",
+        payment_status: paymentResult.result.description,
+      });
+    }
+  }, [open, paymentResult, isCashPayment]);
 
   return (
     <Dialog open={open} onClose={() => {}} disableEscapeKeyDown>
