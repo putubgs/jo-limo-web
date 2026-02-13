@@ -29,7 +29,7 @@ export default function SuccessDialog({ open, onClose, paymentResult }: Props) {
         transaction_id: paymentResult.id,
         value: Number(paymentResult.amount),
         currency: paymentResult.currency,
-        payment_type: isCashPayment ? "cash" : "online",
+        payment_type: isCashPayment ? "cash" : "credit/debit",
         payment_status: paymentResult.result.description,
       });
     }
