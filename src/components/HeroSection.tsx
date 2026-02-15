@@ -34,12 +34,12 @@ export default function HeroSection() {
 
           {/* CTA Buttons */}
           <div className="mt-8 flex flex-col md:flex-row gap-4 text-center md:text-left">
-            <a
+            {/* <a
               href="#bookingForm"
               className="bg-[#c5a059] text-[#111111] px-6 py-3 rounded font-bold hover:bg-white transition"
             >
               Check Rates & Book
-            </a>
+            </a> */}
             <a
               href="https://wa.me/962791698125"
               className="border border-white px-6 py-3 rounded font-bold hover:bg-white hover:text-black transition"

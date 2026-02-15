@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -40,6 +40,8 @@ export default function ReservationForm({
 }: ReservationFormProps) {
   const router = useRouter();
   const { setReservationData } = useReservationStore();
+  const pathname = usePathname();
+  const buttonText = pathname === "/landing-page" ? "Check Rates & Book" : "Continue";
 
   const [activeBookingTab, setActiveBookingTab] = useState<
     "one-way" | "by-hour"
@@ -871,7 +873,7 @@ export default function ReservationForm({
           onClick={handleContinue}
           className="w-full mt-3 py-4 bg-[#7C7C7C] text-white font-bold text-[16px] rounded transition-colors duration-200 hover:bg-[#6C6C6C]"
         >
-          Continue
+          {buttonText}
         </button>
       </div>
     </div>
