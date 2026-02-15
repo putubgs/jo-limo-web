@@ -23,7 +23,7 @@ export default function Footer() {
             href="https://wa.me/+962791698125"
             className="border border-gray-600 px-6 py-3 rounded font-bold hover:bg-gray-800"
           >
-            WhatsApp
+            Chat with Concierge
           </a>
         </div>
         <p className="text-xs">
