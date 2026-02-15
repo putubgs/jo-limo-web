@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { UpdateBookingRequest } from "@/types/booking";
 import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
+import { verifyToken } from "@/utils/jwt";
 
 // GET - Get a specific booking by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -14,39 +16,39 @@ export async function GET(
     if (!id) {
       return NextResponse.json(
         { error: "Booking ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const cookieStore = await cookies();
-    const supabase = createClient(cookieStore);
+    const token = cookieStore.get("auth-token")?.value;
 
-    const { data, error } = await supabase
-      .from("bookinghistory")
-      .select("*")
-      .eq("booking_id", id)
-      .single();
-
-    if (error) {
-      if (error.code === "PGRST116") {
-        return NextResponse.json(
-          { error: "Booking not found" },
-          { status: 404 }
-        );
-      }
-      console.error("Database error:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch booking", details: error.message },
-        { status: 500 }
-      );
+    if (!token) {
+      return new Response("Unauthorized", { status: 401 });
     }
 
-    return NextResponse.json(data);
+    const payload = await verifyToken(token);
+
+    if (!payload) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    const booking = await prisma.bookinghistory.findUnique({
+      where: {
+        booking_id: id,
+      },
+    });
+
+    if (!booking) {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(booking, { status: 200 });
   } catch (error) {
     console.error("API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -54,7 +56,7 @@ export async function GET(
 // PUT - Update a specific booking
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -63,7 +65,7 @@ export async function PUT(
     if (!id) {
       return NextResponse.json(
         { error: "Booking ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -71,14 +73,14 @@ export async function PUT(
     if (body.booking_type === "by-hour" && !body.duration) {
       return NextResponse.json(
         { error: "Duration is required for by-hour bookings" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (body.booking_type === "one-way" && body.duration) {
       return NextResponse.json(
         { error: "Duration should be null for one-way bookings" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -96,13 +98,13 @@ export async function PUT(
       if (fetchError.code === "PGRST116") {
         return NextResponse.json(
           { error: "Booking not found" },
-          { status: 404 }
+          { status: 404 },
         );
       }
       console.error("Database error:", fetchError);
       return NextResponse.json(
         { error: "Failed to fetch booking", details: fetchError.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -126,7 +128,7 @@ export async function PUT(
       console.error("Database error:", error);
       return NextResponse.json(
         { error: "Failed to update booking", details: error.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -135,7 +137,7 @@ export async function PUT(
     console.error("API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -143,7 +145,7 @@ export async function PUT(
 // DELETE - Delete a specific booking
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -151,7 +153,7 @@ export async function DELETE(
     if (!id) {
       return NextResponse.json(
         { error: "Booking ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -169,13 +171,13 @@ export async function DELETE(
       if (fetchError.code === "PGRST116") {
         return NextResponse.json(
           { error: "Booking not found" },
-          { status: 404 }
+          { status: 404 },
         );
       }
       console.error("Database error:", fetchError);
       return NextResponse.json(
         { error: "Failed to fetch booking", details: fetchError.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -189,7 +191,7 @@ export async function DELETE(
       console.error("Database error:", error);
       return NextResponse.json(
         { error: "Failed to delete booking", details: error.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -198,7 +200,7 @@ export async function DELETE(
     console.error("API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

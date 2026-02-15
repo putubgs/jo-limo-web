@@ -133,7 +133,7 @@ export async function GET(request: NextRequest) {
 
     const offset = (page - 1) * limit;
 
-    // 🧠 Build dynamic where object
+    // Build dynamic where object
     const where: Prisma.bookinghistoryWhereInput = {};
 
     // Filter: general / corporate
