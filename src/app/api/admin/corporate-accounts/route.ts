@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const cookieStore = await cookies();
     const token = cookieStore.get("auth-token")?.value;
 
-    if(!token){
+    if (!token) {
       return new Response("Unauthorized", { status: 401 });
     }
 
@@ -89,6 +89,53 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Get corporate accounts error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
+// BULK DELETE API
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { ids } = body;
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json(
+        { error: "Array of account IDs is required" },
+        { status: 400 },
+      );
+    }
+
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token")?.value;
+
+    if (!token) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    const payload = await verifyToken(token);
+
+    if (!payload) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    const result = await prisma.corporateaccount.deleteMany({
+      where: {
+        company_id: {
+          in: ids,
+        },
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      deletedCount: result.count,
+    });
+  } catch (error) {
+    console.error("Bulk delete corporate accounts error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

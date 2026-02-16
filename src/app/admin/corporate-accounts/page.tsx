@@ -182,9 +182,9 @@ export default function CorporateAccounts() {
       setLoading(true);
       try {
         const response = await fetch(
-          "/api/admin/corporate-accounts/bulk-delete",
+          "/api/admin/corporate-accounts",
           {
-            method: "POST",
+            method: "DELETE",
             headers: {
               "Content-Type": "application/json",
             },

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
 import { UpdateBookingRequest } from "@/types/booking";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
