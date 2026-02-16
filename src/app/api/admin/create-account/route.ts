@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
-import { createClient } from "@/utils/supabase/server";
 import { sendCorporateAccountEmail } from "@/utils/email";
 import { prisma } from "@/lib/prisma";
+import { verifyToken } from "@/utils/jwt";
 
 interface CorporateAccountData {
   corporate_reference: string;
@@ -44,7 +44,17 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(data.password, 12);
 
     const cookieStore = await cookies();
-    const supabase = createClient(cookieStore);
+    const token = cookieStore.get("auth-token")?.value;
+
+    if (!token) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    const payload = await verifyToken(token);
+
+    if (!payload) {
+      return new Response("Unauthorized", { status: 401 });
+    }
 
     // 🔎 Check if corporate account already exists
     const existingAccount = await prisma.corporateaccount.findFirst({
