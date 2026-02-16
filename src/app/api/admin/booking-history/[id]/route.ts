@@ -53,7 +53,7 @@ export async function GET(
   }
 }
 
-// PUT - Update a specific booking
+// PUT - Update a specific booking (This one need to be tested)
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -85,56 +85,35 @@ export async function PUT(
     }
 
     const cookieStore = await cookies();
-    const supabase = createClient(cookieStore);
+    const token = cookieStore.get("auth-token")?.value;
 
-    // Check if booking exists
-    const { error: fetchError } = await supabase
-      .from("bookinghistory")
-      .select("booking_id")
-      .eq("booking_id", id)
-      .single();
-
-    if (fetchError) {
-      if (fetchError.code === "PGRST116") {
-        return NextResponse.json(
-          { error: "Booking not found" },
-          { status: 404 },
-        );
-      }
-      console.error("Database error:", fetchError);
-      return NextResponse.json(
-        { error: "Failed to fetch booking", details: fetchError.message },
-        { status: 500 },
-      );
+    if (!token) {
+      return new Response("Unauthorized", { status: 401 });
     }
 
-    // Store Jordan Time (UTC+3) directly in database
-    const now = new Date();
-    const jordanTime = new Date(now.getTime() + 3 * 60 * 60 * 1000);
-    const timestamp = jordanTime.toISOString();
+    const payload = await verifyToken(token);
 
-    // Update the booking with updated_at timestamp
-    const { data, error } = await supabase
-      .from("bookinghistory")
-      .update({
+    if (!payload) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    const updatedBooking = await prisma.bookinghistory.update({
+      where: {
+        booking_id: id,
+      },
+      data: {
         ...body,
-        updated_at: timestamp,
-      })
-      .eq("booking_id", id)
-      .select()
-      .single();
+      },
+    });
 
-    if (error) {
-      console.error("Database error:", error);
-      return NextResponse.json(
-        { error: "Failed to update booking", details: error.message },
-        { status: 500 },
-      );
+    return NextResponse.json(updatedBooking);
+  } catch (error: any) {
+    console.error("API error:", error);
+
+    if (error.code === "P2025") {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
     }
 
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -158,46 +137,35 @@ export async function DELETE(
     }
 
     const cookieStore = await cookies();
-    const supabase = createClient(cookieStore);
+    const token = cookieStore.get("auth-token")?.value;
 
-    // Check if booking exists
-    const { error: fetchError } = await supabase
-      .from("bookinghistory")
-      .select("booking_id")
-      .eq("booking_id", id)
-      .single();
-
-    if (fetchError) {
-      if (fetchError.code === "PGRST116") {
-        return NextResponse.json(
-          { error: "Booking not found" },
-          { status: 404 },
-        );
-      }
-      console.error("Database error:", fetchError);
-      return NextResponse.json(
-        { error: "Failed to fetch booking", details: fetchError.message },
-        { status: 500 },
-      );
+    if (!token) {
+      return new Response("Unauthorized", { status: 401 });
     }
 
-    // Delete the booking
-    const { error } = await supabase
-      .from("bookinghistory")
-      .delete()
-      .eq("booking_id", id);
+    const payload = await verifyToken(token);
 
-    if (error) {
-      console.error("Database error:", error);
-      return NextResponse.json(
-        { error: "Failed to delete booking", details: error.message },
-        { status: 500 },
-      );
+    if (!payload) {
+      return new Response("Unauthorized", { status: 401 });
     }
 
-    return NextResponse.json({ message: "Booking deleted successfully" });
-  } catch (error) {
+    await prisma.bookinghistory.delete({
+      where: {
+        booking_id: id,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Booking deleted successfully",
+    });
+  } catch (error: any) {
     console.error("API error:", error);
+
+    if (error.code == "P2025") {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
+
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
