@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { sendCorporateAccountEmail } from "@/utils/email";
+import { prisma } from "@/lib/prisma";
 
 interface CorporateAccountData {
   corporate_reference: string;
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
       if (!data[field as keyof CorporateAccountData]) {
         return NextResponse.json(
           { error: `${field} is required` },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -45,29 +46,32 @@ export async function POST(request: NextRequest) {
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
 
-    // Check if corporate account already exists
-    const { data: existingAccount, error: checkError } = await supabase
-      .from("corporateaccount")
-      .select("company_id")
-      .or(
-        `corporate_reference.eq.${data.corporate_reference},company_email.eq.${data.company_email}`
-      )
-      .single();
+    // 🔎 Check if corporate account already exists
+    const existingAccount = await prisma.corporateaccount.findFirst({
+      where: {
+        OR: [
+          { corporate_reference: data.corporate_reference },
+          { company_email: data.company_email },
+        ],
+      },
+      select: {
+        company_id: true,
+      },
+    });
 
-    if (existingAccount && !checkError) {
+    if (existingAccount) {
       return NextResponse.json(
         {
           error:
             "Corporate account with this reference or email already exists",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
     // Create new corporate account
-    const { data: newAccount, error: createError } = await supabase
-      .from("corporateaccount")
-      .insert({
+    const newAccount = await prisma.corporateaccount.create({
+      data: {
         corporate_reference: data.corporate_reference,
         company_name: data.company_name,
         company_website: data.company_website || "-",
@@ -76,40 +80,33 @@ export async function POST(request: NextRequest) {
         phone_number: data.phone_number,
         billing_address: data.billing_address,
         corporate_password: hashedPassword,
-      })
-      .select("*")
-      .single();
-
-    if (createError) {
-      console.error("Error creating corporate account:", createError);
-      return NextResponse.json(
-        {
-          error: "Failed to create corporate account",
-          details: createError.message,
-          code: createError.code,
-          hint: createError.hint,
-        },
-        { status: 500 }
-      );
-    }
-
-    // Remove password from response
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { corporate_password: _, ...accountWithoutPassword } = newAccount;
+      },
+      select: {
+        company_id: true,
+        corporate_reference: true,
+        company_name: true,
+        company_website: true,
+        company_address: true,
+        company_email: true,
+        phone_number: true,
+        billing_address: true,
+        created_at: true, // if you have timestamps
+      },
+    });
 
     // Send email notification
     try {
       await sendCorporateAccountEmail({
-        corporateReference: newAccount.corporate_reference,
-        companyName: newAccount.company_name,
-        companyEmail: newAccount.company_email,
-        password: data.password, // Use the original password before hashing
-        companyAddress: newAccount.company_address,
-        phoneNumber: newAccount.phone_number,
+        corporateReference: newAccount.corporate_reference!,
+        companyName: newAccount.company_name!,
+        companyEmail: newAccount.company_email!,
+        password: data.password,
+        companyAddress: newAccount.company_address!,
+        phoneNumber: newAccount.phone_number!,
       });
 
       console.log(
-        `Email notification sent to ${newAccount.company_email} for account ${newAccount.corporate_reference}`
+        `Email notification sent to ${newAccount.company_email} for account ${newAccount.corporate_reference}`,
       );
     } catch (emailError) {
       console.error("Failed to send email notification:", emailError);
@@ -120,13 +117,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: "Corporate account created successfully",
-      account: accountWithoutPassword,
+      account: newAccount,
     });
   } catch (error) {
     console.error("Create corporate account error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
