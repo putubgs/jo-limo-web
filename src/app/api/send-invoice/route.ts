@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendInvoiceEmail } from "@/utils/email";
-import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,7 +38,7 @@ export async function POST(request: NextRequest) {
       });
       return NextResponse.json(
         { error: "Missing required fields" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -49,25 +48,14 @@ export async function POST(request: NextRequest) {
     const randomDigits = Math.floor(10000000 + Math.random() * 90000000);
     const invoiceNumber = `AT${randomDigits}`;
 
-    // Get total booking count to generate booking number
-    const cookieStore = await cookies();
-    const supabase = createClient(cookieStore);
-    const { count, error: countError } = await supabase
-      .from("bookinghistory")
-      .select("*", { count: "exact", head: true });
-
     let bookingNumber = "00001";
-    if (!countError && count !== null) {
-      // Booking number is current count + 1 (padded to 5 digits)
+    try {
+      const count = await prisma.bookinghistory.count();
+1
       bookingNumber = String(count + 1).padStart(5, "0");
+    } catch (error) {
+      console.error("Failed to count bookings:", error);
     }
-
-    console.log(
-      "📊 Total bookings:",
-      count,
-      "Next booking number:",
-      bookingNumber
-    );
 
     // Format dates
     const bookingDate = new Date().toISOString().split("T")[0];
@@ -193,7 +181,7 @@ export async function POST(request: NextRequest) {
         error: "Failed to send invoice",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

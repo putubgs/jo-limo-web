@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
-import { createClient } from "@/utils/supabase/server";
 import { generateToken } from "@/utils/jwt";
 import { checkRateLimit } from "@/utils/rate-limiter";
 import { prisma } from "@/lib/prisma";
@@ -42,7 +41,6 @@ export async function POST(request: NextRequest) {
     }
 
     const cookieStore = await cookies();
-    const supabase = createClient(cookieStore);
 
     const corporateAccount = await prisma.corporateaccount.findUnique({
       where: {

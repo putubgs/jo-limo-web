@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/utils/jwt";
 import { prisma } from "@/lib/prisma";
@@ -66,8 +65,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createClient(cookieStore);
-
     // Store Jordan Time (UTC+3) directly in database
     const now = new Date();
     const jordanTime = new Date(now.getTime() + 3 * 60 * 60 * 1000);
@@ -109,43 +106,6 @@ export async function POST(request: NextRequest) {
         updated_at: jordanTime,
       },
     });
-
-    // const bookingData = {
-    //   company_id: payload.id, // Use the authenticated corporate user's company_id
-    //   first_name: body.first_name,
-    //   last_name: body.last_name,
-    //   email: body.email,
-    //   mobile_number: body.mobile_number,
-    //   pickup_sign: body.pickup_sign || null,
-    //   flight_number: body.flight_number || null,
-    //   notes_for_the_chauffeur: body.notes_for_the_chauffeur || null,
-    //   reference_code: referenceCode,
-    //   booking_type: inferredBookingType,
-    //   pick_up_location: body.pick_up_location,
-    //   drop_off_location: body.drop_off_location,
-    //   duration: body.duration || null,
-    //   date_and_time: body.date_and_time,
-    //   selected_class: body.selected_class,
-    //   payment_method: "corporate-billing", // Always set to corporate billing
-    //   payment_status: "pending", // Always set to pending for corporate bookings
-    //   price: body.price,
-    //   created_at: timestamp,
-    //   updated_at: timestamp,
-    // };
-
-    // const { data, error } = await supabase
-    //   .from("bookinghistory")
-    //   .insert([bookingData])
-    //   .select()
-    //   .single();
-
-    // if (error) {
-    //   console.error("Database error:", error);
-    //   return NextResponse.json(
-    //     { error: "Failed to create booking", details: error.message },
-    //     { status: 500 }
-    //   );
-    // }
 
     // Send invoice email after successful booking
     if (booking && body.email) {
