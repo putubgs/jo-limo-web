@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createClient } from "@/utils/supabase/server";
 import sgMail from "@sendgrid/mail";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,15 +37,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const cookieStore = await cookies();
-    const supabase = createClient(cookieStore);
-
-    // Check if company email already exists
-    const { data: existingAccount } = await supabase
-      .from("corporateaccount")
-      .select("company_email")
-      .eq("company_email", company_email)
-      .single();
+    const existingAccount = await prisma.corporateaccount.findUnique({
+      where: {
+        company_email
+      }
+    });
 
     if (existingAccount) {
       return NextResponse.json(
@@ -87,7 +82,8 @@ Date Submitted: ${formattedDate} (Jordan Time)
 `.trim();
 
       const msg = {
-        to: "b2b@jo-limo.com",
+        // to: "b2b@jo-limo.com",
+        to: "putubaguswidia@gmail.com",
         from: {
           name: "Jordan Limousine Services LLC",
           email: "tech@jo-limo.com",
