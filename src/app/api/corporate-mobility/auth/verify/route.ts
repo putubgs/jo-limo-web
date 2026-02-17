@@ -23,6 +23,8 @@ export async function GET() {
       );
     }
 
+    console.log(payload)
+
     return NextResponse.json({
       success: true,
       user: {

@@ -11,26 +11,26 @@ export async function POST(request: NextRequest) {
     // Check rate limit
     const rateLimitResult = checkRateLimit(request);
 
-    // if (!rateLimitResult.allowed) {
-    //   const resetDate = new Date(rateLimitResult.resetTime);
-    //   return NextResponse.json(
-    //     {
-    //       error: "Too many login attempts. Please try again later.",
-    //       resetTime: resetDate.toISOString(),
-    //     },
-    //     {
-    //       status: 429,
-    //       headers: {
-    //         "X-RateLimit-Limit": "5",
-    //         "X-RateLimit-Remaining": "0",
-    //         "X-RateLimit-Reset": resetDate.toISOString(),
-    //         "Retry-After": Math.ceil(
-    //           (rateLimitResult.resetTime - Date.now()) / 1000,
-    //         ).toString(),
-    //       },
-    //     },
-    //   );
-    // }
+    if (!rateLimitResult.allowed) {
+      const resetDate = new Date(rateLimitResult.resetTime);
+      return NextResponse.json(
+        {
+          error: "Too many login attempts. Please try again later.",
+          resetTime: resetDate.toISOString(),
+        },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": "5",
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": resetDate.toISOString(),
+            "Retry-After": Math.ceil(
+              (rateLimitResult.resetTime - Date.now()) / 1000,
+            ).toString(),
+          },
+        },
+      );
+    }
 
     const { corporate_reference, password } = await request.json();
 
@@ -43,13 +43,6 @@ export async function POST(request: NextRequest) {
 
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
-
-    // Check corporate account
-    // const { data: corporateAccount, error: accountError } = await supabase
-    //   .from("corporateaccount")
-    //   .select("*")
-    //   .eq("corporate_reference", corporate_reference)
-    //   .single();
 
     const corporateAccount = await prisma.corporateaccount.findUnique({
       where: {
@@ -73,8 +66,8 @@ export async function POST(request: NextRequest) {
           id: corporateAccount.company_id,
           email: corporateAccount.company_email,
           role: "corporate",
-          // corporate_reference: corporateAccount.corporate_reference,
-          // company_name: corporateAccount.company_name,
+          corporate_reference: corporateAccount.corporate_reference,
+          company_name: corporateAccount.company_name,
         });
 
         console.log(token)
@@ -105,6 +98,8 @@ export async function POST(request: NextRequest) {
           maxAge: 60 * 60 * 4, // 4 hours
           path: "/",
         });
+
+        console.log(response)
 
         return response;
       }

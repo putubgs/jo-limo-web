@@ -19,7 +19,7 @@ export interface InvoicePDFData {
 }
 
 export async function generateInvoicePDF(
-  data: InvoicePDFData
+  data: InvoicePDFData,
 ): Promise<Buffer> {
   try {
     const doc = new jsPDF({
@@ -33,7 +33,7 @@ export async function generateInvoicePDF(
       process.cwd(),
       "public",
       "images",
-      "jolimo-logo.png"
+      "jolimo-logo.png",
     );
     let logoData: string | null = null;
 
@@ -157,7 +157,7 @@ export async function generateInvoicePDF(
     let rowY = tableTop + 10;
     const descLines = doc.splitTextToSize(
       data.serviceDescription,
-      col3Width - 6
+      col3Width - 6,
     );
     const descHeight = descLines.length * 5 + 14;
 
@@ -232,7 +232,7 @@ export async function generateInvoicePDF(
     doc.text(
       " | Queen Alia International Airport Road | Amman, Jordan",
       leftMargin + 38,
-      footerY + 4
+      footerY + 4,
     );
 
     doc.setFont("helvetica", "bold");
@@ -241,7 +241,7 @@ export async function generateInvoicePDF(
     doc.text(
       " | Email: support@jo-limo.com | Phone: +962 7 9169 8125 | Website: jo-limo.com",
       leftMargin + 18,
-      footerY + 8
+      footerY + 8,
     );
 
     // doc.setFont("helvetica", "bold");
@@ -253,12 +253,10 @@ export async function generateInvoicePDF(
     //   footerY + 12
     // );
 
+    doc.setFont("helvetica", "bold");
+    doc.text("Register Court Amman", leftMargin, footerY + 12);
     doc.setFont("helvetica", "normal");
-    doc.text(
-      "Register Court Amman | VAT No.: 178056421",
-      leftMargin,
-      footerY + 12
-    );
+    doc.text(" | VAT No.: 178056421", leftMargin + 19, footerY + 12);
 
     // Convert to buffer
     const pdfArrayBuffer = doc.output("arraybuffer");
