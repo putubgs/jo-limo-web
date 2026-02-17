@@ -79,8 +79,8 @@ export async function POST(request: NextRequest) {
               id: corporateAccount.company_id,
               email: corporateAccount.company_email,
               role: "corporate",
-              // corporate_reference: corporateAccount.corporate_reference,
-              // company_name: corporateAccount.company_name,
+              corporate_reference: corporateAccount.corporate_reference,
+              company_name: corporateAccount.company_name,
             },
           },
           {

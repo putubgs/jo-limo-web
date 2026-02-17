@@ -12,7 +12,7 @@ export interface TokenPayload {
   id: string;
   email: string;
   role: string;
-  [key: string]: string | number | boolean;
+  [key: string]: string | number | boolean | null;
 }
 
 export async function generateToken(payload: TokenPayload): Promise<string> {

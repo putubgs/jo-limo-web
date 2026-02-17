@@ -26,11 +26,11 @@ model bookinghistory {
   pick_up_location        String?          @db.VarChar
   drop_off_location       String?          @db.VarChar
   duration                String?          @db.VarChar
-  date_and_time           DateTime?        @db.Timestamptz(6)
+  date_and_time           DateTime        @db.Timestamptz(6)
   selected_class          String?          @db.VarChar
   payment_method          String?          @db.VarChar
   payment_status          String?          @db.VarChar
-  price                   Decimal?         @db.Decimal
+  price                   Decimal          @db.Decimal
   reference_code          String?          @db.VarChar
   created_at              DateTime         @default(now()) @db.Timestamptz(6)
   updated_at              DateTime         @default(now()) @db.Timestamptz(6)
