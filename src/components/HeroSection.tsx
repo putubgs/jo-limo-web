@@ -41,7 +41,7 @@ export default function HeroSection() {
               Check Rates & Book
             </a> */}
             <a
-              href="https://wa.me/962791698125"
+              href="https://api.whatsapp.com/send/?phone=962791698125&text=Hello+Jo+Limo%2C+I+would+like+to+ask+for+more+information+regarding+your+services.&type=phone_number&app_absent=0"
               className="border border-white px-6 py-3 rounded font-bold hover:bg-white hover:text-black transition"
             >
               Chat with Concierge

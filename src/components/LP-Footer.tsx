@@ -20,7 +20,7 @@ export default function Footer() {
             Book Online
           </a>
           <a
-            href="https://wa.me/+962791698125"
+            href="https://api.whatsapp.com/send/?phone=962791698125&text=Hello+Jo+Limo%2C+I+would+like+to+ask+for+more+information+regarding+your+services.&type=phone_number&app_absent=0"
             className="border border-gray-600 px-6 py-3 rounded font-bold hover:bg-gray-800"
           >
             Chat with Concierge
