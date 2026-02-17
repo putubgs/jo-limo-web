@@ -239,25 +239,25 @@ export async function generateInvoicePDF(
     doc.text("Contact Details", leftMargin, footerY + 8);
     doc.setFont("helvetica", "normal");
     doc.text(
-      " | Email: tech@jo-limo.com | Phone: +962 6 XXX XXXX | Website: jo-limo.com",
+      " | Email: support@jo-limo.com | Phone: +962 7 9169 8125 | Website: jo-limo.com",
       leftMargin + 18,
       footerY + 8
     );
 
-    doc.setFont("helvetica", "bold");
-    doc.text("Managing Directors", leftMargin, footerY + 12);
-    doc.setFont("helvetica", "normal");
-    doc.text(
-      " | Mr Zaid Abu Samra",
-      leftMargin + 23,
-      footerY + 12
-    );
+    // doc.setFont("helvetica", "bold");
+    // doc.text("Managing Directors", leftMargin, footerY + 12);
+    // doc.setFont("helvetica", "normal");
+    // doc.text(
+    //   " | Mr Zaid Abu Samra",
+    //   leftMargin + 23,
+    //   footerY + 12
+    // );
 
     doc.setFont("helvetica", "normal");
     doc.text(
-      "Register Court Amman | VAT No.: XXXXXXXXX",
+      "Register Court Amman | VAT No.: 178056421",
       leftMargin,
-      footerY + 16
+      footerY + 12
     );
 
     // Convert to buffer

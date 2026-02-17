@@ -103,7 +103,7 @@ function PaymentAndCheckoutContent() {
             existingBilling.billingState &&
             existingBilling.billingCountry &&
             existingBilling.billingPostcode
-          )
+          ),
         );
       } else if (reservationData.billingData) {
         // Pre-fill with data from pick-up info if no billing data exists
@@ -156,7 +156,7 @@ function PaymentAndCheckoutContent() {
   const filteredBillingCountries = COUNTRY_CODES.filter(
     (country) =>
       country.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) ||
-      country.code.toLowerCase().includes(countrySearchTerm.toLowerCase())
+      country.code.toLowerCase().includes(countrySearchTerm.toLowerCase()),
   );
 
   const handleBillingCountrySelect = (country: {
@@ -171,7 +171,7 @@ function PaymentAndCheckoutContent() {
   };
 
   const handleBillingChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setBillingForm((prev) => ({ ...prev, [name]: value }));
@@ -224,7 +224,7 @@ function PaymentAndCheckoutContent() {
     // TRACE REAL DATA: Let's see what's actually in the store
     console.log(
       "🔍 FULL RESERVATION DATA OBJECT:",
-      JSON.stringify(reservationData, null, 2)
+      JSON.stringify(reservationData, null, 2),
     );
 
     // Check if we have real data, if not, try to restore from localStorage
@@ -234,7 +234,7 @@ function PaymentAndCheckoutContent() {
       !reservationData.pickup
     ) {
       console.log(
-        "❌ No real data found, checking localStorage for restoration"
+        "❌ No real data found, checking localStorage for restoration",
       );
 
       // Check localStorage directly
@@ -257,7 +257,7 @@ function PaymentAndCheckoutContent() {
       }
 
       console.log(
-        "❌ No data found anywhere - user needs to complete booking flow"
+        "❌ No data found anywhere - user needs to complete booking flow",
       );
     } else {
       console.log("✅ REAL DATA FOUND:", {
@@ -280,7 +280,7 @@ function PaymentAndCheckoutContent() {
 
     if (!hasMinimalData && !searchParams.get("resourcePath")) {
       console.log(
-        "❌ Missing reservation data - checking localStorage for backup"
+        "❌ Missing reservation data - checking localStorage for backup",
       );
 
       // Try to restore from localStorage
@@ -296,7 +296,7 @@ function PaymentAndCheckoutContent() {
             const storedReservationData = parsed.state.reservationData;
             console.log(
               "🔍 Stored reservation data details:",
-              storedReservationData
+              storedReservationData,
             );
             console.log("🔍 RAW stored data values:", {
               date: storedReservationData.date,
@@ -315,7 +315,7 @@ function PaymentAndCheckoutContent() {
               storedReservationData.pickup
             ) {
               console.log(
-                "✅ Stored data looks valid, but Zustand store is empty"
+                "✅ Stored data looks valid, but Zustand store is empty",
               );
               console.log("Attempting to restore data from localStorage...");
 
@@ -327,10 +327,10 @@ function PaymentAndCheckoutContent() {
               // Force a re-render by updating state
               setTimeout(() => {
                 console.log(
-                  "🔄 Checking if data was restored after timeout..."
+                  "🔄 Checking if data was restored after timeout...",
                 );
                 console.log(
-                  "🔄 Current reservation data should be updated on next render"
+                  "🔄 Current reservation data should be updated on next render",
                 );
               }, 100);
 
@@ -383,14 +383,14 @@ function PaymentAndCheckoutContent() {
 
   const bookingData = useMemo(
     () => ({ ...reservationData, service: reservationData.selectedClass }),
-    [reservationData]
+    [reservationData],
   );
 
   // Create booking function - defined early to avoid conditional hook calls
   const createBooking = useCallback(
     async (
       paymentMethod: "credit/debit" | "cash",
-      paymentResult?: HyperPayResult
+      paymentResult?: HyperPayResult,
     ) => {
       try {
         const billingData = getBillingData();
@@ -412,7 +412,7 @@ function PaymentAndCheckoutContent() {
             fullData: reservationData,
           });
           console.error(
-            "This usually means the user accessed the payment page without completing the booking flow"
+            "This usually means the user accessed the payment page without completing the booking flow",
           );
 
           console.log("❌ Cannot create booking - insufficient data");
@@ -447,36 +447,35 @@ function PaymentAndCheckoutContent() {
         console.log("✅ Booking result:", result);
         console.log(
           "📧 Email should have been sent to:",
-          billingData?.customerEmail
+          billingData?.customerEmail,
         );
       } catch (error) {
         console.error(
           "❌ CRITICAL ERROR: Failed to create booking history:",
-          error
+          error,
         );
         console.error(
           "❌ Error details:",
-          error instanceof Error ? error.message : String(error)
+          error instanceof Error ? error.message : String(error),
         );
         console.error("❌ Full error object:", JSON.stringify(error, null, 2));
         // Re-throw the error so we know booking failed even if payment succeeded
         throw new Error(
           `Booking creation failed: ${
             error instanceof Error ? error.message : String(error)
-          }`
+          }`,
         );
       }
     },
-    [reservationData, getBillingData]
+    [reservationData, getBillingData],
   );
 
   /* ---------------------------------------------------------------- */
   /*  Payment-status check (after redirect)                           */
   /* ---------------------------------------------------------------- */
+  const resourcePath = searchParams.get("resourcePath");
+  const paymentId = searchParams.get("id");
   useEffect(() => {
-    const resourcePath = searchParams.get("resourcePath");
-    const paymentId = searchParams.get("id");
-
     // Wait for data restoration to complete before processing payment
     if (
       !resourcePath ||
@@ -498,13 +497,13 @@ function PaymentAndCheckoutContent() {
     dispatch({ type: "PROCESSING" });
 
     fetch(
-      `/api/checkout-status?resourcePath=${encodeURIComponent(resourcePath)}`
+      `/api/checkout-status?resourcePath=${encodeURIComponent(resourcePath)}`,
     )
       .then((r) => r.json())
       .then(async (data: HyperPayResult) => {
         console.log(
           "💳 PAYMENT STATUS RESPONSE:",
-          JSON.stringify(data, null, 2)
+          JSON.stringify(data, null, 2),
         );
         console.log("💳 Result code:", data.result?.code);
         console.log("💳 Result description:", data.result?.description);
@@ -523,7 +522,7 @@ function PaymentAndCheckoutContent() {
           "💳 Payment success:",
           success,
           "| Code:",
-          data.result.code
+          data.result.code,
         );
 
         if (success) {
@@ -539,7 +538,7 @@ function PaymentAndCheckoutContent() {
           } catch (bookingError) {
             console.error(
               "❌ Payment succeeded but booking creation failed:",
-              bookingError
+              bookingError,
             );
             console.error("❌ Booking error type:", typeof bookingError);
             console.error("❌ Booking error details:", {
@@ -595,7 +594,7 @@ function PaymentAndCheckoutContent() {
         setDistanceInfo({
           distance: r?.distance || "",
           duration: r?.duration || "",
-        })
+        }),
       )
       .catch((err) => console.error("distance-calc", err));
   }, [bookingData.pickup, bookingData.dropoff]);
@@ -634,7 +633,7 @@ function PaymentAndCheckoutContent() {
     const storedHasRequiredData = localStorage.getItem("hasRequiredData");
     console.log(
       "storedHasRequiredData from localStorage:",
-      storedHasRequiredData
+      storedHasRequiredData,
     );
 
     if (storedHasRequiredData !== null) {
@@ -665,7 +664,7 @@ function PaymentAndCheckoutContent() {
     "Will show error:",
     localHasRequiredData === false &&
       dialog.kind === "NONE" &&
-      !hasSettledRef.current
+      !hasSettledRef.current,
   );
 
   if (
@@ -692,7 +691,7 @@ function PaymentAndCheckoutContent() {
     console.log("🔵 Current reservation data:", reservationData);
     console.log(
       "🔵 Current billing data from store:",
-      reservationData.billingData
+      reservationData.billingData,
     );
 
     // For cash payment, save minimal billing data (from pick-up info)

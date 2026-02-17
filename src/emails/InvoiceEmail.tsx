@@ -432,16 +432,16 @@ export const InvoiceEmail = ({
           <Section style={footer}>
             <Text style={footerText}>
               Questions? Contact us at{" "}
-              <Link href="mailto:tech@jo-limo.com" style={footerLink}>
-                tech@jo-limo.com
+              <Link href="mailto:support@jo-limo.com" style={footerLink}>
+                support@jo-limo.com
               </Link>{" "}
               or call our 24/7 Service Hotlines:
             </Text>
 
             <Text style={footerText}>
-              +962 6 XXX XXXX
+              +962 7 9169 8125
               <br />
-              +962 6 XXX XXXX
+              +962 7 9111 2628
               {/* <br />
               US: +1 415 429 1027
               <br />
@@ -459,56 +459,64 @@ export const InvoiceEmail = ({
             >
               <tr>
                 <td style={{ padding: "0 10px" }}>
-                  <Img
-                    src="cid:facebook-icon"
-                    width="28"
-                    height="28"
-                    alt="Facebook"
-                    style={{
-                      display: "block",
-                      width: "28px",
-                      height: "28px",
-                    }}
-                  />
+                  <Link href="https://www.facebook.com/share/14Sf5WQGyDB/">
+                    <Img
+                      src="cid:facebook-icon"
+                      width="28"
+                      height="28"
+                      alt="Facebook"
+                      style={{
+                        display: "block",
+                        width: "28px",
+                        height: "28px",
+                      }}
+                    />
+                  </Link>
                 </td>
                 <td style={{ padding: "0 10px" }}>
-                  <Img
-                    src="cid:x-icon"
-                    width="28"
-                    height="28"
-                    alt="X"
-                    style={{
-                      display: "block",
-                      width: "28px",
-                      height: "28px",
-                    }}
-                  />
+                  <Link href="https://x.com/jolimo_official">
+                    <Img
+                      src="cid:x-icon"
+                      width="28"
+                      height="28"
+                      alt="X"
+                      style={{
+                        display: "block",
+                        width: "28px",
+                        height: "28px",
+                      }}
+                    />
+                  </Link>
                 </td>
                 <td style={{ padding: "0 10px" }}>
-                  <Img
-                    src="cid:instagram-icon"
-                    width="28"
-                    height="28"
-                    alt="Instagram"
-                    style={{
-                      display: "block",
-                      width: "28px",
-                      height: "28px",
-                    }}
-                  />
+                  <Link href="https://www.instagram.com/jolimo_official?igsh=MXZtMjIqdm42bXF1aw==">
+                    <Img
+                      src="cid:instagram-icon"
+                      width="28"
+                      height="28"
+                      alt="Instagram"
+                      style={{
+                        display: "block",
+                        width: "28px",
+                        height: "28px",
+                      }}
+                    />
+                  </Link>
                 </td>
                 <td style={{ padding: "0 10px" }}>
-                  <Img
-                    src="cid:linkedin-icon"
-                    width="28"
-                    height="28"
-                    alt="LinkedIn"
-                    style={{
-                      display: "block",
-                      width: "28px",
-                      height: "28px",
-                    }}
-                  />
+                  <Link>
+                    <Img
+                      src="cid:linkedin-icon"
+                      width="28"
+                      height="28"
+                      alt="LinkedIn"
+                      style={{
+                        display: "block",
+                        width: "28px",
+                        height: "28px",
+                      }}
+                    />
+                  </Link>
                 </td>
               </tr>
             </table>
@@ -518,11 +526,9 @@ export const InvoiceEmail = ({
               <br />
               Queen Alia International Airport Road | Amman, Jordan
               <br />
-              Managing Directors: Mr Zaid Abu Samra
+              Register court: Amman | Registration No. 44804
               <br />
-              Register court: Amman | Registration No. XXXXXX
-              <br />
-              B. VAT No.: XXXXXXXXX
+              B. VAT No.: 178056421
               <br />
               <br />
               This is a transactional email confirming your booking. You
