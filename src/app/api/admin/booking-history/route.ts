@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       if (!value || (typeof value === "string" && value.trim() === "")) {
         return NextResponse.json(
           { error: `Missing required field: ${field}` },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -45,14 +45,14 @@ export async function POST(request: NextRequest) {
     if (body.booking_type === "by-hour" && !body.duration) {
       return NextResponse.json(
         { error: "Duration is required for by-hour bookings" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (body.booking_type === "one-way" && body.duration) {
       return NextResponse.json(
         { error: "Duration should be null for one-way bookings" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -94,20 +94,26 @@ export async function POST(request: NextRequest) {
     console.log("✅ Booking created successfully:", booking);
 
     return NextResponse.json(booking, { status: 201 });
-
   } catch (error) {
     console.error("❌ Create booking error:", error);
+
+    // Add this 👇
+    if (error instanceof Error && "meta" in error) {
+      console.error(
+        "❌ Prisma error meta:",
+        JSON.stringify((error as any).meta, null, 2),
+      );
+    }
 
     return NextResponse.json(
       {
         error: "Failed to create booking",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-
 
 // GET - List all bookings with pagination and filtering
 export async function GET(request: NextRequest) {
