@@ -256,7 +256,7 @@ export async function generateInvoicePDF(
     doc.setFont("helvetica", "bold");
     doc.text("Register Court Amman", leftMargin, footerY + 12);
     doc.setFont("helvetica", "normal");
-    doc.text(" | VAT No.: 178056421", leftMargin + 19, footerY + 12);
+    doc.text(" | VAT No.: 178056421", leftMargin + 27, footerY + 12);
 
     // Convert to buffer
     const pdfArrayBuffer = doc.output("arraybuffer");
